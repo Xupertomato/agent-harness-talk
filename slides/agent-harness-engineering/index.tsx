@@ -3685,7 +3685,7 @@ const DeliverToPage: Page = () => (
           head="個人型 Agent"
           rows={[
             { k: '情境', v: '個人型 Agent 要操作我們的系統' },
-            { k: '交付形式', v: <><b>System Agent</b>：整個任務交給它</> },
+            { k: '交付形式', v: <><b>System Agent</b>：<br />一個服務，開 A2A／MCP 介面</> },
             { k: '人在不在線上', v: '在，但在對方那一端' },
           ]}
         />
@@ -3695,7 +3695,7 @@ const DeliverToPage: Page = () => (
           head="事件觸發"
           rows={[
             { k: '情境', v: '告警、排程、工單觸發，沒人開口' },
-            { k: '交付形式', v: <><b>職能型 Agent</b>：<br />Harness 用 SDK 嵌進服務</> },
+            { k: '交付形式', v: <><b>職能型 Agent</b>：<br />一個服務，事件一來就自己跑</> },
             { k: '人在不在線上', v: '不在，把關要事前設計好' },
           ]}
         />
@@ -4014,8 +4014,9 @@ Summarizer：只給最終表格太單薄，也要讓使用者確認操作符合�
 補充（被問到）：Plugin 是 Claude Code 與 claude.ai 的打包格式，其他 Harness 有各自的做法；能跨 Harness 帶著走的是 Skill 和 MCP。Plugin 可以由管理員用 managed settings 統一發布、強制啟用。`,
   `上一頁回答了「留下的放在哪裡」；這頁回答「交給誰用」。命題是「以後是不是交一個通用 Harness 就好」——答案取決於使用的人是誰。
 使用者自己用：裝成 Plugin，放進使用者自己的 Harness，人在線上，隨時能核准。
-個人型 Agent 要操作我們的系統：我們的團隊把這叫 System Agent——每個公司系統都能被 Agent 使用，個人型 Agent 處理個人的事，透過 System Agent 去操作系統。交付形式是整個任務交給它，不是只給一個工具；人在線上，但在對方那一端。下一頁細講：System Agent 負責什麼。
-事件觸發（職能型 Agent，線上沒有人）：告警、排程、工單觸發，沒人開口。做法是把整個 Harness 當函式庫嵌進服務。現在主要的 Harness 都提供 SDK：Claude Agent SDK 給的是跟 Claude Code 一樣的工具、迴圈和 context 管理，Python、TypeScript 都能用，也有 hooks、子 Agent、MCP、權限、session；Codex SDK（TypeScript、Python）可以開 thread、跑任務，官方列的用途包括放進 CI/CD；OpenCode 有 @opencode/sdk，在程式裡直接起一個 OpenCode。框架那邊反過來：LangChain 的 Deep Agents 自稱 agent harness，跑在 LangGraph 的執行環境上。兩邊收斂成同一個形狀：迴圈、工具、Skill、子 Agent、hook、MCP、session。
+個人型 Agent 要操作我們的系統：我們的團隊把這叫 System Agent——每個公司系統都能被 Agent 使用，個人型 Agent 處理個人的事，透過 System Agent 去操作系統。交付形式是一個服務，對外開 A2A 或 MCP 介面，整個任務交給它，不是只給一個工具；人在線上，但在對方那一端。下一頁細講：System Agent 負責什麼。
+事件觸發（職能型 Agent，線上沒有人）：告警、排程、工單觸發，沒人開口；交付形式也是一個服務，事件一來就自己跑。
+後兩欄的做法其實一樣：都是把整個 Harness 當函式庫嵌進服務，差別只在誰叫它——System Agent 是別的 Agent 來叫，職能型是事件來叫。現在主要的 Harness 都提供 SDK：Claude Agent SDK 給的是跟 Claude Code 一樣的工具、迴圈和 context 管理，Python、TypeScript 都能用，也有 hooks、子 Agent、MCP、權限、session；Codex SDK（TypeScript、Python）可以開 thread、跑任務，官方列的用途包括放進 CI/CD；OpenCode 有 @opencode/sdk，在程式裡直接起一個 OpenCode。框架那邊反過來：LangChain 的 Deep Agents 自稱 agent harness，跑在 LangGraph 的執行環境上。兩邊收斂成同一個形狀：迴圈、工具、Skill、子 Agent、hook、MCP、session。
 這一欄是展望，口頭說：目前團隊還沒有這類需求，下下頁再講。
 被問到「那以後還用 LangGraph 嗎」：那篇比對 11 套 coding Harness 原始碼的論文發現，沒有一套在 Agent 的執行環境用 LangChain、LangGraph 這類框架，迴圈都是自己寫的；它的建議是，要現成的起點，就用 Harness 的 SDK。但這是 Agent 迴圈的趨勢，不是規則——LPQM Agent 裡真正固定的流程，用 graph 寫仍然合理（回到 Workflow 到 Loop 那頁的左端）。
 再下兩頁：System Agent，以及職能型 Agent。
