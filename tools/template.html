@@ -1,0 +1,38 @@
+<title>Agent System with Harness Engineering</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* single-theme viewer: slate surround so the light slide reads as a projected page */
+:root{--ground:#1c2533;--bar:#273246;--ink:#e8edf5;--dim:#9aa6b8;--accent:#7fa8e0;color-scheme:dark}
+html,body{height:100%}
+body{background:var(--ground);color:var(--ink);font-family:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;overflow:hidden}
+.app{height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding-inline:16px}
+.stage{display:flex;justify-content:center}
+.frame{position:relative;overflow:hidden;box-shadow:0 10px 40px rgba(0,0,0,.45)}
+.hit{position:absolute;top:0;bottom:0;width:30%;background:transparent;border:0;cursor:pointer}
+.hit.left{left:0}.hit.right{right:0}
+.hit:focus-visible{outline:2px solid var(--accent)}
+.notes{max-width:100%;height:150px;overflow:auto;background:var(--bar);border-radius:6px;padding:12px 16px;font-size:15px;line-height:1.7;white-space:pre-wrap}
+.nl{font-size:12px;letter-spacing:.08em;color:var(--dim);margin-bottom:4px}
+.dim{color:var(--dim)}
+.bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:center}
+.bar button{background:var(--bar);color:var(--ink);border:1px solid #3a475d;border-radius:6px;padding:7px 14px;font:inherit;font-size:14px;cursor:pointer}
+.bar button:disabled{opacity:.4;cursor:default}
+.bar button.on{border-color:var(--accent);color:var(--accent)}
+.bar button:focus-visible,.pg input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.pg{display:flex;align-items:center;gap:6px;font-size:14px;color:var(--dim);font-variant-numeric:tabular-nums}
+.pg input{width:56px;background:var(--bar);color:var(--ink);border:1px solid #3a475d;border-radius:6px;padding:6px 8px;font:inherit;text-align:center}
+.laser{position:absolute;left:0;top:0;pointer-events:none;z-index:5}
+.frame.lasering{cursor:none}
+.app.present{padding:0;gap:0;background:#000}
+.app.present .frame{box-shadow:none}
+.app.idle,.app.idle *{cursor:none}
+.pctl{position:fixed;right:14px;bottom:12px;display:flex;gap:8px;align-items:center;opacity:0;transition:opacity .2s;z-index:10}
+.app.present:not(.idle) .pctl,.pctl:hover{opacity:.9}
+.pctl button{background:rgba(39,50,70,.9);color:var(--ink);border:1px solid #3a475d;border-radius:6px;padding:6px 12px;font:inherit;font-size:13px;cursor:pointer}
+.pctl button.on{border-color:#ff5a5a;color:#ff8a8a}
+.pnum{font-size:13px;color:var(--dim);font-variant-numeric:tabular-nums}
+.bar button.on{border-color:var(--accent);color:var(--accent)}
+</style>
+<div id="root"></div>
+<script>/*__VIEWER__*/</script>
