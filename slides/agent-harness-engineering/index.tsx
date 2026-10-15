@@ -2829,7 +2829,7 @@ const Reasons = ({ children }: { children: ReactNode }) => (
 );
 
 const RedrawBefore: Page = () => (
-  <Frame title="LPQM 的每個節點，都在補能力或守要求">
+  <Frame title="LPQM Agent 的每個節點，都在補能力或守要求">
     <p style={{ fontSize: 28, color: c.muted, margin: '0 0 20px' }}>2025.03 · 用 LangGraph 打造 · 給 RD 工程師用的 service</p>
     <Steps>
       <div style={{ display: 'grid', gridTemplateColumns: TABLE_COLS, alignItems: 'center' }}>
@@ -2944,7 +2944,7 @@ const KeptRow = ({ item, kind }: { item: string; kind: WhyKind | '業務知識' 
 };
 
 const RedrawAfter: Page = () => (
-  <Frame title="LPQM 重調：補能力的拆掉，守要求的留下">
+  <Frame title="LPQM Agent 也跟著重構：補能力的拆掉，守要求的留下">
     <div style={{ display: 'flex', gap: 40, alignItems: 'stretch' }}>
       <Panel tone="muted" style={{ flex: 1, padding: '24px 32px 8px' }}>
         <p style={{ fontSize: 32, fontWeight: 800, color: c.muted, margin: '0 0 8px' }}>交給通用 Harness</p>
@@ -3941,7 +3941,7 @@ Ilya 說：模型越會推理，就越難預測。
 中間的等式：Agent 等於模型加 Harness。模型負責判斷，Harness 負責控制。今天談的是鬆緊——哪些判斷交給模型、哪些由 Harness 控制；放得越寬，模型的自由度越高。整場只用兩個動作描述它怎麼變：放寬、收緊。
 往下看，比重在移動：模型越來越強，越來越多判斷交給模型。例如 Bitter Lesson 講的通用方法終究勝出；Claude Code 的 auto mode 一版一版放寬 push；規則從 prompt 移到設定檔。
 但 Harness 不會消失。把資料、工具、執行環境接上的「管線」還在，只是正在變成通用的——Claude Code、Codex 這類通用 Harness 已經內建。我們自己要寫的，最後只剩使用者的要求：什麼不能錯、什麼才算對。
-所以我們過去幫模型做的 Harness（像 LPQM 那張 graph，很多節點是在補模型的能力）正在過期；守要求的部分不會——第三部分會拆給大家看。這也是為什麼才要問清楚，哪些該放、哪些要留。
+所以我們過去幫模型做的 Harness（像 LPQM Agent 那張 graph，很多節點是在補模型的能力）正在過期；守要求的部分不會——第三部分會拆給大家看。這也是為什麼才要問清楚，哪些該放、哪些要留。
 等式出處：LangChain〈The Anatomy of an Agent Harness〉（Vivek Trivedy，2026-03）：Agent = Model + Harness；Harness 是模型以外的所有程式、設定與執行邏輯。
 被問到「Agent 這個詞比 Harness 早」：Harness 是新名字，指的是一直都在的那一半——以前叫 scaffold、agent framework、orchestration，我們用 LangGraph 建的 graph 也是。模型越強，差異越在外面那一圈，所以才需要一個名字。類比：MLOps 這個詞比模型訓練晚很多，但訓練一直都有 pipeline。
 重點句：模型越來越強，Harness 越來越薄；我們過去幫模型做的，正在過期。`,
@@ -3999,7 +3999,7 @@ Workflow 比較便宜、比較快，這是成本選擇，不在今天的範圍�
   `【第二部分・判斷 10 分鐘】
 這一部分是今天的核心：判斷與控制的鬆緊，怎麼拿捏？方法只有一個——每一個控制，先問它為什麼存在。`,
   `每一個控制，先問它為什麼存在（逐張按 →）。只有兩種理由，這頁的例子都是第一部分講過的 Harness 元件。
-守要求：工作本身的規定。例如 deny 規則擋 rm -rf；LPQM 被規定「模型寫的程式不能在 prod 跑」。模型再強都需要，做成強制。
+守要求：工作本身的規定。例如 deny 規則擋 rm -rf；LPQM Agent 被規定「模型寫的程式不能在 prod 跑」。模型再強都需要，做成強制。
 為什麼守要求不會過期（口頭帶）：紅燈要停，不是因為駕駛開得不好，開了三十年的老司機也要停。守要求跟能力無關，是因為有人要負責。
 補能力：替模型做它還做不到的判斷。例如每個動作都停下來問人（Manual mode）：人在替模型判斷危不危險。模型判斷危險的能力夠了，Claude Code 就把預設換成 auto mode——這已經放寬過一次。先收緊、標記理由；模型變強就放寬。
 兩種理由的差別，一句話：守要求一直緊，補能力暫時緊。
@@ -4035,14 +4035,14 @@ OpenAI 的具體做法：AGENTS.md 當目錄不當百科；架構規則用 linte
 重點句：鬆緊不靠感覺：紀錄指出哪裡錯，測試題決定能不能放。`,
   `第二部分結論：補能力的會放寬，守要求的不會；放不放，用證據決定。
 兩種理由，各自什麼時候放寬：守要求做成強制，模型再強都不放寬；補能力先收緊、標記理由，模型升級就檢查能不能放寬。
-轉場：原則有了。換我們自己提供工具時，三個問題：留下什麼（先拿 LPQM 重調一次）、交給誰用、誰來做。這就是第三部分「動手」。`,
+轉場：原則有了。換我們自己提供工具時，三個問題：留下什麼（先拿 LPQM Agent 重調一次）、交給誰用、誰來做。這就是第三部分「動手」。`,
   `【第三部分・動手 8 分鐘】
 這一部分回答開場的問題：模型變強後，我們還要做什麼？先拋一個命題，再拿真實系統驗證，最後把同一個問題問在自己身上。
 命題：以後面對需求，是不是交一個通用 Harness 給使用者就好？我們頂多幫忙做 Skill、做 Plugin？
 可以這樣問台下：Claude Code 寫程式這麼順手，知識能加 Skill、操作能力能接工具或 Plugin，都補上之後，就能直接交給其他單位用了嗎？
 在這裡停一下，讓問題懸著。不憑感覺回答，拿一個真實系統來驗證：LPQM Data Summary Agent。
 這裡說的通用 Harness，指的是引擎（迴圈、工具呼叫、context 管理）；預設要為使用者重新設定——後面要講的就是怎麼重新調鬆緊。`,
-  `LPQM 的每個節點，當初為什麼存在？這是 LPQM Data Summary Agent，講者自己做的專案。
+  `LPQM Agent 的每個節點，當初為什麼存在？這是 LPQM Data Summary Agent，講者自己做的專案。
 先只看上排：四個節點各做什麼。Extractor 依術語表找出問句裡的術語；Clarifier 判斷分析主體、分析方式是否明確，不明確就先反問；接著依條件抓資料（圖上省略）；Plan & Execute 先排步驟，再用設計好的表格工具照著執行；Summarizer 整理工具呼叫過程，說明結果怎麼來。
 Extractor 有兩個原因：術語表太大放不進 prompt（補能力）；欄位值必須 100% 正確（守要求）。
 Clarifier：當時模型不會主動反問（補能力）。
@@ -4060,19 +4060,19 @@ Summarizer：只給最終表格太單薄，也要讓使用者確認操作符合�
 注意：「現在模型做得到」要用舊的測試題重跑過才能說——這也是後面「需要保證每次都對」那一題。`,
   `留下來的，怎麼交出去？Harness 很強了，我們交付的不再是 Agent，而是放進 Harness 的東西：使用者的業務知識寫成 Skill、我們做的工具和強制，打包成 Plugin 一起交出去；再加上一組測試題。
 上一頁留下來的每一項，這一頁都要找到位置。知識（術語表、判斷框架）放進 Skill，使用者也能寫。回覆時附上操作清單，以前是 Summarizer 這個節點在守要求；如果只寫成 Skill 裡的一句話，那只是引導，模型可能漏掉，所以用 Hook 在回覆前檢查——例如 Claude Code 的 Stop hook，沒附操作清單就擋下、不讓結束。
-欄位值檢查和只開放設計好的表格操作，都做在 MCP server 端，在 Plugin 外面：就算 Harness 被繞過，也擋得住，模型寫的程式碰不到 prod。Plugin 只帶 MCP 的連線設定。權限做在資料來源或前端，LPQM 就是做在前端；測試題拿來驗證整包。
+欄位值檢查和只開放設計好的表格操作，都做在 MCP server 端，在 Plugin 外面：就算 Harness 被繞過，也擋得住，模型寫的程式碰不到 prod。Plugin 只帶 MCP 的連線設定。權限做在資料來源或前端，LPQM Agent 就是做在前端；測試題拿來驗證整包。
 重點句：Plugin 是包裝；真正不能錯的，要做在包裝外面。如果把規則寫成 Plugin 裡的 Skill，那只是引導。
 補充（被問到）：Plugin 是 Claude Code 與 claude.ai 的打包格式，其他 Harness 有各自的做法；能跨 Harness 帶著走的是 Skill 和 MCP。Plugin 可以由管理員用 managed settings 統一發布、強制啟用。`,
   `上一頁回答了「留下的放在哪裡」；這頁回答「交給誰用」。命題是「以後是不是交一個通用 Harness 就好」——答案取決於使用的人是誰。
 使用者自己用：裝成 Plugin，放進使用者自己的 Harness，人在線上，隨時能核准。
 別的 Agent：下一頁細講——交出多少、怎麼交（知識、工具，還是整個任務）。
 組織型 Agent（線上沒有人）：把整個 Harness 當函式庫嵌進服務，例如排程、工單這類事件觸發。現在主要的 Harness 都提供 SDK：Claude Agent SDK 給的是跟 Claude Code 一樣的工具、迴圈和 context 管理，Python、TypeScript 都能用，也有 hooks、子 Agent、MCP、權限、session；Codex SDK（TypeScript、Python）可以開 thread、跑任務，官方列的用途包括放進 CI/CD；OpenCode 有 @opencode/sdk，在程式裡直接起一個 OpenCode。框架那邊反過來：LangChain 的 Deep Agents 自稱 agent harness，跑在 LangGraph 的執行環境上。兩邊收斂成同一個形狀：迴圈、工具、Skill、子 Agent、hook、MCP、session。
-被問到「那以後還用 LangGraph 嗎」：那篇比對 11 套 coding Harness 原始碼的論文發現，沒有一套在 Agent 的執行環境用 LangChain、LangGraph 這類框架，迴圈都是自己寫的；它的建議是，要現成的起點，就用 Harness 的 SDK。但這是 Agent 迴圈的趨勢，不是規則——LPQM 裡真正固定的流程，用 graph 寫仍然合理（回到 Workflow 到 Loop 那頁的左端）。
+被問到「那以後還用 LangGraph 嗎」：那篇比對 11 套 coding Harness 原始碼的論文發現，沒有一套在 Agent 的執行環境用 LangChain、LangGraph 這類框架，迴圈都是自己寫的；它的建議是，要現成的起點，就用 Harness 的 SDK。但這是 Agent 迴圈的趨勢，不是規則——LPQM Agent 裡真正固定的流程，用 graph 寫仍然合理（回到 Workflow 到 Loop 那頁的左端）。
 再下兩頁：組織型 Agent，以及實際的例子。
 共用的底：三條路後面是同一組 server 端檢查，所以不管從哪條路進來，不能錯的都擋得住——接回上一頁「真正不能錯的，要做在包裝外面」。
 重點句：交給誰用，決定交付形式；不能錯的，三條路都靠同一組 server 端檢查。`,
   `上一頁第二條路「別的 Agent」，現在拆開成兩個決定：先決定交出多少，再決定怎麼交。角度也翻過來：第一部分的 MCP、A2A 是我們用別人的；這頁是我們做的專業 Agent 被別人用。
-① 交出多少。決定交多少的關鍵問題：對方的 Agent 缺的是什麼？缺知識，就給 Skill，判斷全在對方的模型；缺動作（碰不到我們的系統），就給 MCP 工具，怎麼用對方判斷，不能錯的檢查寫在我們 server 端，Harness 被繞過也擋得住；缺判斷（要懂這個領域才知道怎麼問、怎麼查、要不要先反問），就交整個任務，由我們的模型判斷，品質我們負責。例子都來自剛拆完的 LPQM：術語表、判斷框架是 Skill；查詢內部資料時的欄位值檢查是 MCP 工具；反問、規劃、整理說明，原本的 Clarifier、Plan & Execute、Summarizer，就是「整個任務」那一層。
+① 交出多少。決定交多少的關鍵問題：對方的 Agent 缺的是什麼？缺知識，就給 Skill，判斷全在對方的模型；缺動作（碰不到我們的系統），就給 MCP 工具，怎麼用對方判斷，不能錯的檢查寫在我們 server 端，Harness 被繞過也擋得住；缺判斷（要懂這個領域才知道怎麼問、怎麼查、要不要先反問），就交整個任務，由我們的模型判斷，品質我們負責。例子都來自剛拆完的 LPQM Agent：術語表、判斷框架是 Skill；查詢內部資料時的欄位值檢查是 MCP 工具；反問、規劃、整理說明，原本的 Clarifier、Plan & Execute、Summarizer，就是「整個任務」那一層。
 這三種缺口剛好對到第一部分地圖的三格：資訊、行動、模型判斷——缺的越接近判斷，交出去的就越多。
 ② 怎麼交。只有交整個任務時才需要選，兩條路的差別：(a) 對方 Harness 支不支援——coding Harness 裡只有 Gemini CLI 原生支援 A2A，Claude Code、Codex、OpenCode 都沒有；A2A 主要長在 Azure AI Foundry、Copilot Studio、Bedrock AgentCore 這類雲端 Agent 平台，所以實務上很多人把 Agent 包成 MCP 工具。(b) 反問：MCP 的 elicitation 是 server 透過客戶端介面問「人」；A2A 的 input-required 是把問題交回呼叫我們的 Agent，它可以自己回答或再問它的使用者——線上沒有人的情境只能走 A2A。(c) 長時間：MCP 2025-11-25 版規格才加入 Tasks，仍標實驗性；A2A 原生支援輪詢、串流、webhook 推送。
 結論：預設開一個 MCP server 當正門（工具＋一個把任務交給專業 Agent 的工具），知識另外用 Skill 發佈；呼叫方在支援 A2A 的平台、或需要多輪反問、長時間、沒人在線上時，再加 A2A 入口。兩個入口後面是同一個專業 Agent，身分與不能錯的檢查都在我們這邊。
@@ -4091,10 +4091,10 @@ Summarizer：只給最終表格太單薄，也要讓使用者確認操作符合�
 背景數字（被問到）：Gartner（2025-06）預測，2027 年底前超過四成的 agentic AI 專案會被取消，原因是成本、價值不明、風險控制不足。反例：Replit（2025-07）的 Agent 在使用者明講「不准改」的程式凍結期間刪了正式資料庫——那句「不准改」只是對話裡的引導；事後 Replit 補的是強制：自動分開開發與正式資料庫、只能規劃的模式、一鍵從備份還原。`,
   `實例：Stripe 的 Minions——內部的無人看管 coding Agent（依 Stripe 官方部落格，2026-02）。每週合併超過一千個 PR；Stripe 的說法是：人 review 程式碼，但從頭到尾是 Minions 寫的。
 上排是一次執行的流程：工程師最常在 Slack 標記它交代工作，交代完就離開，從訊息到通過 CI 的 PR 中間沒有人介入；跑在預先暖好的開發機上，10 秒啟動，裡面已經載好 Stripe 的程式碼和服務，而且跟正式環境、網路隔開——Stripe 原文說，這樣就不需要人逐步確認權限；照「藍圖」執行——藍圖是寫在程式裡的工作流程，結合 workflow 的確定性和 Agent 處理未知狀況的彈性；CI 最多跑兩輪，兼顧速度、成本和邊際效益；最後由人 review PR。底層是 Block 開源的 Goose 的 fork。
-下排對照前面講的：隔離的開發機就是復原那頁的「圈得住」——圈得住，才能拿掉逐步確認；藍圖就是路線光譜的中間地帶——成熟的組織選的不是純 Loop，而是該寫死的寫死（這也替 LPQM 那種 graph 背書：問題不是 graph 本身，而是哪些節點該寫死）；Toolshed 是 Stripe 內部的中央 MCP server，有 400 多個工具，加一次，所有 Agent 都能用；CI 兩輪上限是 Harness 決定何時停；人 review 是驗收留給人。
+下排對照前面講的：隔離的開發機就是復原那頁的「圈得住」——圈得住，才能拿掉逐步確認；藍圖就是路線光譜的中間地帶——成熟的組織選的不是純 Loop，而是該寫死的寫死（這也替 LPQM Agent 那種 graph 背書：問題不是 graph 本身，而是哪些節點該寫死）；Toolshed 是 Stripe 內部的中央 MCP server，有 400 多個工具，加一次，所有 Agent 都能用；CI 兩輪上限是 Harness 決定何時停；人 review 是驗收留給人。
 重點句：能放手不看，是因為環境圈得住、該寫死的寫死，最後由人驗收。`,
   `把同一個問題，問在我們自己身上：我們替使用者做 Agent，這件事為什麼存在？（逐列按 →）
-第一列：把需求寫成 graph、做成 service——這是補能力。使用者不會寫程式、模型不夠強、通用 Harness 還不存在。LPQM 就是例子，而它正在過期。
+第一列：把需求寫成 graph、做成 service——這是補能力。使用者不會寫程式、模型不夠強、通用 Harness 還不存在。LPQM Agent 就是例子，而它正在過期。
 第二列：術語與業務規則本來就在使用者身上，我們只是轉譯；使用者現在能自己寫 Skill，轉譯會過期。
 第三列：讓不能錯的事不可能錯——守要求，不會過期。
 第四列：共用的工具與測試方法——看規模與成本，不在今天的兩類裡。
@@ -4105,7 +4105,7 @@ Summarizer：只給最終表格太單薄，也要讓使用者確認操作符合�
 右邊，需要我們——兩個條件任一成立：
 一是線上沒有人：代表單位或流程，例如排程、系統事件、寫進共用系統（前一頁的組織型 Agent）。OpenCode 是例子：TUI 只是連到 server 的用戶端，opencode serve 只啟動 server；引擎一樣，差在線上有沒有人，而 server 沒有多使用者的設計，身分、權限、紀錄要另外補。
 二是要每次都對：重複使用、拿去做決策。一次對不代表每次對——同一題跑十次可能錯一次，模型升級後原本對的可能變錯，邊界情況平常遇不到（前一頁的 pass^k）。
-我們負責：身分與權限、事前的強制（例如 LPQM 的欄位值檢查）、測試題與 eval。分工：需求單位知道什麼是對的，提供題目和標準答案；我們知道怎麼大量、重複地檢查——跑多次、換模型重跑、處理輸出不固定的比對——這是 eval，ML 工程師的專業。Anthropic 的建議也是這樣分：domain expert 出題，eval 團隊負責基礎設施；起步只要 20 到 50 題，從真實的失敗挑。
+我們負責：身分與權限、事前的強制（例如 LPQM Agent 的欄位值檢查）、測試題與 eval。分工：需求單位知道什麼是對的，提供題目和標準答案；我們知道怎麼大量、重複地檢查——跑多次、換模型重跑、處理輸出不固定的比對——這是 eval，ML 工程師的專業。Anthropic 的建議也是這樣分：domain expert 出題，eval 團隊負責基礎設施；起步只要 20 到 50 題，從真實的失敗挑。
 資料規定與成本：看部門，沒有通用答案，跟需求單位一起決定。有些部門的資料只能留在需求單位內，這時更傾向讓使用者自己做。
 被問到「把守要求做成強制很難嗎？」：寫一條檢查不難，難的是三件事——先問出哪些規則不能錯；再決定工具切多細，太窄做不了事、太寬等於沒把關；最後用測試題證明它守得住，模型換了還要重跑。
 重點句：大部分需求使用者自己做；使用者知道什麼是對的，我們負責讓它每次都對。`,
@@ -4115,7 +4115,7 @@ Summarizer：只給最終表格太單薄，也要讓使用者確認操作符合�
 留給人的有兩種。要有人提供的：因為知識在人身上而存在的，業務規則、術語、什麼才算對。模型再強也不會自己知道。
 要有人負責的：因為責任與授權而存在的，核准、承擔後果、驗收。能力會被取代，責任不會。
 （成本（更快、更省）是另一種取捨，不在今天範圍，被問到再說。）
-講者自己的心得（LPQM）：我花了很久讓那張 graph 能用，現在大部分都能交給通用 Harness。但拆開來看，被取代的是補能力的結構；術語表、判斷框架，是對業務的理解，現在變成 Skill；「不能在 prod 跑模型寫的程式」這條規定，到今天依然成立。如果被問到要不要繼續用 LangGraph：一份比對 11 套 coding Harness 原始碼的研究（2026-07）發現，沒有一套在 agent 迴圈裡用 LangGraph、LangChain 這類框架；LangChain 自己也做了 Deep Agents 這個 Harness。對照第一部分的光譜：graph 適合左半邊、路線事先排好的流程；越往右邊的開放 Loop，越是 Harness 的地盤——不是誰對誰錯，是位置不同。
+講者自己的心得（LPQM Agent）：我花了很久讓那張 graph 能用，現在大部分都能交給通用 Harness。但拆開來看，被取代的是補能力的結構；術語表、判斷框架，是對業務的理解，現在變成 Skill；「不能在 prod 跑模型寫的程式」這條規定，到今天依然成立。如果被問到要不要繼續用 LangGraph：一份比對 11 套 coding Harness 原始碼的研究（2026-07）發現，沒有一套在 agent 迴圈裡用 LangGraph、LangChain 這類框架；LangChain 自己也做了 Deep Agents 這個 Harness。對照第一部分的光譜：graph 適合左半邊、路線事先排好的流程；越往右邊的開放 Loop，越是 Harness 的地盤——不是誰對誰錯，是位置不同。
 最後一句回到第 3 頁的鬆緊：哪些判斷交給模型，哪些由 Harness 控制。模型越強，可以放得越寬；知識和責任，留在人這邊。
 （可口頭補一句：不再畫好路線讓它照走，而是設計它的工作環境。）`,
   `【Q&A 10 分鐘】
@@ -4185,7 +4185,7 @@ Codex：不記。早期版本有檔案快照，現在的原始碼已經移除（
 接多了有兩個代價（Anthropic〈Code execution with MCP〉，2025-11）：
 第一，工具定義擠滿 context。Harness 的解法是用到才載入：Claude Code 預設只列 MCP 工具名稱，透過 tool search 找到才載入完整 schema。
 第二，每個中間結果都要經過模型——例如把一份逐字稿從一個系統搬到另一個系統，整份內容要被模型讀進來、再寫出去。解法是讓模型寫程式呼叫工具，中間資料在執行環境裡處理掉，只把需要的結果交回模型。文章的例子從 15 萬 token 降到 2,000 token。
-伏筆：寫程式呼叫工具要有地方執行程式。LPQM 當時被規定「模型產生的程式不能在 prod 執行」，所以只能選 tool calling——在哪裡執行，是 Harness 的控制，也是第三部分會回來的限制。
+伏筆：寫程式呼叫工具要有地方執行程式。LPQM Agent 當時被規定「模型產生的程式不能在 prod 執行」，所以只能選 tool calling——在哪裡執行，是 Harness 的控制，也是第三部分會回來的限制。
 A2A 放在 Q&A 備用素材。
 補充：MCP 接進來的是工具；如果接進來的是另一個 Agent，就是 A2A。`,
   `（附錄）A2A：Agent 從外面接進來——MCP 的下一步。MCP 接進來的是工具，判斷還在我們的模型，每次呼叫我們都看得到；A2A 接進來的是另一個 Agent，也就是別人的模型加上別人的 Harness，中間的判斷在對方，我們只看得到狀態和交回的結果。依 A2A 1.0 規格（Linux Foundation 開源專案，由 Google 提出）。
