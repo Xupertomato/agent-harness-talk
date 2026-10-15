@@ -3064,88 +3064,64 @@ const OurWork: Page = () => (
   </Frame>
 );
 
-const ORG_COLS = '220px 1fr 1fr';
-
-const OrgRow = ({ k, me, org }: { k: string; me: ReactNode; org: ReactNode }) => (
-  <TRow cols={ORG_COLS} pad={15} size={26}>
-    <div style={{ fontWeight: 800 }}>{k}</div>
-    <div style={{ color: c.muted }}>{me}</div>
-    <div>{org}</div>
-  </TRow>
-);
-
-const OrgAgentPage: Page = () => (
-  <Frame title="組織型 Agent：引擎一樣，差在線上沒有人">
-    <p style={{ fontSize: 26, lineHeight: 1.5, color: c.muted, margin: '0 0 16px' }}>第三條路：同一套 Harness 用 SDK 嵌進服務，代表單位或流程在跑。</p>
-    <TRow cols={ORG_COLS} head>
-      <div />
-      <div>個人 Agent</div>
-      <div>組織型 Agent</div>
-    </TRow>
-    <OrgRow k="代表誰" me="使用者本人，用自己的權限" org={<><b>單位或流程</b>：有自己的身分，<br />或記下「替誰做」</>} />
-    <OrgRow k="誰負責" me="使用者自己" org={<><b>指定一個負責人</b>；權限到期要續</>} />
-    <OrgRow k="什麼時候動" me="人開口才動" org={<>事件、排程、被 @；常常<b>沒人在線上</b></>} />
-    <OrgRow k="人怎麼介入" me="當場對話、逐步確認" org={<><b>事前做成強制</b>；<br />事後非同步通知、提問、審核</>} />
-    <OrgRow k="什麼才算對" me="這次對就好" org={<><b>每次都對</b>：跑 k 次要 k 次全對</>} />
-    <p style={{ fontSize: 22, lineHeight: 1.55, color: c.muted, margin: '18px 0 0' }}>
-      例：Claude Tag 進團隊頻道，管理員替它劃好身分、頻道與預算，並記錄每個請求是誰下的；Microsoft Entra 替每個 Agent 指定負責人。
-    </p>
-    <p style={{ fontSize: 32, fontWeight: 800, lineHeight: 1.5, margin: '22px 0 0' }}>
-      線上沒有人，所以身分、把關、驗收，<Hi>都要事前設計好</Hi>。
-    </p>
-  </Frame>
-);
-
-const MinionStep = ({ no, text, sub, last = false }: { no: string; text: string; sub: ReactNode; last?: boolean }) => (
-  <div style={{ display: 'flex', alignItems: 'stretch', flex: 1 }}>
-    <div
-      style={{
-        flex: 1,
-        boxSizing: 'border-box',
-        border: `1.5px solid ${c.line}`,
-        borderTop: '4px solid var(--osd-accent)',
-        background: c.panel,
-        borderRadius: 'var(--osd-radius)',
-        padding: '14px 16px',
-      }}
-    >
-      <div style={{ fontFamily: mono, fontSize: 18, color: 'var(--osd-accent)' }}>{no}</div>
-      <div style={{ fontSize: 25, fontWeight: 800, lineHeight: 1.35, marginTop: 4 }}>{text}</div>
-      <div style={{ fontSize: 20, lineHeight: 1.45, color: c.muted, marginTop: 6 }}>{sub}</div>
+const VerbRow = ({ verb, name, children }: { verb: string; name: string; children: ReactNode }) => (
+  <div style={{ display: 'flex', alignItems: 'baseline', gap: 18, padding: '15px 0', borderBottom: `1px solid ${c.hair}` }}>
+    <span style={{ fontSize: 40, fontWeight: 900, lineHeight: 1.2, color: 'var(--osd-accent)', width: 44, flexShrink: 0 }}>{verb}</span>
+    <div style={{ fontSize: 25, lineHeight: 1.45 }}>
+      <b>{name}</b>
+      <div style={{ color: c.muted, fontSize: 24, marginTop: 2 }}>{children}</div>
     </div>
-    {last ? null : <div style={{ width: 30, textAlign: 'center', alignSelf: 'center', fontSize: 24, color: c.dim }}>→</div>}
   </div>
 );
 
-const MapRow = ({ k, v }: { k: string; v: ReactNode }) => (
-  <TRow cols="380px 1fr" pad={12} size={24}>
-    <div style={{ fontWeight: 800 }}>{k}</div>
-    <div>{v}</div>
-  </TRow>
+const PlanBox = ({ children, navy = false, sub }: { children: ReactNode; navy?: boolean; sub?: ReactNode }) => (
+  <div
+    style={{
+      boxSizing: 'border-box',
+      border: navy ? '2px solid var(--osd-accent)' : `1.5px solid ${c.line}`,
+      background: navy ? 'var(--osd-accent)' : c.panel,
+      color: navy ? '#fff' : undefined,
+      borderRadius: 'var(--osd-radius)',
+      padding: '14px 22px',
+      fontSize: 26,
+      fontWeight: 800,
+      lineHeight: 1.4,
+    }}
+  >
+    {children}
+    {sub ? <div style={{ fontSize: 21, fontWeight: 400, color: navy ? 'rgba(255,255,255,0.85)' : c.muted, marginTop: 2 }}>{sub}</div> : null}
+  </div>
 );
 
-const MinionsPage: Page = () => (
-  <Frame title="Stripe Minions：無人看管，靠環境把關">
-    <div style={{ display: 'flex' }}>
-      <MinionStep no="1" text="在 Slack 交代" sub={<>交代完就離開，<br />中間沒有人介入</>} />
-      <MinionStep no="2" text="隔離的開發機" sub={<>10 秒啟動；<br />跟正式環境、網路隔開</>} />
-      <MinionStep no="3" text="照藍圖執行" sub={<>寫死的步驟，<br />加上 Agent 迴圈</>} />
-      <MinionStep no="4" text="CI 最多兩輪" sub={<>過不了，<br />就退回給人</>} />
-      <MinionStep no="5" text="人 review PR" sub={<>每週合併<br />超過一千個</>} last />
+const PlanArrow = ({ label }: { label?: string }) => (
+  <div style={{ textAlign: 'center', color: c.dim, fontSize: 24, lineHeight: 1.3, padding: '6px 0' }}>
+    ↓{label ? <span style={{ fontSize: 22, marginLeft: 12, color: c.muted }}>{label}</span> : null}
+  </div>
+);
+
+const OrgAgentPage: Page = () => (
+  <Frame title="職能型 Agent：沒人在線上，放寬要一類一類來">
+    <div style={{ display: 'flex', gap: 56, alignItems: 'flex-start' }}>
+      <div style={{ flex: 11 }}>
+        <div style={{ fontSize: 28, fontWeight: 800, paddingBottom: 8, borderBottom: `1.5px solid ${c.line}` }}>線上沒人，五格各要改什麼</div>
+        <VerbRow verb="看" name="資訊">從事件本身組 context；<K>記憶跟著職位</K>，不跟著某個人</VerbRow>
+        <VerbRow verb="想" name="模型判斷">入口是 Workflow，依觸發類型分流；裡面再用 Loop</VerbRow>
+        <VerbRow verb="擋" name="把關">不能當場問人，事前寫成規則</VerbRow>
+        <VerbRow verb="做" name="行動">用自己的身分，權限最小化</VerbRow>
+        <VerbRow verb="記" name="狀態・驗收">每次都要對；留紀錄，非同步通知負責人</VerbRow>
+      </div>
+      <div style={{ flex: 9 }}>
+        <div style={{ fontSize: 28, fontWeight: 800, paddingBottom: 8, borderBottom: `1.5px solid ${c.line}` }}>實例：Azure SRE Agent</div>
+        <p style={{ fontSize: 24, lineHeight: 1.5, color: c.muted, margin: '14px 0 14px' }}>每個 response plan、每個排程任務，分開設定</p>
+        <PlanBox sub="人核准">Review</PlanBox>
+        <PlanArrow label="先跑 2–4 週" />
+        <PlanBox>一直被核准的那一類</PlanBox>
+        <PlanArrow />
+        <PlanBox navy>Autonomous</PlanBox>
+      </div>
     </div>
-    <div style={{ marginTop: 26 }}>
-      <TRow cols="380px 1fr" head>
-        <div>Stripe 的設計</div>
-        <div>對照前面講的</div>
-      </TRow>
-      <MapRow k="開發機跟正式環境隔開" v="圈得住，所以不用逐步問人（復原）" />
-      <MapRow k="藍圖：寫死的步驟＋Agent 迴圈" v="該寫死的寫死，該交給模型的交給模型（路線光譜）" />
-      <MapRow k="400 多個 MCP 工具集中管理" v="工具加一次，所有 Agent 都能用（MCP）" />
-      <MapRow k="CI 最多兩輪" v="什麼時候停，由 Harness 決定（完成判定）" />
-      <MapRow k="人 review 每個 PR" v="驗收留給人（完成判定）" />
-    </div>
-    <p style={{ fontSize: 30, fontWeight: 800, lineHeight: 1.5, margin: '24px 0 0' }}>
-      能放手不看，是因為環境圈得住、該寫死的寫死，<Hi>最後由人驗收</Hi>。
+    <p style={{ fontSize: 32, fontWeight: 800, lineHeight: 1.5, margin: '26px 0 0' }}>
+      越自主，<Hi>守要求越重要</Hi>；放寬，一個觸發一個觸發來。
     </p>
   </Frame>
 );
@@ -3335,7 +3311,6 @@ const References: Page = () => (
         <Ref who="Anthropic" what="How we built our multi-agent research system, 2025-06" />
         <Ref who="Qianyu Meng et al." what="Agent Harness for LLM Agents: A Survey, 2026-04" />
         <Ref who="Harrison Chase (LangChain)" what="Introducing ambient agents, 2025-01" />
-        <Ref who="Alistair Gray (Stripe)" what="Minions: one-shot, end-to-end coding agents, 2026-02" />
         <Ref who="Gartner" what="Agentic AI 專案預測, 2025-06" />
       </div>
       <div style={{ flex: 1 }}>
@@ -3349,7 +3324,7 @@ const References: Page = () => (
         <Ref who="Google ADK 原始碼" what="RemoteA2aAgent" />
         <Ref who="A2A Protocol" what="Specification 1.0；Linux Foundation 公告，2026-04" />
         <Ref who="OpenAI" what="Introducing OpenAI Frontier, 2026-02" />
-        <Ref who="Anthropic" what="Introducing Claude Tag, 2026-06" />
+        <Ref who="Microsoft、AWS、Datadog 官方文件" what="Azure SRE Agent、AWS DevOps Agent、Datadog Bits AI SRE" />
         <Ref who="Microsoft Entra 官方文件" what="Agent ID governance（sponsors）" />
         <Ref who="Claude Managed Agents 官方文件" what="vaults" />
         <Ref who="Model Context Protocol 規格" what="elicitation、tasks" />
@@ -3707,20 +3682,20 @@ const DeliverToPage: Page = () => (
       </div>
       <div style={{ flex: 1 }}>
         <DelivCard
-          head="別的 Agent"
+          head="個人型 Agent"
           rows={[
-            { k: '情境', v: '通用 Agent 遇到專業領域的問題' },
-            { k: '交付形式', v: <>知識、工具，或<b>整個任務</b></> },
-            { k: '人在不在線上', v: '看對方，可能不在' },
+            { k: '情境', v: '個人型 Agent 要操作我們的系統' },
+            { k: '交付形式', v: <><b>System Agent</b>：工具，或整個任務</> },
+            { k: '人在不在線上', v: '在，但在對方那一端' },
           ]}
         />
       </div>
       <div style={{ flex: 1 }}>
         <DelivCard
-          head="組織型 Agent"
+          head="事件觸發"
           rows={[
-            { k: '情境', v: '代表單位或流程，由事件觸發' },
-            { k: '交付形式', v: <><b>Harness SDK</b>：<br />把整個 Harness 嵌進服務</> },
+            { k: '情境', v: '告警、排程、工單觸發，沒人開口' },
+            { k: '交付形式', v: <><b>職能型 Agent</b>：<br />Harness 用 SDK 嵌進服務</> },
             { k: '人在不在線上', v: '不在，把關要事前設計好' },
           ]}
         />
@@ -3803,8 +3778,34 @@ const Sub = ({ children }: { children: ReactNode }) => (
   <div style={{ fontSize: 22, fontWeight: 400, color: c.muted, lineHeight: 1.4, marginTop: 2 }}>{children}</div>
 );
 
+const SysBox = ({ children }: { children: ReactNode }) => (
+  <div
+    style={{
+      width: 220,
+      boxSizing: 'border-box',
+      textAlign: 'center',
+      border: `1.5px solid ${c.line}`,
+      background: c.panel,
+      borderRadius: 'var(--osd-radius)',
+      padding: '12px 8px',
+      fontSize: 26,
+      fontWeight: 800,
+      lineHeight: 1.35,
+    }}
+  >
+    {children}
+  </div>
+);
+
+const SysPath = ({ ok, children }: { ok: boolean; children: ReactNode }) => (
+  <div style={{ display: 'flex', alignItems: 'baseline', gap: 14, fontSize: 25, lineHeight: 1.5, color: ok ? 'var(--osd-accent)' : c.amber }}>
+    <span style={{ fontWeight: 800, width: 28, flexShrink: 0 }}>{ok ? '✓' : '✗'}</span>
+    <span>{children}</span>
+  </div>
+);
+
 const AgentLadderPage: Page = () => (
-  <Frame title="別的 Agent 來找我們：交出多少、怎麼交">
+  <Frame title="System Agent：對方缺判斷，才值得長成一個 Agent">
     <LadderHead n="①">
       <b>交出多少</b>：對方的 Agent 缺的是什麼？
     </LadderHead>
@@ -3839,24 +3840,31 @@ const AgentLadderPage: Page = () => (
       <LadderRow
         level={3}
         what={<>判斷<Sub>要懂這個領域，<br />才知道怎麼問、怎麼查</Sub></>}
-        how={<>整個任務<Sub>A2A，或包成 MCP 工具</Sub></>}
+        how={<>長成 System Agent<Sub>A2A，或包成 MCP 工具</Sub></>}
         who={<><b>我們的模型</b>判斷，<b>品質我們負責</b></>}
         eg="先反問，再規劃查詢"
       />
     </div>
     <div style={{ marginLeft: 80, marginTop: 16, borderLeft: '4px solid var(--osd-accent)', paddingLeft: 28, paddingTop: 10 }}>
       <LadderHead n="②">
-        <b>怎麼交</b>：整個任務交出去，走哪條路？
+        <b>用誰的權限</b>：操作系統時，身分怎麼走？
       </LadderHead>
-      <div style={{ marginTop: 6 }}>
-        <CompRow head k="" a="包成 MCP 工具" b="A2A" />
-        <CompRow k="對方的 Harness" a="幾乎都支援" b="少數支援，例如 Gemini CLI、雲端 Agent 平台" />
-        <CompRow k="需要反問時" a="問客戶端畫面前的人" b="交回呼叫我們的 Agent" />
-        <CompRow k="長時間任務" a="規格剛加入，仍在實驗" b="原生支援：輪詢、推送" />
+      <div id="osd-ah-sysagent-chain" style={{ display: 'flex', alignItems: 'center', gap: 16, marginTop: 12 }}>
+        <SysBox>使用者</SysBox>
+        <span style={{ fontSize: 28, color: c.dim }}>→</span>
+        <SysBox>個人型 Agent</SysBox>
+        <span style={{ fontSize: 28, color: c.dim }}>→</span>
+        <SysBox>System Agent</SysBox>
+        <span style={{ fontSize: 28, color: c.dim }}>→</span>
+        <SysBox>系統</SysBox>
+      </div>
+      <div id="osd-ah-sysagent-paths" style={{ marginTop: 14, display: 'flex', flexDirection: 'column', gap: 4 }}>
+        <SysPath ok>帶著<b>使用者的身分</b>，系統用這個身分查權限</SysPath>
+        <SysPath ok={false}>用 System Agent 自己的高權限 → <b>權限破口</b></SysPath>
       </div>
     </div>
     <p style={{ fontSize: 32, fontWeight: 800, lineHeight: 1.5, margin: '18px 0 0' }}>
-      預設包成 MCP 工具；<Hi>要反問、長時間、沒人在線上，再加 A2A</Hi>。
+      缺判斷才長成 Agent；操作系統時，<Hi>用的是原始使用者的權限</Hi>。
     </p>
   </Frame>
 );
@@ -3892,7 +3900,6 @@ const mainPages: Page[] = [
   DeliverToPage,
   AgentLadderPage,
   OrgAgentPage,
-  MinionsPage,
   OurWork,
   WhoBuilds,
   BackToIlya,
@@ -4065,34 +4072,28 @@ Summarizer：只給最終表格太單薄，也要讓使用者確認操作符合�
 補充（被問到）：Plugin 是 Claude Code 與 claude.ai 的打包格式，其他 Harness 有各自的做法；能跨 Harness 帶著走的是 Skill 和 MCP。Plugin 可以由管理員用 managed settings 統一發布、強制啟用。`,
   `上一頁回答了「留下的放在哪裡」；這頁回答「交給誰用」。命題是「以後是不是交一個通用 Harness 就好」——答案取決於使用的人是誰。
 使用者自己用：裝成 Plugin，放進使用者自己的 Harness，人在線上，隨時能核准。
-別的 Agent：下一頁細講——交出多少、怎麼交（知識、工具，還是整個任務）。
-組織型 Agent（線上沒有人）：把整個 Harness 當函式庫嵌進服務，例如排程、工單這類事件觸發。現在主要的 Harness 都提供 SDK：Claude Agent SDK 給的是跟 Claude Code 一樣的工具、迴圈和 context 管理，Python、TypeScript 都能用，也有 hooks、子 Agent、MCP、權限、session；Codex SDK（TypeScript、Python）可以開 thread、跑任務，官方列的用途包括放進 CI/CD；OpenCode 有 @opencode/sdk，在程式裡直接起一個 OpenCode。框架那邊反過來：LangChain 的 Deep Agents 自稱 agent harness，跑在 LangGraph 的執行環境上。兩邊收斂成同一個形狀：迴圈、工具、Skill、子 Agent、hook、MCP、session。
+個人型 Agent 要操作我們的系統：我們的團隊把這叫 System Agent——每個公司系統都能被 Agent 使用，個人型 Agent 處理個人的事，透過 System Agent 去操作系統。交付形式是工具，或整個任務；人在線上，但在對方那一端。下一頁細講：什麼時候系統才需要長成一個 Agent。
+事件觸發（職能型 Agent，線上沒有人）：告警、排程、工單觸發，沒人開口。做法是把整個 Harness 當函式庫嵌進服務。現在主要的 Harness 都提供 SDK：Claude Agent SDK 給的是跟 Claude Code 一樣的工具、迴圈和 context 管理，Python、TypeScript 都能用，也有 hooks、子 Agent、MCP、權限、session；Codex SDK（TypeScript、Python）可以開 thread、跑任務，官方列的用途包括放進 CI/CD；OpenCode 有 @opencode/sdk，在程式裡直接起一個 OpenCode。框架那邊反過來：LangChain 的 Deep Agents 自稱 agent harness，跑在 LangGraph 的執行環境上。兩邊收斂成同一個形狀：迴圈、工具、Skill、子 Agent、hook、MCP、session。
+這一欄是展望，口頭說：目前團隊還沒有這類需求，下下頁再講。
 被問到「那以後還用 LangGraph 嗎」：那篇比對 11 套 coding Harness 原始碼的論文發現，沒有一套在 Agent 的執行環境用 LangChain、LangGraph 這類框架，迴圈都是自己寫的；它的建議是，要現成的起點，就用 Harness 的 SDK。但這是 Agent 迴圈的趨勢，不是規則——LPQM Agent 裡真正固定的流程，用 graph 寫仍然合理（回到 Workflow 到 Loop 那頁的左端）。
-再下兩頁：組織型 Agent，以及實際的例子。
+再下兩頁：System Agent，以及職能型 Agent。
 共用的底：三條路後面是同一組 server 端檢查，所以不管從哪條路進來，不能錯的都擋得住——接回上一頁「真正不能錯的，要做在包裝外面」。
 重點句：交給誰用，決定交付形式；不能錯的，三條路都靠同一組 server 端檢查。`,
-  `上一頁第二條路「別的 Agent」，現在拆開成兩個決定：先決定交出多少，再決定怎麼交。角度也翻過來：第一部分的 MCP、A2A 是我們用別人的；這頁是我們做的專業 Agent 被別人用。
-① 交出多少。決定交多少的關鍵問題：對方的 Agent 缺的是什麼？缺知識，就給 Skill，判斷全在對方的模型；缺動作（碰不到我們的系統），就給 MCP 工具，怎麼用對方判斷，不能錯的檢查寫在我們 server 端，Harness 被繞過也擋得住；缺判斷（要懂這個領域才知道怎麼問、怎麼查、要不要先反問），就交整個任務，由我們的模型判斷，品質我們負責。例子都來自剛拆完的 LPQM Agent：術語表、判斷框架是 Skill；查詢內部資料時的欄位值檢查是 MCP 工具；反問、規劃、整理說明，原本的 Clarifier、Plan & Execute、Summarizer，就是「整個任務」那一層。
+  `上一頁第二欄：個人型 Agent 要操作我們的系統。我們團隊的定義是 System Agent——每個系統都能被 Agent 使用，個人型 Agent 透過 System Agent 操作系統。角度也翻過來：第一部分的 MCP、A2A 是我們用別人的；這頁是我們做的東西被別人的 Agent 用。
+① 交出多少。關鍵問題：對方的 Agent 缺的是什麼？缺知識，就給 Skill，判斷全在對方的模型；缺動作（碰不到我們的系統），就給 MCP 工具，怎麼用對方判斷，不能錯的檢查寫在我們 server 端，Harness 被繞過也擋得住；缺判斷（要懂這個領域才知道怎麼問、怎麼查、要不要先反問），才長成 System Agent，由我們的模型判斷，品質我們負責。例子都來自剛拆完的 LPQM Agent：術語表、判斷框架是 Skill；查詢內部資料時的欄位值檢查是 MCP 工具；反問、規劃、整理說明，原本的 Clarifier、Plan & Execute、Summarizer，就是 System Agent 那一層。
+為什麼不是每個系統都要長成 Agent：多一層模型，就多一層判斷；判斷交出去，呼叫方只看得到結果；明確的操作包成工具就夠了。
 這三種缺口剛好對到第一部分地圖的三格：資訊、行動、模型判斷——缺的越接近判斷，交出去的就越多。
-② 怎麼交。只有交整個任務時才需要選，兩條路的差別：(a) 對方 Harness 支不支援——coding Harness 裡只有 Gemini CLI 原生支援 A2A，Claude Code、Codex、OpenCode 都沒有；A2A 主要長在 Azure AI Foundry、Copilot Studio、Bedrock AgentCore 這類雲端 Agent 平台，所以實務上很多人把 Agent 包成 MCP 工具。(b) 反問：MCP 的 elicitation 是 server 透過客戶端介面問「人」；A2A 的 input-required 是把問題交回呼叫我們的 Agent，它可以自己回答或再問它的使用者——線上沒有人的情境只能走 A2A。(c) 長時間：MCP 2025-11-25 版規格才加入 Tasks，仍標實驗性；A2A 原生支援輪詢、串流、webhook 推送。
-結論：預設開一個 MCP server 當正門（工具＋一個把任務交給專業 Agent 的工具），知識另外用 Skill 發佈；呼叫方在支援 A2A 的平台、或需要多輪反問、長時間、沒人在線上時，再加 A2A 入口。兩個入口後面是同一個專業 Agent，身分與不能錯的檢查都在我們這邊。
-名片補充：我們放在固定網址的 Agent Card，對方模型只會讀到 description 和 skills 的名稱與描述——那是唯一能影響對方「要不要找我們」的地方，要寫清楚會做什麼、不做什麼；但不能靠描述擋人，真正的權限在我們 server 端依呼叫者身分決定。
-轉場：要反問、長時間、沒人在線上才用 A2A——最後這個「沒人在線上」，其實就是第三條路。
-重點句：預設包成 MCP 工具；要反問、長時間、沒人在線上，再加 A2A。`,
-  `第三條路：同一套 Harness 用 SDK 嵌進服務。組織型 Agent——也就是代表單位或流程、而不是代表使用者本人的 Agent。先講清楚：引擎一樣，差別都在引擎外面那一圈，而根源是線上沒有人。
-逐列：
-代表誰：個人 Agent 用使用者自己的權限；組織型 Agent 要嘛有自己的身分（OpenAI Frontier、Microsoft Entra Agent ID 都替每個 Agent 開一個帳號），要嘛「替某個人做」時明確記下是替誰——業界叫 on-behalf-of，紀錄裡同時留下使用者和 Agent；原則是權限只會縮小、不會放大：實際權限是使用者權限、Agent 權限、目標系統允許範圍的交集。
-誰負責：個人 Agent 出事是使用者自己的；組織型 Agent 要指定一個人負責——Microsoft Entra 叫 sponsor：「對 Agent 生命週期與存取負責的人」，負責人離職會自動轉給主管，權限到期不續就收回。
-什麼時候動：組織型 Agent 常常是事件、排程或被 @ 觸發，例如 Claude Tag 被頻道裡任何人 @，還會主動追蹤停滯的討論串——這時沒有人在螢幕前逐步確認。
-人怎麼介入：既然沒人逐步確認，把關就要事前做成強制；人改成非同步介入——LangChain 把它歸納成三種：只通知、卡住時提問、動作前送審。
-什麼才算對：個人用看一次就好；組織用要每次都對。Anthropic 的 eval 文章用兩個指標區分：pass@k 是 k 次裡至少對一次，適合工具型；pass^k 是 k 次全對，對外、要一致的 Agent 看這個——k 越大越難。
-例子：Claude Tag（Anthropic，2026-06）把 Claude 放進 Slack 頻道當團隊成員，管理員替它劃好身分（不同用途不同身分，記憶不互通）、頻道與花費上限，並記錄每個請求是誰下的。
-重點句：線上沒有人，所以身分、把關、驗收，都要事前設計好。這三件事，就是第一部分講過的元件——只是現在沒有人在旁邊兜底。
-背景數字（被問到）：Gartner（2025-06）預測，2027 年底前超過四成的 agentic AI 專案會被取消，原因是成本、價值不明、風險控制不足。反例：Replit（2025-07）的 Agent 在使用者明講「不准改」的程式凍結期間刪了正式資料庫——那句「不准改」只是對話裡的引導；事後 Replit 補的是強制：自動分開開發與正式資料庫、只能規劃的模式、一鍵從備份還原。`,
-  `實例：Stripe 的 Minions——內部的無人看管 coding Agent（依 Stripe 官方部落格，2026-02）。每週合併超過一千個 PR；Stripe 的說法是：人 review 程式碼，但從頭到尾是 Minions 寫的。
-上排是一次執行的流程：工程師最常在 Slack 標記它交代工作，交代完就離開，從訊息到通過 CI 的 PR 中間沒有人介入；跑在預先暖好的開發機上，10 秒啟動，裡面已經載好 Stripe 的程式碼和服務，而且跟正式環境、網路隔開——Stripe 原文說，這樣就不需要人逐步確認權限；照「藍圖」執行——藍圖是寫在程式裡的工作流程，結合 workflow 的確定性和 Agent 處理未知狀況的彈性；CI 最多跑兩輪，兼顧速度、成本和邊際效益；最後由人 review PR。底層是 Block 開源的 Goose 的 fork。
-下排對照前面講的：隔離的開發機就是復原那頁的「圈得住」——圈得住，才能拿掉逐步確認；藍圖就是路線光譜的中間地帶——成熟的組織選的不是純 Loop，而是該寫死的寫死（這也替 LPQM Agent 那種 graph 背書：問題不是 graph 本身，而是哪些節點該寫死）；Toolshed 是 Stripe 內部的中央 MCP server，有 400 多個工具，加一次，所有 Agent 都能用；CI 兩輪上限是 Harness 決定何時停；人 review 是驗收留給人。
-重點句：能放手不看，是因為環境圈得住、該寫死的寫死，最後由人驗收。`,
+怎麼交：預設包成 MCP 工具；要反問、長時間、沒人在線上，再加 A2A。差別有三點：(a) 對方的 Harness：MCP 幾乎都支援；A2A 少數支援，例如 Gemini CLI、雲端 Agent 平台——coding Harness 裡只有 Gemini CLI 原生支援 A2A，Claude Code、Codex、OpenCode 都沒有；A2A 主要長在 Azure AI Foundry、Copilot Studio、Bedrock AgentCore 這類平台。(b) 需要反問時：MCP 的 elicitation 是問客戶端畫面前的人；A2A 的 input-required 是交回呼叫我們的 Agent，它可以自己回答或再問它的使用者。(c) 長時間任務：MCP 2025-11-25 版規格才加入 Tasks，仍標實驗性；A2A 原生支援輪詢、串流、webhook 推送。兩個入口後面是同一個 System Agent，身分與不能錯的檢查都在我們這邊。細節見附錄的 MCP、A2A、Agent Card 頁。
+System Agent 的價值：系統負責人把守要求集中寫一次，所有個人型 Agent 都經過同一套強制。
+② 用誰的權限，這是 System Agent 最重要的工程重點：它要用原始使用者的權限操作系統，身分沿著整條鏈傳下去，系統用這個身分查權限；不能用它自己的高權限，否則別人就能借它的權限做事——這是 confused deputy，也就是權限破口。另外，別的 Agent 傳來的訊息不能當成使用者同意（Claude Code 文件明文規定）。
+名片補充：Agent Card 放在固定網址，對方模型只會讀到 description 和 skills 的名稱與描述——那是唯一能影響對方「要不要找我們」的地方，要寫清楚會做什麼、不做什麼；但不能靠描述擋人，真正的權限在我們 server 端依呼叫者身分決定。
+重點句：缺判斷才長成 Agent；操作系統時，用的是原始使用者的權限。`,
+  `這頁是展望，口頭說明：目前團隊還沒有這類需求，這是一種 Agent 型態的想像。
+定義：職能型 Agent 在組織裡擔任一個職位，由告警、排程、工單觸發，沒人開口、線上沒人。引擎跟個人型 Agent 一樣，差別都在引擎外面那一圈。
+左邊五格，對照第一部分的地圖：看——從事件本身組 context，記憶跟著職位、不跟著某個人；想——入口用 Workflow，依觸發類型分流，裡面再用 Loop；擋——不能當場問人，事前寫成規則；做——用自己的身分，權限最小化（例如 Microsoft Entra 的 agent 身分不能擁有高權限管理角色）；記——每次都要對，留紀錄，非同步通知負責人。
+業界實例：Azure SRE Agent、AWS DevOps Agent（自動調查告警與工單）、Datadog Bits AI SRE（調查每個告警）。右邊講 Azure SRE Agent 的執行模式：Review（人核准）與 Autonomous，依每個 response plan 與每個排程任務分開設定；官方建議先用 Review 跑 2–4 週，一直被核准的那一類再切成 Autonomous。這就是第二部分「放不放，用證據決定」，而且是一類一類放。
+回扣主線：補能力的會變薄，守要求的不會；越自主，守要求越重要。
+重點句：越自主，守要求越重要；放寬，一個觸發一個觸發來。`,
   `把同一個問題，問在我們自己身上：我們替使用者做 Agent，這件事為什麼存在？（逐列按 →）
 第一列：把需求寫成 graph、做成 service——這是補能力。使用者不會寫程式、模型不夠強、通用 Harness 還不存在。LPQM Agent 就是例子，而它正在過期。
 第二列：術語與業務規則本來就在使用者身上，我們只是轉譯；使用者現在能自己寫 Skill，轉譯會過期。
@@ -4103,8 +4104,8 @@ Summarizer：只給最終表格太單薄，也要讓使用者確認操作符合�
   `這個需求，該誰來做？把前兩頁收成一個分工。
 左邊，使用者自己做——大部分需求在這裡：代表使用者本人、用自己的權限、自己看結果，拿來探索、看一次就好。怎麼做：通用 Harness 加上自己寫的 Skill。單看一次答案，使用者是領域專家，判斷得比我們好。
 右邊，需要我們——兩個條件任一成立：
-一是線上沒有人：代表單位或流程，例如排程、系統事件、寫進共用系統（前一頁的組織型 Agent）。OpenCode 是例子：TUI 只是連到 server 的用戶端，opencode serve 只啟動 server；引擎一樣，差在線上有沒有人，而 server 沒有多使用者的設計，身分、權限、紀錄要另外補。
-二是要每次都對：重複使用、拿去做決策。一次對不代表每次對——同一題跑十次可能錯一次，模型升級後原本對的可能變錯，邊界情況平常遇不到（前一頁的 pass^k）。
+一是線上沒有人：代表單位或流程，例如排程、系統事件、寫進共用系統（職能型 Agent）。OpenCode 是例子：TUI 只是連到 server 的用戶端，opencode serve 只啟動 server；引擎一樣，差在線上有沒有人，而 server 沒有多使用者的設計，身分、權限、紀錄要另外補。
+二是要每次都對：重複使用、拿去做決策。一次對不代表每次對——同一題跑十次可能錯一次，模型升級後原本對的可能變錯，邊界情況平常遇不到（pass^k：k 次要全對）。
 我們負責：身分與權限、事前的強制（例如 LPQM Agent 的欄位值檢查）、測試題與 eval。分工：需求單位知道什麼是對的，提供題目和標準答案；我們知道怎麼大量、重複地檢查——跑多次、換模型重跑、處理輸出不固定的比對——這是 eval，ML 工程師的專業。Anthropic 的建議也是這樣分：domain expert 出題，eval 團隊負責基礎設施；起步只要 20 到 50 題，從真實的失敗挑。
 資料規定與成本：看部門，沒有通用答案，跟需求單位一起決定。有些部門的資料只能留在需求單位內，這時更傾向讓使用者自己做。
 被問到「把守要求做成強制很難嗎？」：寫一條檢查不難，難的是三件事——先問出哪些規則不能錯；再決定工具切多細，太窄做不了事、太寬等於沒把關；最後用測試題證明它守得住，模型換了還要重跑。
