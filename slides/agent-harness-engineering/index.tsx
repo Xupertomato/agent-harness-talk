@@ -3685,7 +3685,7 @@ const DeliverToPage: Page = () => (
           head="個人型 Agent"
           rows={[
             { k: '情境', v: '個人型 Agent 要操作我們的系統' },
-            { k: '交付形式', v: <><b>System Agent</b>：工具，或整個任務</> },
+            { k: '交付形式', v: <><b>System Agent</b>：整個任務交給它</> },
             { k: '人在不在線上', v: '在，但在對方那一端' },
           ]}
         />
@@ -3718,47 +3718,6 @@ const DeliverToPage: Page = () => (
   </Frame>
 );
 
-const LADDER2_COLS = '20px 330px 340px 470px 1fr';
-
-const LadderRow = ({
-  level,
-  what,
-  how,
-  who,
-  eg,
-}: {
-  level: 1 | 2 | 3;
-  what: ReactNode;
-  how: ReactNode;
-  who: ReactNode;
-  eg: ReactNode;
-}) => {
-  const bar = level === 1 ? { w: 3, bg: c.hair } : level === 2 ? { w: 8, bg: 'rgba(10, 26, 51, 0.35)' } : { w: 14, bg: 'var(--osd-accent)' };
-  return (
-    <div
-      style={{
-        display: 'grid',
-        gridTemplateColumns: LADDER2_COLS,
-        columnGap: 28,
-        alignItems: 'center',
-        padding: '12px 0',
-        borderBottom: `1px solid ${c.hair}`,
-        background: level === 1 ? c.mutedSoft : level === 3 ? c.panel : 'transparent',
-        fontSize: 25,
-        lineHeight: 1.45,
-      }}
-    >
-      <div style={{ alignSelf: 'stretch', position: 'relative' }}>
-        <div style={{ position: 'absolute', left: 0, top: -12, bottom: -12, width: bar.w, background: bar.bg }} />
-      </div>
-      <div style={{ fontWeight: 800, fontSize: 28, color: level === 3 ? 'var(--osd-accent)' : undefined }}>{what}</div>
-      <div>{how}</div>
-      <div style={level === 3 ? { color: 'var(--osd-accent)' } : level === 1 ? { color: c.muted } : undefined}>{who}</div>
-      <div style={{ color: c.muted, fontSize: 23 }}>{eg}</div>
-    </div>
-  );
-};
-
 const CompRow = ({ k, a, b, head = false }: { k: string; a: string; b: string; head?: boolean }) => (
   <div style={{ display: 'grid', gridTemplateColumns: '210px 1fr 1fr', columnGap: 28, padding: '8px 0', borderBottom: `1px solid ${c.hair}`, fontSize: 22, lineHeight: 1.45, fontWeight: head ? 700 : 400, color: head ? c.muted : undefined }}>
     <div style={{ fontWeight: 700 }}>{k}</div>
@@ -3772,10 +3731,6 @@ const LadderHead = ({ n, children }: { n: string; children: ReactNode }) => (
     <span style={{ fontFamily: 'var(--osd-font-mono, monospace)', fontWeight: 700, color: 'var(--osd-accent)' }}>{n}</span>
     <span>{children}</span>
   </div>
-);
-
-const Sub = ({ children }: { children: ReactNode }) => (
-  <div style={{ fontSize: 22, fontWeight: 400, color: c.muted, lineHeight: 1.4, marginTop: 2 }}>{children}</div>
 );
 
 const SysBox = ({ children }: { children: ReactNode }) => (
@@ -3804,46 +3759,33 @@ const SysPath = ({ ok, children }: { ok: boolean; children: ReactNode }) => (
   </div>
 );
 
+const SysDuty = ({ k, children }: { k: string; children: ReactNode }) => (
+  <div
+    style={{
+      flex: 1,
+      border: `1.5px solid ${c.line}`,
+      background: c.panel,
+      borderRadius: 'var(--osd-radius)',
+      padding: '16px 22px',
+    }}
+  >
+    <div style={{ fontSize: 28, fontWeight: 800, lineHeight: 1.35, color: 'var(--osd-accent)' }}>{k}</div>
+    <div style={{ fontSize: 24, lineHeight: 1.5, marginTop: 6 }}>{children}</div>
+  </div>
+);
+
 const AgentLadderPage: Page = () => (
-  <Frame title="System Agent：對方缺判斷，才值得長成一個 Agent">
+  <Frame title="System Agent：替一個系統做判斷，用使用者的權限操作">
     <LadderHead n="①">
-      <b>交出多少</b>：對方的 Agent 缺的是什麼？
+      <b>它負責什麼</b>
     </LadderHead>
-    <div style={{ marginTop: 10 }}>
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: LADDER2_COLS,
-          columnGap: 28,
-          paddingBottom: 8,
-          borderBottom: `1px solid ${c.line}`,
-          fontSize: 21,
-          fontWeight: 700,
-          letterSpacing: '0.08em',
-          color: 'var(--osd-accent)',
-        }}
-      >
-        <div />
-        <div>對方缺什麼</div>
-        <div>我們交什麼</div>
-        <div>判斷在誰</div>
-        <div>例子</div>
-      </div>
-      <LadderRow level={1} what="知識" how="Skill" who="全在對方的模型" eg="術語表、判斷框架" />
-      <LadderRow
-        level={2}
-        what={<>動作<Sub>碰不到我們的系統</Sub></>}
-        how="MCP 工具"
-        who={<>怎麼用，對方的模型判斷；<br />不能錯的，我們在 server 端擋</>}
-        eg={<>查詢內部資料，<br />附欄位值檢查</>}
-      />
-      <LadderRow
-        level={3}
-        what={<>判斷<Sub>要懂這個領域，<br />才知道怎麼問、怎麼查</Sub></>}
-        how={<>長成 System Agent<Sub>A2A，或包成 MCP 工具</Sub></>}
-        who={<><b>我們的模型</b>判斷，<b>品質我們負責</b></>}
-        eg="先反問，再規劃查詢"
-      />
+    <div style={{ display: 'flex', gap: 20, marginTop: 12 }}>
+      <SysDuty k="領域判斷">懂這個系統的術語與規則；<br />先反問，再規劃怎麼查</SysDuty>
+      <SysDuty k="操作系統">明確的操作直接執行，模糊的才動用模型</SysDuty>
+      <SysDuty k="守要求">系統的規定集中寫一次，所有個人型 Agent 都經過同一套強制</SysDuty>
+    </div>
+    <div style={{ marginTop: 12, fontSize: 23, lineHeight: 1.5, color: c.muted }}>
+      對外介面：<b>A2A</b>；對方的 Harness 只支援 MCP 時，包成一個 <b>MCP 工具</b>
     </div>
     <div style={{ marginLeft: 80, marginTop: 16, borderLeft: '4px solid var(--osd-accent)', paddingLeft: 28, paddingTop: 10 }}>
       <LadderHead n="②">
@@ -3864,7 +3806,7 @@ const AgentLadderPage: Page = () => (
       </div>
     </div>
     <p style={{ fontSize: 32, fontWeight: 800, lineHeight: 1.5, margin: '18px 0 0' }}>
-      缺判斷才長成 Agent；操作系統時，<Hi>用的是原始使用者的權限</Hi>。
+      判斷在 System Agent；<Hi>權限，永遠是原始使用者的</Hi>。
     </p>
   </Frame>
 );
@@ -4072,22 +4014,20 @@ Summarizer：只給最終表格太單薄，也要讓使用者確認操作符合�
 補充（被問到）：Plugin 是 Claude Code 與 claude.ai 的打包格式，其他 Harness 有各自的做法；能跨 Harness 帶著走的是 Skill 和 MCP。Plugin 可以由管理員用 managed settings 統一發布、強制啟用。`,
   `上一頁回答了「留下的放在哪裡」；這頁回答「交給誰用」。命題是「以後是不是交一個通用 Harness 就好」——答案取決於使用的人是誰。
 使用者自己用：裝成 Plugin，放進使用者自己的 Harness，人在線上，隨時能核准。
-個人型 Agent 要操作我們的系統：我們的團隊把這叫 System Agent——每個公司系統都能被 Agent 使用，個人型 Agent 處理個人的事，透過 System Agent 去操作系統。交付形式是工具，或整個任務；人在線上，但在對方那一端。下一頁細講：什麼時候系統才需要長成一個 Agent。
+個人型 Agent 要操作我們的系統：我們的團隊把這叫 System Agent——每個公司系統都能被 Agent 使用，個人型 Agent 處理個人的事，透過 System Agent 去操作系統。交付形式是整個任務交給它，不是只給一個工具；人在線上，但在對方那一端。下一頁細講：System Agent 負責什麼。
 事件觸發（職能型 Agent，線上沒有人）：告警、排程、工單觸發，沒人開口。做法是把整個 Harness 當函式庫嵌進服務。現在主要的 Harness 都提供 SDK：Claude Agent SDK 給的是跟 Claude Code 一樣的工具、迴圈和 context 管理，Python、TypeScript 都能用，也有 hooks、子 Agent、MCP、權限、session；Codex SDK（TypeScript、Python）可以開 thread、跑任務，官方列的用途包括放進 CI/CD；OpenCode 有 @opencode/sdk，在程式裡直接起一個 OpenCode。框架那邊反過來：LangChain 的 Deep Agents 自稱 agent harness，跑在 LangGraph 的執行環境上。兩邊收斂成同一個形狀：迴圈、工具、Skill、子 Agent、hook、MCP、session。
 這一欄是展望，口頭說：目前團隊還沒有這類需求，下下頁再講。
 被問到「那以後還用 LangGraph 嗎」：那篇比對 11 套 coding Harness 原始碼的論文發現，沒有一套在 Agent 的執行環境用 LangChain、LangGraph 這類框架，迴圈都是自己寫的；它的建議是，要現成的起點，就用 Harness 的 SDK。但這是 Agent 迴圈的趨勢，不是規則——LPQM Agent 裡真正固定的流程，用 graph 寫仍然合理（回到 Workflow 到 Loop 那頁的左端）。
 再下兩頁：System Agent，以及職能型 Agent。
 共用的底：三條路後面是同一組 server 端檢查，所以不管從哪條路進來，不能錯的都擋得住——接回上一頁「真正不能錯的，要做在包裝外面」。
 重點句：交給誰用，決定交付形式；不能錯的，三條路都靠同一組 server 端檢查。`,
-  `上一頁第二欄：個人型 Agent 要操作我們的系統。我們團隊的定義是 System Agent——每個系統都能被 Agent 使用，個人型 Agent 透過 System Agent 操作系統。角度也翻過來：第一部分的 MCP、A2A 是我們用別人的；這頁是我們做的東西被別人的 Agent 用。
-① 交出多少。關鍵問題：對方的 Agent 缺的是什麼？缺知識，就給 Skill，判斷全在對方的模型；缺動作（碰不到我們的系統），就給 MCP 工具，怎麼用對方判斷，不能錯的檢查寫在我們 server 端，Harness 被繞過也擋得住；缺判斷（要懂這個領域才知道怎麼問、怎麼查、要不要先反問），才長成 System Agent，由我們的模型判斷，品質我們負責。例子都來自剛拆完的 LPQM Agent：術語表、判斷框架是 Skill；查詢內部資料時的欄位值檢查是 MCP 工具；反問、規劃、整理說明，原本的 Clarifier、Plan & Execute、Summarizer，就是 System Agent 那一層。
-為什麼不是每個系統都要長成 Agent：多一層模型，就多一層判斷；判斷交出去，呼叫方只看得到結果；明確的操作包成工具就夠了。
-這三種缺口剛好對到第一部分地圖的三格：資訊、行動、模型判斷——缺的越接近判斷，交出去的就越多。
-怎麼交：預設包成 MCP 工具；要反問、長時間、沒人在線上，再加 A2A。差別有三點：(a) 對方的 Harness：MCP 幾乎都支援；A2A 少數支援，例如 Gemini CLI、雲端 Agent 平台——coding Harness 裡只有 Gemini CLI 原生支援 A2A，Claude Code、Codex、OpenCode 都沒有；A2A 主要長在 Azure AI Foundry、Copilot Studio、Bedrock AgentCore 這類平台。(b) 需要反問時：MCP 的 elicitation 是問客戶端畫面前的人；A2A 的 input-required 是交回呼叫我們的 Agent，它可以自己回答或再問它的使用者。(c) 長時間任務：MCP 2025-11-25 版規格才加入 Tasks，仍標實驗性；A2A 原生支援輪詢、串流、webhook 推送。兩個入口後面是同一個 System Agent，身分與不能錯的檢查都在我們這邊。細節見附錄的 MCP、A2A、Agent Card 頁。
-System Agent 的價值：系統負責人把守要求集中寫一次，所有個人型 Agent 都經過同一套強制。
+  `上一頁第二欄：個人型 Agent 要操作我們的系統。團隊目前的方向：公司內每個系統都長出一個 System Agent，負責操作原本的系統；個人型 Agent 處理個人業務，透過 A2A 等協議找 System Agent。LPQM Agent 就是 LPQM 這個系統的 System Agent。角度也翻過來：第一部分的 MCP、A2A 是我們用別人的；這頁是我們做的東西被別人的 Agent 用。
+① 它負責三件事：領域判斷、操作系統、守要求集中。為什麼要有判斷：個人型 Agent 缺的是領域判斷——要懂術語和規則才知道怎麼問、怎麼查；只給知識或工具，判斷還在對方的模型，品質我們管不到。System Agent 價值之一：系統負責人把守要求集中寫一次，所有個人型 Agent 都經過同一套強制。
+成本提醒（可能被問）：多一層模型就多一次判斷、多一份 token；所以 System Agent 內部，明確的操作直接執行，模糊的才動用模型。
+對外介面：介面用 A2A；對方只支援 MCP，就把整個 System Agent 包成一個 MCP 工具。差別有三點：(a) 對方的 Harness：MCP 幾乎都支援；A2A 少數支援，例如 Gemini CLI、雲端 Agent 平台——coding Harness 裡只有 Gemini CLI 原生支援 A2A，Claude Code、Codex、OpenCode 都沒有；A2A 主要長在 Azure AI Foundry、Copilot Studio、Bedrock AgentCore 這類平台。(b) 需要反問時：MCP 的 elicitation 是問客戶端畫面前的人；A2A 的 input-required 是交回呼叫我們的 Agent，它可以自己回答或再問它的使用者。(c) 長時間任務：MCP 2025-11-25 版規格才加入 Tasks，仍標實驗性；A2A 原生支援輪詢、串流、webhook 推送。兩個入口後面是同一個 System Agent，身分與不能錯的檢查都在我們這邊。細節見附錄的 MCP、A2A、Agent Card 頁。
 ② 用誰的權限，這是 System Agent 最重要的工程重點：它要用原始使用者的權限操作系統，身分沿著整條鏈傳下去，系統用這個身分查權限；不能用它自己的高權限，否則別人就能借它的權限做事——這是 confused deputy，也就是權限破口。另外，別的 Agent 傳來的訊息不能當成使用者同意（Claude Code 文件明文規定）。
 名片補充：Agent Card 放在固定網址，對方模型只會讀到 description 和 skills 的名稱與描述——那是唯一能影響對方「要不要找我們」的地方，要寫清楚會做什麼、不做什麼；但不能靠描述擋人，真正的權限在我們 server 端依呼叫者身分決定。
-重點句：缺判斷才長成 Agent；操作系統時，用的是原始使用者的權限。`,
+重點句：判斷在 System Agent；權限，永遠是原始使用者的。`,
   `這頁是展望，口頭說明：目前團隊還沒有這類需求，這是一種 Agent 型態的想像。
 定義：職能型 Agent 在組織裡擔任一個職位，由告警、排程、工單觸發，沒人開口、線上沒人。引擎跟個人型 Agent 一樣，差別都在引擎外面那一圈。
 左邊五格，對照第一部分的地圖：看——從事件本身組 context，記憶跟著職位、不跟著某個人；想——入口用 Workflow，依觸發類型分流，裡面再用 Loop；擋——不能當場問人，事前寫成規則；做——用自己的身分，權限最小化（例如 Microsoft Entra 的 agent 身分不能擁有高權限管理角色）；記——每次都要對，留紀錄，非同步通知負責人。
