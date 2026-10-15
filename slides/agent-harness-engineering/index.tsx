@@ -3099,29 +3099,42 @@ const PlanArrow = ({ label }: { label?: string }) => (
   </div>
 );
 
+const ModeCol = ({ head, items }: { head: string; items: string }) => (
+  <div style={{ flex: 1, padding: '14px 26px' }}>
+    <div style={{ fontSize: 24, fontWeight: 800 }}>{head}</div>
+    <div style={{ fontSize: 23, color: c.muted, marginTop: 4, lineHeight: 1.45 }}>{items}</div>
+  </div>
+);
+
 const OrgAgentPage: Page = () => (
   <Frame title="職能型 Agent：沒人在線上，放寬要一類一類來">
-    <div style={{ display: 'flex', gap: 56, alignItems: 'flex-start' }}>
-      <div style={{ flex: 11 }}>
-        <div style={{ fontSize: 28, fontWeight: 800, paddingBottom: 8, borderBottom: `1.5px solid ${c.line}` }}>線上沒人，五格各要改什麼</div>
-        <VerbRow verb="看" name="資訊">從事件本身組 context；<K>記憶跟著職位</K>，不跟著某個人</VerbRow>
-        <VerbRow verb="想" name="模型判斷">入口是 Workflow，依觸發類型分流；裡面再用 Loop</VerbRow>
-        <VerbRow verb="擋" name="把關">不能當場問人，事前寫成規則</VerbRow>
-        <VerbRow verb="做" name="行動">用自己的身分，權限最小化</VerbRow>
-        <VerbRow verb="記" name="狀態・驗收">每次都要對；留紀錄，非同步通知負責人</VerbRow>
-      </div>
-      <div style={{ flex: 9 }}>
-        <div style={{ fontSize: 28, fontWeight: 800, paddingBottom: 8, borderBottom: `1.5px solid ${c.line}` }}>實例：Azure SRE Agent</div>
-        <p style={{ fontSize: 24, lineHeight: 1.5, color: c.muted, margin: '14px 0 14px' }}>每個 response plan、每個排程任務，分開設定</p>
-        <PlanBox sub="人核准">Review</PlanBox>
-        <PlanArrow label="先跑 2–4 週" />
-        <PlanBox>一直被核准的那一類</PlanBox>
-        <PlanArrow />
-        <PlanBox navy>Autonomous</PlanBox>
-      </div>
+    <div style={{ fontSize: 24, color: c.muted, marginBottom: 14 }}>實例：Azure SRE Agent，值班處理告警</div>
+    <div style={{ display: 'flex', alignItems: 'stretch' }}>
+      <LoopStep
+        no="01"
+        title="告警進來，自己調查"
+        sub={<>例：正式環境的服務延遲飆高。沒人開口，Agent 自己查 log、指標、<K>最近的部署</K>，<K>找出處置。</K></>}
+      />
+      <StageArrow />
+      <LoopStep
+        no="02"
+        title="Review：先提案，人核准"
+        sub={<>要改基礎設施的操作，<K>等管理員按「核准」</K>才執行。先這樣跑 2–4 週，<K>留下核准紀錄。</K></>}
+      />
+      <StageArrow />
+      <LoopStep
+        no="03"
+        title="一直被核准的那類，放手"
+        sub={<>這一類觸發切成 Autonomous：自己執行、事後回報。<K>其他類照舊</K>留在 Review。</>}
+      />
     </div>
-    <p style={{ fontSize: 32, fontWeight: 800, lineHeight: 1.5, margin: '26px 0 0' }}>
-      越自主，<Hi>守要求越重要</Hi>；放寬，一個觸發一個觸發來。
+    <div style={{ display: 'flex', marginTop: 24, border: `1.5px solid ${c.line}`, borderRadius: 'var(--osd-radius)', background: c.panel }}>
+      <ModeCol head="官方建議留在 Review" items="正式環境的事故、資安告警" />
+      <div style={{ width: 1.5, background: c.line }} />
+      <ModeCol head="官方建議可以 Autonomous" items="測試環境的事故、每日健康檢查、成本報表" />
+    </div>
+    <p style={{ fontSize: 32, fontWeight: 800, lineHeight: 1.5, margin: '30px 0 0' }}>
+      越自主，<Hi>守要求越重要</Hi>；放寬的依據，是一筆一筆的核准紀錄。
     </p>
   </Frame>
 );
@@ -4031,10 +4044,15 @@ Summarizer：只給最終表格太單薄，也要讓使用者確認操作符合�
 重點句：判斷在 System Agent；權限，永遠是原始使用者的。`,
   `這頁是展望，口頭說明：目前團隊還沒有這類需求，這是一種 Agent 型態的想像。
 定義：職能型 Agent 在組織裡擔任一個職位，由告警、排程、工單觸發，沒人開口、線上沒人。引擎跟個人型 Agent 一樣，差別都在引擎外面那一圈。
-左邊五格，對照第一部分的地圖：看——從事件本身組 context，記憶跟著職位、不跟著某個人；想——入口用 Workflow，依觸發類型分流，裡面再用 Loop；擋——不能當場問人，事前寫成規則；做——用自己的身分，權限最小化（例如 Microsoft Entra 的 agent 身分不能擁有高權限管理角色）；記——每次都要對，留紀錄，非同步通知負責人。
-業界實例：Azure SRE Agent、AWS DevOps Agent（自動調查告警與工單）、Datadog Bits AI SRE（調查每個告警）。右邊講 Azure SRE Agent 的執行模式：Review（人核准）與 Autonomous，依每個 response plan 與每個排程任務分開設定；官方建議先用 Review 跑 2–4 週，一直被核准的那一類再切成 Autonomous。這就是第二部分「放不放，用證據決定」，而且是一類一類放。
-回扣主線：補能力的會變薄，守要求的不會；越自主，守要求越重要。
-重點句：越自主，守要求越重要；放寬，一個觸發一個觸發來。`,
+用一個實例走一遍：Azure SRE Agent 值班處理告警（依 Microsoft Learn「run modes」文件，2026-10）。
+01：告警進來，例如正式環境的服務延遲飆高。沒人開口，Agent 自己調查：查 log、指標、最近的部署，找出處置。（這個情境是舉例。）
+02：Review 模式——Agent 調查、找出處置，要執行 Azure 基礎設施的操作（Azure CLI、Resource Manager 這類寫入動作）前，等你核准；只有 SRE Agent 管理員能按核准。發 email、貼 Teams、查外部資料不用等，依 Agent 的判斷和 response plan 的指示進行。官方建議：先用 Review，觀察它建議什麼，跑兩到四週。
+03：發現某些模式你一直都核准，就把那些觸發切成 Autonomous：自己執行、事後回報。執行模式是依每個 response plan、每個排程任務分開設定的，不是整個 Agent 一起切——所以叫一類一類放。
+下方是官方的建議分法：正式環境事故、資安告警留在 Review；測試環境事故、每日健康檢查、成本與用量報表可以 Autonomous。
+回扣第二部分：這就是「放不放，用證據決定」——證據是核准紀錄，放寬的單位是一類觸發。回扣主線：補能力的會變薄，守要求的不會；越自主，守要求越重要。
+工程上還要改的（被問到再講）：context 從事件本身組，記憶跟著職位、不跟著某個人；入口用 Workflow 依觸發類型分流，裡面再用 Loop；不能當場問人，把關事前寫成規則；用自己的身分、權限最小化（例如 Microsoft Entra 的 agent 身分不能擁有高權限管理角色；Azure SRE Agent 沒有權限時，透過 Entra 的 OBO 流程代使用者申請暫時存取）；每次都要對，留紀錄，非同步通知負責人。
+其他業界實例：AWS DevOps Agent（自動調查告警與工單）、Datadog Bits AI SRE（調查每個告警）。
+重點句：越自主，守要求越重要；放寬的依據，是一筆一筆的核准紀錄。`,
   `把同一個問題，問在我們自己身上：我們替使用者做 Agent，這件事為什麼存在？（逐列按 →）
 第一列：把需求寫成 graph、做成 service——這是補能力。使用者不會寫程式、模型不夠強、通用 Harness 還不存在。LPQM Agent 就是例子，而它正在過期。
 第二列：術語與業務規則本來就在使用者身上，我們只是轉譯；使用者現在能自己寫 Skill，轉譯會過期。
