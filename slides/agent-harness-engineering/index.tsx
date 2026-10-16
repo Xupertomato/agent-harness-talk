@@ -165,6 +165,38 @@ const Crumbs = ({ stage }: { stage: StageName }) => (
   </div>
 );
 
+type ArchName = '個人型 Agent' | '職能型 Agent' | 'System Agent' | '守要求';
+const ARCHES: ArchName[] = ['個人型 Agent', '職能型 Agent', 'System Agent', '守要求'];
+
+const ArchCrumb = ({ arch }: { arch: ArchName }) => (
+  <div style={{ position: 'absolute', top: 82, right: 140, display: 'flex', alignItems: 'center', gap: 5 }} aria-hidden="true">
+    {ARCHES.map((nm, i) => {
+      const active = nm === arch;
+      return (
+        <Fragment key={nm}>
+          {i > 0 ? <span style={{ fontSize: 15, color: c.dim, lineHeight: 1 }}>›</span> : null}
+          <span
+            style={{
+              fontSize: 17,
+              lineHeight: 1.2,
+              fontWeight: active ? 800 : 500,
+              padding: '4px 11px',
+              borderRadius: 999,
+              whiteSpace: 'nowrap',
+              boxSizing: 'border-box',
+              color: active ? '#ffffff' : c.muted,
+              background: active ? 'var(--osd-accent)' : 'transparent',
+              border: active ? '1.5px solid var(--osd-accent)' : `1.5px solid ${c.hair}`,
+            }}
+          >
+            {nm}
+          </span>
+        </Fragment>
+      );
+    })}
+  </div>
+);
+
 const NavRow = ({ back, next }: { back?: { to: Page; label: string }; next?: { to: Page; label: string } }) => (
   <div style={{ position: 'absolute', right: 140, bottom: 82, display: 'flex', alignItems: 'baseline', gap: 40 }}>
     {back ? <BackLink to={back.to} label={back.label} /> : null}
@@ -233,6 +265,7 @@ const Frame = ({
   title,
   children,
   stage,
+  arch,
   back,
   next,
 }: {
@@ -241,12 +274,14 @@ const Frame = ({
   title: ReactNode;
   children: ReactNode;
   stage?: StageName;
+  arch?: ArchName;
   back?: { to: Page; label: string };
   next?: { to: Page; label: string };
 }) => (
   <div style={{ ...canvas, padding: '84px 140px 100px', display: 'flex', flexDirection: 'column' }}>
     <div style={{ height: 29, flexShrink: 0 }} aria-hidden="true" />
     {stage ? <Crumbs stage={stage} /> : null}
+    {arch && !stage ? <ArchCrumb arch={arch} /> : null}
     <h2
       style={{
         fontFamily: 'var(--osd-font-display)',
@@ -3099,13 +3134,6 @@ const PlanArrow = ({ label }: { label?: string }) => (
   </div>
 );
 
-const ModeCol = ({ head, items }: { head: string; items: string }) => (
-  <div style={{ flex: 1, padding: '14px 26px' }}>
-    <div style={{ fontSize: 24, fontWeight: 800 }}>{head}</div>
-    <div style={{ fontSize: 23, color: c.muted, marginTop: 4, lineHeight: 1.45 }}>{items}</div>
-  </div>
-);
-
 const VBox = ({
   w,
   navy = false,
@@ -3175,7 +3203,7 @@ const VisionNote = ({ head, children, strong = false }: { head: string; children
 );
 
 const VisionPage: Page = () => (
-  <Frame title="跨段找 root cause：一個 Agent 統籌，各段回證據">
+  <Frame arch="職能型 Agent" title="跨段找 root cause：一個 Agent 統籌，各段回證據">
     <div style={{ display: 'flex', gap: 56, alignItems: 'flex-start' }}>
       <div style={{ width: 1080, flexShrink: 0 }}>
         <div style={{ display: 'flex', alignItems: 'center' }}>
@@ -3228,31 +3256,39 @@ const VisionPage: Page = () => (
 );
 
 const OrgAgentPage: Page = () => (
-  <Frame title="職能型 Agent：沒人在線上，放寬要一類一類來">
-    <div style={{ fontSize: 24, color: c.muted, marginBottom: 14 }}>實例：Azure SRE Agent，值班處理告警</div>
+  <Frame arch="職能型 Agent" title="職能型 Agent：沒人在線上，放寬要一類一類來">
     <div style={{ display: 'flex', alignItems: 'stretch' }}>
       <LoopStep
         no="01"
-        title="告警進來，自己調查"
-        sub={<>例：正式環境的服務延遲飆高。沒人開口，Agent 自己查 log、指標、<K>最近的部署</K>，<K>找出處置。</K></>}
+        title="異常進來，先調查"
+        sub={<>例：這批貨在後段量測異常。Agent 醒來，問各段的 System Agent，<K>整理出處置建議。</K></>}
       />
       <StageArrow />
       <LoopStep
         no="02"
-        title="Review：先提案，人核准"
-        sub={<>要改基礎設施的操作，<K>等管理員按「核准」</K>才執行。先這樣跑 2–4 週，<K>留下核准紀錄。</K></>}
+        title="先只提建議，人核准"
+        sub={<>每一類處置，都先由工程師按核准；<K>同時留下核准紀錄。</K></>}
       />
       <StageArrow />
       <LoopStep
         no="03"
-        title="一直被核准的那類，放手"
-        sub={<>這一類觸發切成 Autonomous：自己執行、事後回報。<K>其他類照舊</K>留在 Review。</>}
+        title="一直被核准的那類，才放手"
+        sub={<>例：量測異常就安排重測。<K>扣貨、改 recipe</K> 永遠留給人。</>}
       />
     </div>
-    <div style={{ display: 'flex', marginTop: 24, border: `1.5px solid ${c.line}`, borderRadius: 'var(--osd-radius)', background: c.panel }}>
-      <ModeCol head="官方建議留在 Review" items="正式環境的事故、資安告警" />
-      <div style={{ width: 1.5, background: c.line }} />
-      <ModeCol head="官方建議可以 Autonomous" items="測試環境的事故、每日健康檢查、成本報表" />
+    <div
+      style={{
+        marginTop: 24,
+        border: `1.5px solid ${c.hair}`,
+        background: c.mutedSoft,
+        borderRadius: 'var(--osd-radius)',
+        padding: '16px 28px',
+        fontSize: 24,
+        lineHeight: 1.5,
+        color: c.muted,
+      }}
+    >
+      <b>業界已經這樣做：</b>Azure SRE Agent 的執行模式依每個 response plan 分開設定；<br />官方建議先用 Review 跑 2–4 週，一直被核准的那類再切成 Autonomous。
     </div>
     <p style={{ fontSize: 32, fontWeight: 800, lineHeight: 1.5, margin: '30px 0 0' }}>
       越自主，<Hi>守要求越重要</Hi>；放寬的依據，是一筆一筆的核准紀錄。
@@ -3780,74 +3816,95 @@ const EvidencePage: Page = () => (
   </Frame>
 );
 
-const DelivCard = ({ head, rows }: { head: string; rows: { k: string; v: ReactNode }[] }) => (
+const ArchCaller = ({ head, lines }: { head: string; lines: string[] }) => (
   <div
     style={{
-      flex: 1,
       boxSizing: 'border-box',
       border: `1.5px solid ${c.line}`,
       background: c.panel,
       borderRadius: 'var(--osd-radius)',
-      padding: '22px 30px 8px',
+      padding: '18px 22px',
+      textAlign: 'center',
+      height: '100%',
     }}
   >
-    <div style={{ fontSize: 32, fontWeight: 800, lineHeight: 1.3, color: 'var(--osd-accent)', paddingBottom: 10, borderBottom: `1.5px solid ${c.line}` }}>{head}</div>
-    {rows.map((r, i) => (
-      <div key={i} style={{ padding: '14px 0', borderBottom: i < rows.length - 1 ? `1px solid ${c.hair}` : undefined }}>
-        <div style={{ fontSize: 20, lineHeight: 1.3, color: c.muted }}>{r.k}</div>
-        <div style={{ fontSize: 25, lineHeight: 1.45, marginTop: 4, minHeight: 72 }}>{r.v}</div>
+    <div style={{ fontSize: 34, fontWeight: 800, lineHeight: 1.3 }}>{head}</div>
+    {lines.map((l) => (
+      <div key={l} style={{ fontSize: 23, lineHeight: 1.45, color: c.muted, marginTop: 6 }}>
+        {l}
       </div>
     ))}
   </div>
 );
 
+const ArchArrow = ({ h = 56, id }: { h?: number; id: string }) => (
+  <svg width={24} height={h} viewBox={`0 0 24 ${h}`} style={{ display: 'block', margin: '0 auto' }} aria-hidden="true">
+    <defs>
+      <marker id={id} markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto" markerUnits="userSpaceOnUse">
+        <path d="M1 1 L9 5 L1 9" fill="none" stroke={c.dim} strokeWidth="1.8" />
+      </marker>
+    </defs>
+    <path d={`M12 2 L12 ${h - 3}`} fill="none" stroke={c.dim} strokeWidth="2" markerEnd={`url(#${id})`} />
+  </svg>
+);
+
 const DeliverToPage: Page = () => (
-  <Frame title="交給誰用，決定交付形式">
-    <div style={{ display: 'flex', gap: 32, alignItems: 'flex-start' }}>
-      <div style={{ flex: 1 }}>
-        <DelivCard
-          head="使用者自己用"
-          rows={[
-            { k: '情境', v: <>使用者在自己的<br />Harness 裡互動</> },
-            { k: '交付形式', v: <><b>Plugin</b>：Skill、MCP 連線、Hook</> },
-            { k: '人在不在線上', v: '在，隨時可以核准' },
-          ]}
-        />
+  <Frame title="交給誰用：三種叫用方式，最後都經過同一套守要求">
+    <div id="osd-ah-arch-map" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', columnGap: 36 }}>
+      <ArchCaller head="使用者自己用" lines={['交付：Plugin（Skill、MCP、Hook）', '人在線上，隨時核准']} />
+      <ArchCaller head="個人型 Agent" lines={['交付：叫用 System Agent', '人在，但在對方那一端']} />
+      <ArchCaller head="職能型 Agent" lines={['事件觸發，叫用 System Agent', '沒人在線上']} />
+
+      <div style={{ gridRow: '2 / 5', gridColumn: 1, display: 'flex', justifyContent: 'center' }}>
+        <svg width={24} height={218} viewBox={`0 0 24 ${218}`} style={{ display: 'block' }} aria-hidden="true">
+          <defs>
+            <marker id="osd-ah-arch-head-l" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto" markerUnits="userSpaceOnUse">
+              <path d="M1 1 L9 5 L1 9" fill="none" stroke={c.dim} strokeWidth="1.8" />
+            </marker>
+          </defs>
+          <path d={`M12 2 L12 ${218 - 3}`} fill="none" stroke={c.dim} strokeWidth="2" markerEnd="url(#osd-ah-arch-head-l)" />
+        </svg>
       </div>
-      <div style={{ flex: 1 }}>
-        <DelivCard
-          head="個人型 Agent"
-          rows={[
-            { k: '情境', v: '個人型 Agent 要操作我們的系統' },
-            { k: '交付形式', v: <><b>System Agent</b>：<br />一個服務，開 A2A／MCP 介面</> },
-            { k: '人在不在線上', v: '在，但在對方那一端' },
-          ]}
-        />
+      <div style={{ gridRow: 2, gridColumn: '2 / 4', display: 'grid', gridTemplateColumns: '1fr 1fr', columnGap: 36 }}>
+        <ArchArrow id="osd-ah-arch-head-a" />
+        <ArchArrow id="osd-ah-arch-head-b" />
       </div>
-      <div style={{ flex: 1 }}>
-        <DelivCard
-          head="事件觸發"
-          rows={[
-            { k: '情境', v: '告警、排程、工單觸發，沒人開口' },
-            { k: '交付形式', v: <><b>職能型 Agent</b>：<br />一個服務，事件一來就自己跑</> },
-            { k: '人在不在線上', v: '不在，把關要事前設計好' },
-          ]}
-        />
+      <div
+        style={{
+          gridRow: 3,
+          gridColumn: '2 / 4',
+          boxSizing: 'border-box',
+          border: '2px solid var(--osd-accent)',
+          background: c.panel,
+          borderRadius: 'var(--osd-radius)',
+          padding: '16px 24px',
+          textAlign: 'center',
+        }}
+      >
+        <div style={{ fontSize: 34, fontWeight: 800, lineHeight: 1.3 }}>System Agent（每個系統一個）</div>
+        <div style={{ fontSize: 23, lineHeight: 1.45, color: c.muted, marginTop: 6 }}>替系統做判斷、操作系統</div>
       </div>
-    </div>
-    <div
-      style={{
-        marginTop: 14,
-        border: '2px solid var(--osd-accent)',
-        background: c.panel,
-        borderRadius: 'var(--osd-radius)',
-        padding: '16px 30px',
-        fontSize: 27,
-        lineHeight: 1.45,
-      }}
-    >
-      <b style={{ color: 'var(--osd-accent)' }}>守要求只寫一次：</b>
-      放在系統那一端，三條路都會經過——例如欄位值檢查、只開放設計好的表格操作
+
+      <div style={{ gridRow: 4, gridColumn: '1 / 4', display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', columnGap: 36 }}>
+        <div />
+        <ArchArrow h={44} id="osd-ah-arch-head-c" />
+        <div />
+      </div>
+      <div
+        style={{
+          gridRow: 5,
+          gridColumn: '1 / 4',
+          border: '2px solid var(--osd-accent)',
+          background: c.panel,
+          borderRadius: 'var(--osd-radius)',
+          padding: '16px 30px',
+          fontSize: 27,
+          lineHeight: 1.45,
+        }}
+      >
+        <b style={{ color: 'var(--osd-accent)' }}>守要求只寫一次：</b>
+        放在系統那一端，三條路都會經過——例如欄位值檢查、只開放設計好的表格操作
+      </div>
     </div>
   </Frame>
 );
@@ -3870,14 +3927,15 @@ const LadderHead = ({ n, children }: { n: string; children: ReactNode }) => (
 const SysBox = ({ children }: { children: ReactNode }) => (
   <div
     style={{
-      width: 220,
+      width: 190,
+      flexShrink: 0,
       boxSizing: 'border-box',
       textAlign: 'center',
       border: `1.5px solid ${c.line}`,
       background: c.panel,
       borderRadius: 'var(--osd-radius)',
-      padding: '12px 8px',
-      fontSize: 26,
+      padding: '10px 8px',
+      fontSize: 24,
       fontWeight: 800,
       lineHeight: 1.35,
     }}
@@ -3908,39 +3966,52 @@ const SysDuty = ({ k, children }: { k: string; children: ReactNode }) => (
   </div>
 );
 
+const SysChain = ({ id, from, mid, verdict }: { id: string; from: string; mid: string; verdict: ReactNode }) => (
+  <div id={id} style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 10 }}>
+    <SysBox>{from}</SysBox>
+    <span style={{ fontSize: 28, color: c.dim }}>→</span>
+    <SysBox>{mid}</SysBox>
+    <span style={{ fontSize: 28, color: c.dim }}>→</span>
+    <SysBox>System Agent</SysBox>
+    <span style={{ fontSize: 28, color: c.dim }}>→</span>
+    <SysBox>系統</SysBox>
+    <div style={{ marginLeft: 12, fontSize: 25, lineHeight: 1.45, color: 'var(--osd-accent)', display: 'flex', gap: 10 }}>
+      <span style={{ fontWeight: 800 }}>✓</span>
+      <span>{verdict}</span>
+    </div>
+  </div>
+);
+
 const AgentLadderPage: Page = () => (
-  <Frame title="System Agent：替一個系統做判斷，用使用者的權限操作">
+  <Frame arch="System Agent" title="System Agent：替一個系統做判斷，權限追得到負責的人">
     <LadderHead n="①">
       <b>它負責什麼</b>
     </LadderHead>
     <div style={{ display: 'flex', gap: 20, marginTop: 12 }}>
       <SysDuty k="領域判斷">懂這個系統的術語與規則；<br />先反問，再規劃怎麼查</SysDuty>
       <SysDuty k="操作系統">明確的操作直接執行，模糊的才動用模型</SysDuty>
-      <SysDuty k="守要求">系統的規定集中寫一次，所有個人型 Agent 都經過同一套強制</SysDuty>
+      <SysDuty k="守要求">系統的規定集中寫一次，叫用它的每個 Agent 都經過同一套強制</SysDuty>
     </div>
     <div style={{ marginTop: 12, fontSize: 23, lineHeight: 1.5, color: c.muted }}>
       對外介面：<b>A2A</b>；對方的 Harness 只支援 MCP 時，包成一個 <b>MCP 工具</b>
     </div>
-    <div style={{ marginLeft: 80, marginTop: 16, borderLeft: '4px solid var(--osd-accent)', paddingLeft: 28, paddingTop: 10 }}>
+    <div style={{ marginLeft: 40, marginTop: 14, borderLeft: '4px solid var(--osd-accent)', paddingLeft: 28, paddingTop: 6 }}>
       <LadderHead n="②">
         <b>用誰的權限</b>：操作系統時，身分怎麼走？
       </LadderHead>
-      <div id="osd-ah-sysagent-chain" style={{ display: 'flex', alignItems: 'center', gap: 16, marginTop: 12 }}>
-        <SysBox>使用者</SysBox>
-        <span style={{ fontSize: 28, color: c.dim }}>→</span>
-        <SysBox>個人型 Agent</SysBox>
-        <span style={{ fontSize: 28, color: c.dim }}>→</span>
-        <SysBox>System Agent</SysBox>
-        <span style={{ fontSize: 28, color: c.dim }}>→</span>
-        <SysBox>系統</SysBox>
-      </div>
-      <div id="osd-ah-sysagent-paths" style={{ marginTop: 14, display: 'flex', flexDirection: 'column', gap: 4 }}>
-        <SysPath ok>帶著<b>使用者的身分</b>，系統用這個身分查權限</SysPath>
-        <SysPath ok={false}>用 System Agent 自己的高權限 → <b>權限破口</b></SysPath>
+      <SysChain id="osd-ah-sysagent-chain-a" from="使用者" mid="個人型 Agent" verdict={<>用這位<b>使用者</b>的權限</>} />
+      <SysChain
+        id="osd-ah-sysagent-chain-b"
+        from="事件"
+        mid="職能型 Agent"
+        verdict={<>用它<b>自己的最小權限</b>，背後有指定的負責人</>}
+      />
+      <div id="osd-ah-sysagent-paths" style={{ marginTop: 10 }}>
+        <SysPath ok={false}>用 System Agent 自己的高權限 → <b>權限破口</b>：出事追不到人</SysPath>
       </div>
     </div>
-    <p style={{ fontSize: 32, fontWeight: 800, lineHeight: 1.5, margin: '18px 0 0' }}>
-      判斷在 System Agent；<Hi>權限，永遠是原始使用者的</Hi>。
+    <p style={{ fontSize: 32, fontWeight: 800, lineHeight: 1.5, margin: '16px 0 0' }}>
+      判斷在 System Agent；<Hi>權限永遠追得到一個負責的人</Hi>。
     </p>
   </Frame>
 );
@@ -4147,24 +4218,25 @@ Summarizer：只給最終表格太單薄，也要讓使用者確認操作符合�
 欄位值檢查和只開放設計好的表格操作，都做在 MCP server 端，在 Plugin 外面：就算 Harness 被繞過，也擋得住，模型寫的程式碰不到 prod。Plugin 只帶 MCP 的連線設定。權限做在資料來源或前端，LPQM Agent 就是做在前端；測試題拿來驗證整包。
 重點句：Plugin 是包裝；真正不能錯的，要做在包裝外面。如果把規則寫成 Plugin 裡的 Skill，那只是引導。
 補充（被問到）：Plugin 是 Claude Code 與 claude.ai 的打包格式，其他 Harness 有各自的做法；能跨 Harness 帶著走的是 Skill 和 MCP。Plugin 可以由管理員用 managed settings 統一發布、強制啟用。`,
-  `上一頁回答了「留下的放在哪裡」；這頁回答「交給誰用」。命題是「以後是不是交一個通用 Harness 就好」——答案取決於使用的人是誰。
-使用者自己用：裝成 Plugin，放進使用者自己的 Harness，人在線上，隨時能核准。
-個人型 Agent 要操作我們的系統：我們的團隊把這叫 System Agent——每個公司系統都能被 Agent 使用，個人型 Agent 處理個人的事，透過 System Agent 去操作系統。交付形式是一個服務，對外開 A2A 或 MCP 介面，整個任務交給它，不是只給一個工具；人在線上，但在對方那一端。下一頁細講：System Agent 負責什麼。
-事件觸發（職能型 Agent，線上沒有人）：告警、排程、工單觸發，沒人開口；交付形式也是一個服務，事件一來就自己跑。
-後兩欄的做法其實一樣：都是把整個 Harness 當函式庫嵌進服務，差別只在誰叫它——System Agent 是別的 Agent 來叫，職能型是事件來叫。現在主要的 Harness 都提供 SDK：Claude Agent SDK 給的是跟 Claude Code 一樣的工具、迴圈和 context 管理，Python、TypeScript 都能用，也有 hooks、子 Agent、MCP、權限、session；Codex SDK（TypeScript、Python）可以開 thread、跑任務，官方列的用途包括放進 CI/CD；OpenCode 有 @opencode/sdk，在程式裡直接起一個 OpenCode。框架那邊反過來：LangChain 的 Deep Agents 自稱 agent harness，跑在 LangGraph 的執行環境上。兩邊收斂成同一個形狀：迴圈、工具、Skill、子 Agent、hook、MCP、session。
-這一欄是展望，口頭說：目前團隊還沒有這類需求，下下頁再講。
+  `上一頁回答了「留下的放在哪裡」；這頁回答「交給誰用」，而且這頁是一張地圖：我們的系統有三種被叫用的方式。
+第一種，使用者自己用：裝成 Plugin（Skill、MCP、Hook），放進使用者自己的 Harness，人在線上，隨時能核准；它直接走到系統，不經過 System Agent。
+第二種，個人型 Agent：個人型 Agent 處理個人的事，要操作我們的系統時，叫用該系統的 System Agent——我們的團隊把這叫 System Agent，每個公司系統都有一個，整個任務交給它，不是只給一個工具；人在，但在對方那一端。
+第三種，職能型 Agent：告警、排程、工單觸發，沒人在線上，它也是叫用 System Agent 去操作系統。
+所以個人型和職能型都經過 System Agent；三條路最後都經過同一套守要求，守要求放在系統那一端。
+System Agent 與職能型 Agent 都是把 Harness 用 SDK 嵌進服務，差別在誰叫它——System Agent 是別的 Agent 來叫，職能型是事件來叫。現在主要的 Harness 都提供 SDK：Claude Agent SDK 給的是跟 Claude Code 一樣的工具、迴圈和 context 管理，Python、TypeScript 都能用，也有 hooks、子 Agent、MCP、權限、session；Codex SDK（TypeScript、Python）可以開 thread、跑任務，官方列的用途包括放進 CI/CD；OpenCode 有 @opencode/sdk，在程式裡直接起一個 OpenCode。框架那邊反過來：LangChain 的 Deep Agents 自稱 agent harness，跑在 LangGraph 的執行環境上。兩邊收斂成同一個形狀：迴圈、工具、Skill、子 Agent、hook、MCP、session。
 被問到「那以後還用 LangGraph 嗎」：那篇比對 11 套 coding Harness 原始碼的論文發現，沒有一套在 Agent 的執行環境用 LangChain、LangGraph 這類框架，迴圈都是自己寫的；它的建議是，要現成的起點，就用 Harness 的 SDK。但這是 Agent 迴圈的趨勢，不是規則——LPQM Agent 裡真正固定的流程，用 graph 寫仍然合理（回到 Workflow 到 Loop 那頁的左端）。
-再下兩頁：System Agent，以及職能型 Agent。
 最下面那條：守要求只寫一次，放在系統那一端（server 端），不放在任何一種交付形式裡。所以不管是使用者的 Plugin、System Agent 還是職能型 Agent，從哪條路進來都會經過同一套檢查，不能錯的都擋得住。例子就是 LPQM Agent 留下來的那幾項：查詢時檢查欄位值、只開放設計好的表格操作。接回上一頁「真正不能錯的，要做在包裝外面」。
-重點句：交給誰用，決定交付形式；守要求只寫一次，放在系統那一端，三條路都會經過。`,
+接下來三頁，依序放大這張圖的三塊：System Agent、職能型 Agent、怎麼一步步放手。右上角的小條標出現在講到哪一塊。
+重點句：三種叫用方式，最後都經過同一套守要求；守要求只寫一次，放在系統那一端。`,
   `上一頁第二欄：個人型 Agent 要操作我們的系統。團隊目前的方向：公司內每個系統都長出一個 System Agent，負責操作原本的系統；個人型 Agent 處理個人業務，透過 A2A 等協議找 System Agent。LPQM Agent 就是 LPQM 這個系統的 System Agent。角度也翻過來：第一部分的 MCP、A2A 是我們用別人的；這頁是我們做的東西被別人的 Agent 用。
 ① 它負責三件事：領域判斷、操作系統、守要求集中。為什麼要有判斷：個人型 Agent 缺的是領域判斷——要懂術語和規則才知道怎麼問、怎麼查；只給知識或工具，判斷還在對方的模型，品質我們管不到。System Agent 價值之一：系統負責人把守要求集中寫一次，所有個人型 Agent 都經過同一套強制。
 成本提醒（可能被問）：多一層模型就多一次判斷、多一份 token；所以 System Agent 內部，明確的操作直接執行，模糊的才動用模型。
 對外介面：介面用 A2A；對方只支援 MCP，就把整個 System Agent 包成一個 MCP 工具。差別有三點：(a) 對方的 Harness：MCP 幾乎都支援；A2A 少數支援，例如 Gemini CLI、雲端 Agent 平台——coding Harness 裡只有 Gemini CLI 原生支援 A2A，Claude Code、Codex、OpenCode 都沒有；A2A 主要長在 Azure AI Foundry、Copilot Studio、Bedrock AgentCore 這類平台。(b) 需要反問時：MCP 的 elicitation 是問客戶端畫面前的人；A2A 的 input-required 是交回呼叫我們的 Agent，它可以自己回答或再問它的使用者。(c) 長時間任務：MCP 2025-11-25 版規格才加入 Tasks，仍標實驗性；A2A 原生支援輪詢、串流、webhook 推送。兩個入口後面是同一個 System Agent，身分與不能錯的檢查都在我們這邊。細節見附錄的 MCP、A2A、Agent Card 頁。
-② 用誰的權限，這是 System Agent 最重要的工程重點：它要用原始使用者的權限操作系統，身分沿著整條鏈傳下去，系統用這個身分查權限；不能用它自己的高權限，否則別人就能借它的權限做事——這是 confused deputy，也就是權限破口。另外，別的 Agent 傳來的訊息不能當成使用者同意（Claude Code 文件明文規定）。
+② 用誰的權限，這是 System Agent 最重要的工程重點，分兩種情況。個人型 Agent 來叫：用原始使用者的權限操作系統，身分沿著整條鏈傳下去，系統用這個身分查權限。職能型 Agent 來叫（事件觸發，沒有使用者可以代表）：用它自己的最小權限，而且背後要有指定的負責人——例如 Microsoft Entra 替每個 agent 身分指定負責人（sponsor），agent 身分也不能擁有高權限管理角色。兩種都不能用 System Agent 自己的高權限，否則別人就能借它的權限做事——這是 confused deputy，也就是權限破口，而且出事追不到人。這就是貫穿全場的一條原則：權限永遠追得到一個負責的人。另外，別的 Agent 傳來的訊息不能當成使用者同意（Claude Code 文件明文規定）。
 名片補充：Agent Card 放在固定網址，對方模型只會讀到 description 和 skills 的名稱與描述——那是唯一能影響對方「要不要找我們」的地方，要寫清楚會做什麼、不做什麼；但不能靠描述擋人，真正的權限在我們 server 端依呼叫者身分決定。
-重點句：判斷在 System Agent；權限，永遠是原始使用者的。`,
+重點句：判斷在 System Agent；權限永遠追得到一個負責的人。`,
   `（展望）這是一種 Agent 型態的想像，團隊目前還沒有這類需求。
+對照架構圖：這是職能型那一塊——這批貨的 Agent 就是一個職能型 Agent，它去叫各段的 System Agent；權限照上一頁，用它自己的最小權限，背後有負責的工程師。
 情境：一批貨在後段量測異常，要回頭找 root cause——可能在前段、中段、也可能在後段。難處是資料和專業知識分散在不同單位，人工追查要跨部門來回問。
 做法：這批貨的 Agent 被事件喚醒，用 lot ID 當線索，去問前、中、後段的 System Agent（就是前面那頁：每個系統一個 System Agent，懂自己那段的資料和術語）。各段回假設和證據，再互相反駁，留下證據最強的——這就是附錄辯論那頁：單一調查者容易被第一個假設牽著走，互相反駁比較可靠。最後整理成建議，扣貨、改 recipe 這類影響產線的決定，由工程師核准。
 「一批貨綁一個 Agent」不是幾千個模型一直開著：這批貨的 Agent ＝ 這批貨的狀態紀錄 ＋ 事件來時才喚醒的 Harness。平常不跑模型，進站、量測超規、被後段退回時才醒來處理，處理完把結果寫回狀態。它不取代 MES：派工、hold、規格是寫死的守要求，Agent 不能覆蓋；它的價值在例外處理。
@@ -4172,17 +4244,16 @@ Summarizer：只給最終表格太單薄，也要讓使用者確認操作符合�
 口頭可以補（不上投影片）：部門 Agent 的想像——它不必「知道部門所有事情」，知道的應該是系統（工單、MES、文件），部門 Agent 是在上面做判斷的那一層；個人 Agent 回報結構化事件，不是自由摘要（模型寫的摘要會漏、會越傳越失真）。它的定位是幕僚長：彙整、建議、草擬分派，由主管核准；誰能問它什麼，照提問者本人的權限回答，否則它就變成全部門權限的聯集。
 下一頁：要怎麼一步一步走到這裡——一類一類放手。
 重點句：一個 Agent 統籌、固定格式交換證據；影響產線的決定，留給人。`,
-  `上一頁是想像，這頁講怎麼一步一步走到那裡：用一個已經上線的產品當例子。
+  `上一頁是想像，這頁講怎麼一步一步走到那裡：接著同一批貨的故事，說明職能型 Agent 的信任怎麼一類一類建立。
 定義：職能型 Agent 在組織裡擔任一個職位，由告警、排程、工單觸發，沒人開口、線上沒人。引擎跟個人型 Agent 一樣，差別都在引擎外面那一圈。
-用一個實例走一遍：Azure SRE Agent 值班處理告警（依 Microsoft Learn「run modes」文件，2026-10）。
-01：告警進來，例如正式環境的服務延遲飆高。沒人開口，Agent 自己調查：查 log、指標、最近的部署，找出處置。（這個情境是舉例。）
-02：Review 模式——Agent 調查、找出處置，要執行 Azure 基礎設施的操作（Azure CLI、Resource Manager 這類寫入動作）前，等你核准；只有 SRE Agent 管理員能按核准。發 email、貼 Teams、查外部資料不用等，依 Agent 的判斷和 response plan 的指示進行。官方建議：先用 Review，觀察它建議什麼，跑兩到四週。
-03：發現某些模式你一直都核准，就把那些觸發切成 Autonomous：自己執行、事後回報。執行模式是依每個 response plan、每個排程任務分開設定的，不是整個 Agent 一起切——所以叫一類一類放。
-下方是官方的建議分法：正式環境事故、資安告警留在 Review；測試環境事故、每日健康檢查、成本與用量報表可以 Autonomous。
+01：異常進來，先調查。這批貨在後段量測異常，Agent 被事件喚醒，去問各段的 System Agent，整理出處置建議。
+02：先只提建議，人核准。每一類處置，都先由工程師按核准，同時留下核准紀錄；這時 Agent 只是提案，不自己動手。
+03：一直被核准的那類，才放手。例如「量測異常就安排重測」一直被核准，這一類才改成自己執行、事後回報（這是舉例）；扣貨、改 recipe 這類影響產線的決定，永遠留給人。
+業界已經這樣做（依 Microsoft Learn「run modes」文件，2026-10）：Azure SRE Agent 的 Review 模式，是在執行 Azure 基礎設施的寫入操作（Azure CLI、Resource Manager 這類）前等核准，只有 SRE Agent 管理員能按核准；發 email、貼 Teams、查外部資料不用等，依 Agent 的判斷和 response plan 的指示進行。執行模式是依每個 response plan、每個排程任務分開設定的，不是整個 Agent 一起切——所以叫一類一類放。官方建議先用 Review，觀察它建議什麼，跑兩到四週，發現某些模式一直都核准，再把那些觸發切成 Autonomous。官方建議的分法：正式環境事故、資安告警留在 Review；測試環境事故、每日健康檢查、成本與用量報表可以 Autonomous。
 回扣第二部分：這就是「放不放，用證據決定」——證據是核准紀錄，放寬的單位是一類觸發。回扣主線：補能力的會變薄，守要求的不會；越自主，守要求越重要。
-工程上還要改的（被問到再講）：context 從事件本身組，記憶跟著職位、不跟著某個人；入口用 Workflow 依觸發類型分流，裡面再用 Loop；不能當場問人，把關事前寫成規則；用自己的身分、權限最小化（例如 Microsoft Entra 的 agent 身分不能擁有高權限管理角色；Azure SRE Agent 沒有權限時，透過 Entra 的 OBO 流程代使用者申請暫時存取）；每次都要對，留紀錄，非同步通知負責人。
+工程上還要改的（被問到再講）：context 從事件本身組，記憶跟著職位、不跟著某個人；入口用 Workflow 依觸發類型分流，裡面再用 Loop；不能當場問人，把關事前寫成規則；用自己的身分、權限最小化、背後有指定的負責人（例如 Microsoft Entra 的 agent 身分不能擁有高權限管理角色；Azure SRE Agent 沒有權限時，透過 Entra 的 OBO 流程代使用者申請暫時存取）；每次都要對，留紀錄，非同步通知負責人。
 其他業界實例：AWS DevOps Agent（自動調查告警與工單）、Datadog Bits AI SRE（調查每個告警）。
-重點句：越自主，守要求越重要；放寬的依據，是一筆一筆的核准紀錄。`,
+重點句：越自主，守要求越重要；放寬的依據，是一筆一筆的核准紀錄；權限始終追得到負責的人。`,
   `把同一個問題，問在我們自己身上：我們替使用者做 Agent，這件事為什麼存在？（逐列按 →）
 第一列：把需求寫成 graph、做成 service——這是補能力。使用者不會寫程式、模型不夠強、通用 Harness 還不存在。LPQM Agent 就是例子，而它正在過期。
 第二列：術語與業務規則本來就在使用者身上，我們只是轉譯；使用者現在能自己寫 Skill，轉譯會過期。
