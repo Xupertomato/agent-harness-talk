@@ -3780,63 +3780,106 @@ const EvidencePage: Page = () => (
   </Frame>
 );
 
-const ArchCaller = ({ head, lines }: { head: string; lines: string[] }) => (
+const RtMarker = ({ id }: { id: string }) => (
+  <marker id={id} markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto-start-reverse" markerUnits="userSpaceOnUse">
+    <path d="M1 1 L9 5 L1 9" fill="none" stroke={c.dim} strokeWidth="1.8" />
+  </marker>
+);
+
+const RtSmall = ({ head, sub, w }: { head: string; sub?: string; w: number }) => (
   <div
     style={{
+      width: w,
+      flexShrink: 0,
       boxSizing: 'border-box',
       border: `1.5px solid ${c.line}`,
       background: c.panel,
       borderRadius: 'var(--osd-radius)',
-      padding: '18px 22px',
+      padding: '12px 10px',
       textAlign: 'center',
-      height: '100%',
+      display: 'flex',
+      flexDirection: 'column',
+      justifyContent: 'center',
     }}
   >
-    <div style={{ fontSize: 34, fontWeight: 800, lineHeight: 1.3 }}>{head}</div>
-    {lines.map((l) => (
-      <div key={l} style={{ fontSize: 23, lineHeight: 1.45, color: c.muted, marginTop: 6 }}>
-        {l}
-      </div>
-    ))}
+    <div style={{ fontSize: 28, fontWeight: 700, lineHeight: 1.3, color: c.muted }}>{head}</div>
+    {sub && <div style={{ fontSize: 20, lineHeight: 1.4, color: c.muted, marginTop: 4 }}>{sub}</div>}
   </div>
 );
 
-const ArchArrow = ({ h = 56, id }: { h?: number; id: string }) => (
-  <svg width={24} height={h} viewBox={`0 0 24 ${h}`} style={{ display: 'block', margin: '0 auto' }} aria-hidden="true">
-    <defs>
-      <marker id={id} markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto" markerUnits="userSpaceOnUse">
-        <path d="M1 1 L9 5 L1 9" fill="none" stroke={c.dim} strokeWidth="1.8" />
-      </marker>
-    </defs>
-    <path d={`M12 2 L12 ${h - 3}`} fill="none" stroke={c.dim} strokeWidth="2" markerEnd={`url(#${id})`} />
-  </svg>
+const RtBig = ({ head, sub, tag }: { head: string; sub: string; tag?: string }) => (
+  <div
+    style={{
+      flex: 1,
+      boxSizing: 'border-box',
+      border: `1.5px solid ${c.line}`,
+      background: c.panel,
+      borderRadius: 'var(--osd-radius)',
+      padding: '16px 18px',
+      textAlign: 'center',
+    }}
+  >
+    <div style={{ fontSize: 34, fontWeight: 800, lineHeight: 1.3 }}>{head}</div>
+    <div style={{ fontSize: 23, lineHeight: 1.45, color: c.muted, marginTop: 4 }}>{sub}</div>
+    {tag && <div style={{ fontSize: 20, lineHeight: 1.45, color: 'var(--osd-accent)', marginTop: 6 }}>{tag}</div>}
+  </div>
+);
+
+const RtH = ({ w, id, both, label }: { w: number; id: string; both?: boolean; label?: string }) => (
+  <div style={{ width: w, flexShrink: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+    {label && <div style={{ fontSize: 20, lineHeight: 1.3, color: c.muted }}>{label}</div>}
+    <svg width={w - 8} height={20} viewBox={`0 0 ${w - 8} 20`} style={{ display: 'block' }} aria-hidden="true">
+      <defs>
+        <RtMarker id={id} />
+      </defs>
+      <path d={`M${both ? 10 : 2} 10 L${w - 8 - (both ? 10 : 4)} 10`} fill="none" stroke={c.dim} strokeWidth="2" markerEnd={`url(#${id})`} markerStart={both ? `url(#${id})` : undefined} />
+    </svg>
+  </div>
+);
+
+const RtV = ({ id, up, label, w }: { id: string; up?: boolean; label: string; w: number }) => (
+  <div style={{ width: w, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10 }}>
+    <svg width={24} height={84} viewBox="0 0 24 84" style={{ display: 'block', flexShrink: 0 }} aria-hidden="true">
+      <defs>
+        <RtMarker id={id} />
+      </defs>
+      <path d={up ? 'M12 81 L12 3' : 'M12 3 L12 81'} fill="none" stroke={c.dim} strokeWidth="2" markerEnd={`url(#${id})`} />
+    </svg>
+    <div style={{ fontSize: 21, lineHeight: 1.35, color: c.muted, whiteSpace: 'nowrap' }}>{label}</div>
+  </div>
 );
 
 const DeliverToPage: Page = () => (
-  <Frame title="交給誰用：三條路最後都進同一個系統，守要求寫在那裡">
-    <div id="osd-ah-arch-map" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', columnGap: 36 }}>
-      <ArchCaller head="使用者自己用" lines={['交付：Plugin（Skill、MCP、Hook）', '人在線上，隨時核准']} />
-      <ArchCaller head="個人型 Agent" lines={['透過 System Agent', '人在，但在對方那一端']} />
-      <ArchCaller head="職能型 Agent" lines={['事件觸發，透過 System Agent', '沒人在線上']} />
+  <Frame title="兩種入口、同一個 System Agent，結果回到人手上">
+    <div id="osd-ah-rt-map" style={{ width: 1640 }}>
+      <div style={{ display: 'flex', gap: 40 }}>
+        <div style={{ width: 900, display: 'flex', alignItems: 'stretch' }}>
+          <RtSmall head="使用者" w={170} />
+          <RtH w={130} id="osd-ah-rt-h1" both label="對話" />
+          <RtBig head="個人型 Agent" sub="例：Claude Code" tag="裝了我們的 Plugin：知道怎麼找 System Agent" />
+        </div>
+        <div style={{ width: 700, display: 'flex', alignItems: 'stretch' }}>
+          <RtSmall head="事件" sub="例：每月底排程" w={170} />
+          <RtH w={50} id="osd-ah-rt-h2" />
+          <RtBig head="職能型 Agent" sub="例：檢查還沒核准的假單" />
+        </div>
+      </div>
 
-      <div style={{ gridRow: '2 / 5', gridColumn: 1, display: 'flex', justifyContent: 'center' }}>
-        <svg width={24} height={218} viewBox={`0 0 24 ${218}`} style={{ display: 'block' }} aria-hidden="true">
-          <defs>
-            <marker id="osd-ah-arch-head-l" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto" markerUnits="userSpaceOnUse">
-              <path d="M1 1 L9 5 L1 9" fill="none" stroke={c.dim} strokeWidth="1.8" />
-            </marker>
-          </defs>
-          <path d={`M12 2 L12 ${218 - 3}`} fill="none" stroke={c.dim} strokeWidth="2" markerEnd="url(#osd-ah-arch-head-l)" />
-        </svg>
+      <div style={{ display: 'flex', gap: 40, margin: '10px 0' }}>
+        <div style={{ width: 900, display: 'flex' }}>
+          <div style={{ width: 300 }} />
+          <RtV id="osd-ah-rt-a1" label="請求" w={150} />
+          <RtV id="osd-ah-rt-a2" up label="結果＋做了哪些操作" w={300} />
+        </div>
+        <div style={{ width: 700, display: 'flex' }}>
+          <div style={{ width: 220 }} />
+          <RtV id="osd-ah-rt-b1" label="請求" w={120} />
+          <RtV id="osd-ah-rt-b2" up label="結果 → 通知負責人" w={240} />
+        </div>
       </div>
-      <div style={{ gridRow: 2, gridColumn: '2 / 4', display: 'grid', gridTemplateColumns: '1fr 1fr', columnGap: 36 }}>
-        <ArchArrow id="osd-ah-arch-head-a" />
-        <ArchArrow id="osd-ah-arch-head-b" />
-      </div>
+
       <div
         style={{
-          gridRow: 3,
-          gridColumn: '2 / 4',
           boxSizing: 'border-box',
           border: '2px solid var(--osd-accent)',
           background: c.panel,
@@ -3845,31 +3888,29 @@ const DeliverToPage: Page = () => (
           textAlign: 'center',
         }}
       >
-        <div style={{ fontSize: 34, fontWeight: 800, lineHeight: 1.3 }}>System Agent（每個系統一個）</div>
-        <div style={{ fontSize: 23, lineHeight: 1.45, color: c.muted, marginTop: 6 }}>替系統做判斷、操作系統</div>
+        <div style={{ fontSize: 34, fontWeight: 800, lineHeight: 1.3 }}>System Agent（請假系統的 Agent）</div>
+        <div style={{ fontSize: 23, lineHeight: 1.45, color: c.muted, marginTop: 4 }}>判斷：該用哪種假、還剩幾天、該找哪位主管核准</div>
       </div>
 
-      <div style={{ gridRow: 4, gridColumn: '1 / 4', display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', columnGap: 36 }}>
-        <div />
-        <ArchArrow h={44} id="osd-ah-arch-head-c" />
-        <div />
+      <div style={{ display: 'flex', justifyContent: 'center', gap: 90, margin: '10px 0' }}>
+        <RtV id="osd-ah-rt-c1" label="操作" w={130} />
+        <RtV id="osd-ah-rt-c2" up label="結果" w={130} />
       </div>
+
       <div
         style={{
-          gridRow: 5,
-          gridColumn: '1 / 4',
+          boxSizing: 'border-box',
           border: '2px solid var(--osd-accent)',
-          background: c.panel,
+          background: '#ffffff',
           borderRadius: 'var(--osd-radius)',
           padding: '16px 30px',
-          fontSize: 27,
-          lineHeight: 1.45,
+          textAlign: 'center',
         }}
       >
-        <div style={{ fontSize: 34, fontWeight: 800, lineHeight: 1.3, textAlign: 'center' }}>系統（例：LPQM 的資料與表格操作）</div>
-        <div style={{ marginTop: 6, textAlign: 'center' }}>
+        <div style={{ fontSize: 34, fontWeight: 800, lineHeight: 1.3 }}>請假系統</div>
+        <div style={{ fontSize: 27, lineHeight: 1.45, marginTop: 6 }}>
           <b style={{ color: 'var(--osd-accent)' }}>守要求寫在這裡：</b>
-          欄位值檢查、只開放設計好的表格操作——三條路都會經過
+          餘額不足不能送出；主管核准才生效；只能看自己的資料
         </div>
       </div>
     </div>
@@ -4184,16 +4225,17 @@ Summarizer：只給最終表格太單薄，也要讓使用者確認操作符合�
 上一頁留下來的每一項，這一頁都要找到位置。知識（術語表、判斷框架）放進 Skill，使用者也能寫。回覆時附上操作清單，以前是 Summarizer 這個節點在守要求；如果只寫成 Skill 裡的一句話，那只是引導，模型可能漏掉，所以用 Hook 在回覆前檢查——例如 Claude Code 的 Stop hook，沒附操作清單就擋下、不讓結束。
 欄位值檢查和只開放設計好的表格操作，都做在 MCP server 端，在 Plugin 外面：就算 Harness 被繞過，也擋得住，模型寫的程式碰不到 prod。Plugin 只帶 MCP 的連線設定。權限做在資料來源或前端，LPQM Agent 就是做在前端；測試題拿來驗證整包。
 重點句：Plugin 是包裝；真正不能錯的，要做在包裝外面。如果把規則寫成 Plugin 裡的 Skill，那只是引導。
-補充（被問到）：Plugin 是 Claude Code 與 claude.ai 的打包格式，其他 Harness 有各自的做法；能跨 Harness 帶著走的是 Skill 和 MCP。Plugin 可以由管理員用 managed settings 統一發布、強制啟用。`,
-  `上一頁回答了「留下的放在哪裡」；這頁回答「交給誰用」，而且這頁是一張地圖：我們的系統有三條路可以用。
-第一種，使用者自己用：裝成 Plugin（Skill、MCP、Hook），放進使用者自己的 Harness，人在線上，隨時能核准；它直接走到系統，不經過 System Agent。
-第二種，個人型 Agent：個人型 Agent 處理個人的事，要操作我們的系統時，透過該系統的 System Agent——我們的團隊把這叫 System Agent，每個公司系統都有一個，整個任務交給它，不是只給一個工具；人在，但在對方那一端。
-第三種，職能型 Agent：告警、排程、工單觸發，沒人在線上，它也是透過 System Agent 去操作系統。第三條路（職能型）先帶過，最後的展望再講。
-所以個人型和職能型都經過 System Agent；三條路最後都進同一個系統，箭頭終點是下面那個「系統」框，守要求寫在那裡。
+補充（被問到）：Plugin 是 Claude Code 與 claude.ai 的打包格式，其他 Harness 有各自的做法；能跨 Harness 帶著走的是 Skill 和 MCP。Plugin 可以由管理員用 managed settings 統一發布、強制啟用。
+下一頁：這個包裝接到哪裡。`,
+  `這頁是第三部分的全貌：我們做的東西，會從哪裡被用到、結果怎麼回來。用一個大家都熟的例子：請假系統。
+入口只有兩種。個人型 Agent：使用者自己的 Agent，例如 Claude Code，人在線上；它裝了我們的 Plugin——上一頁講的包裝——才知道怎麼找 System Agent、什麼時候該找。職能型 Agent：事件觸發，例如每月底排程檢查還沒核准的假單，沒人在線上。
+兩種入口都透過同一個 System Agent。它負責判斷：使用者說「我下週三想請半天」，它判斷該用哪種假、還剩幾天、該找哪位主管核准，然後去操作請假系統。
+守要求寫在系統那一端：餘額不足不能送出、主管核准才生效、只能看自己的資料。不管從哪個入口進來，都會經過同一套檢查，不能錯的都擋得住——接回上一頁「真正不能錯的，要做在包裝外面」。
+結果一定回到人手上：個人型那邊，結果連同「做了哪些操作」回給使用者（就是 LPQM Agent 留下來的那條守要求：回覆時附上操作清單）；職能型那邊沒人在線上，結果通知負責人，例如寫進工單或發訊息給主管。
+System Agent 與職能型 Agent 都是把 Harness 用 SDK 嵌進服務。職能型先帶過，最後的展望再講。
 System Agent 與職能型 Agent 都是把 Harness 用 SDK 嵌進服務，差別在誰叫它——System Agent 是別的 Agent 來叫，職能型是事件來叫。現在主要的 Harness 都提供 SDK：Claude Agent SDK 給的是跟 Claude Code 一樣的工具、迴圈和 context 管理，Python、TypeScript 都能用，也有 hooks、子 Agent、MCP、權限、session；Codex SDK（TypeScript、Python）可以開 thread、跑任務，官方列的用途包括放進 CI/CD；OpenCode 有 @opencode/sdk，在程式裡直接起一個 OpenCode。框架那邊反過來：LangChain 的 Deep Agents 自稱 agent harness，跑在 LangGraph 的執行環境上。兩邊收斂成同一個形狀：迴圈、工具、Skill、子 Agent、hook、MCP、session。
 被問到「那以後還用 LangGraph 嗎」：那篇比對 11 套 coding Harness 原始碼的論文發現，沒有一套在 Agent 的執行環境用 LangChain、LangGraph 這類框架，迴圈都是自己寫的；它的建議是，要現成的起點，就用 Harness 的 SDK。但這是 Agent 迴圈的趨勢，不是規則——LPQM Agent 裡真正固定的流程，用 graph 寫仍然合理（回到 Workflow 到 Loop 那頁的左端）。
-最下面的「系統」框：守要求只寫一次，放在系統那一端（server 端），不放在任何一種交付形式裡。所以不管是使用者的 Plugin、System Agent 還是職能型 Agent，從哪條路進來都會經過同一套檢查，不能錯的都擋得住。例子就是 LPQM Agent 留下來的那幾項：查詢時檢查欄位值、只開放設計好的表格操作。接回上一頁「真正不能錯的，要做在包裝外面」。
-重點句：三條路最後都進同一個系統；守要求只寫一次，寫在系統那一端。`,
+重點句：兩種入口，同一個 System Agent；守要求寫在系統那一端，結果回到人手上。`,
   `上一頁第二欄：個人型 Agent 要操作我們的系統。團隊目前的方向：公司內每個系統都長出一個 System Agent，負責操作原本的系統；個人型 Agent 處理個人業務，透過 A2A 等協議找 System Agent。LPQM Agent 就是 LPQM 這個系統的 System Agent。角度也翻過來：第一部分的 MCP、A2A 是我們用別人的；這頁是我們做的東西被別人的 Agent 用。
 ① 它負責三件事：領域判斷、操作系統、守要求集中。為什麼要有判斷：個人型 Agent 缺的是領域判斷——要懂術語和規則才知道怎麼問、怎麼查；只給知識或工具，判斷還在對方的模型，品質我們管不到。System Agent 價值之一：系統負責人把守要求集中寫一次，所有個人型 Agent 都經過同一套強制。
 成本提醒（可能被問）：多一層模型就多一次判斷、多一份 token；所以 System Agent 內部，明確的操作直接執行，模糊的才動用模型。
