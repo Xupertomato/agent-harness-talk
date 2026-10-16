@@ -165,38 +165,6 @@ const Crumbs = ({ stage }: { stage: StageName }) => (
   </div>
 );
 
-type ArchName = '個人型 Agent' | '職能型 Agent' | 'System Agent' | '守要求';
-const ARCHES: ArchName[] = ['個人型 Agent', '職能型 Agent', 'System Agent', '守要求'];
-
-const ArchCrumb = ({ arch }: { arch: ArchName }) => (
-  <div style={{ position: 'absolute', top: 82, right: 140, display: 'flex', alignItems: 'center', gap: 5 }} aria-hidden="true">
-    {ARCHES.map((nm, i) => {
-      const active = nm === arch;
-      return (
-        <Fragment key={nm}>
-          {i > 0 ? <span style={{ fontSize: 15, color: c.dim, lineHeight: 1 }}>›</span> : null}
-          <span
-            style={{
-              fontSize: 17,
-              lineHeight: 1.2,
-              fontWeight: active ? 800 : 500,
-              padding: '4px 11px',
-              borderRadius: 999,
-              whiteSpace: 'nowrap',
-              boxSizing: 'border-box',
-              color: active ? '#ffffff' : c.muted,
-              background: active ? 'var(--osd-accent)' : 'transparent',
-              border: active ? '1.5px solid var(--osd-accent)' : `1.5px solid ${c.hair}`,
-            }}
-          >
-            {nm}
-          </span>
-        </Fragment>
-      );
-    })}
-  </div>
-);
-
 const NavRow = ({ back, next }: { back?: { to: Page; label: string }; next?: { to: Page; label: string } }) => (
   <div style={{ position: 'absolute', right: 140, bottom: 82, display: 'flex', alignItems: 'baseline', gap: 40 }}>
     {back ? <BackLink to={back.to} label={back.label} /> : null}
@@ -265,7 +233,6 @@ const Frame = ({
   title,
   children,
   stage,
-  arch,
   back,
   next,
 }: {
@@ -274,14 +241,12 @@ const Frame = ({
   title: ReactNode;
   children: ReactNode;
   stage?: StageName;
-  arch?: ArchName;
   back?: { to: Page; label: string };
   next?: { to: Page; label: string };
 }) => (
   <div style={{ ...canvas, padding: '84px 140px 100px', display: 'flex', flexDirection: 'column' }}>
     <div style={{ height: 29, flexShrink: 0 }} aria-hidden="true" />
     {stage ? <Crumbs stage={stage} /> : null}
-    {arch && !stage ? <ArchCrumb arch={arch} /> : null}
     <h2
       style={{
         fontFamily: 'var(--osd-font-display)',
@@ -3064,7 +3029,6 @@ const PluginDelivery: Page = () => (
 
 const OurWork: Page = () => (
   <Frame title="我們的工作：補能力的那部分正在過期">
-    <p style={{ fontSize: 28, lineHeight: 1.4, fontWeight: 400, color: c.muted, margin: '0 0 16px' }}>把同一個問題，問在我們自己身上</p>
     <Steps>
       <TRow cols="500px 1fr 440px" head>
         <div>我們做的事</div>
@@ -3203,7 +3167,7 @@ const VisionNote = ({ head, children, strong = false }: { head: string; children
 );
 
 const VisionPage: Page = () => (
-  <Frame arch="職能型 Agent" title="跨段找 root cause：一個 Agent 統籌，各段回證據">
+  <Frame title="跨段找 root cause：一個 Agent 統籌，各段回證據">
     <div style={{ display: 'flex', gap: 56, alignItems: 'flex-start' }}>
       <div style={{ width: 1080, flexShrink: 0 }}>
         <div style={{ display: 'flex', alignItems: 'center' }}>
@@ -3256,7 +3220,7 @@ const VisionPage: Page = () => (
 );
 
 const OrgAgentPage: Page = () => (
-  <Frame arch="職能型 Agent" title="職能型 Agent：沒人在線上，放寬要一類一類來">
+  <Frame title="走到那一步：先提建議，有核准紀錄才一類一類放手">
     <div style={{ display: 'flex', alignItems: 'stretch' }}>
       <LoopStep
         no="01"
@@ -3849,11 +3813,11 @@ const ArchArrow = ({ h = 56, id }: { h?: number; id: string }) => (
 );
 
 const DeliverToPage: Page = () => (
-  <Frame title="交給誰用：三種叫用方式，最後都經過同一套守要求">
+  <Frame title="交給誰用：三條路最後都進同一個系統，守要求寫在那裡">
     <div id="osd-ah-arch-map" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', columnGap: 36 }}>
       <ArchCaller head="使用者自己用" lines={['交付：Plugin（Skill、MCP、Hook）', '人在線上，隨時核准']} />
-      <ArchCaller head="個人型 Agent" lines={['交付：叫用 System Agent', '人在，但在對方那一端']} />
-      <ArchCaller head="職能型 Agent" lines={['事件觸發，叫用 System Agent', '沒人在線上']} />
+      <ArchCaller head="個人型 Agent" lines={['透過 System Agent', '人在，但在對方那一端']} />
+      <ArchCaller head="職能型 Agent" lines={['事件觸發，透過 System Agent', '沒人在線上']} />
 
       <div style={{ gridRow: '2 / 5', gridColumn: 1, display: 'flex', justifyContent: 'center' }}>
         <svg width={24} height={218} viewBox={`0 0 24 ${218}`} style={{ display: 'block' }} aria-hidden="true">
@@ -3902,8 +3866,11 @@ const DeliverToPage: Page = () => (
           lineHeight: 1.45,
         }}
       >
-        <b style={{ color: 'var(--osd-accent)' }}>守要求只寫一次：</b>
-        放在系統那一端，三條路都會經過——例如欄位值檢查、只開放設計好的表格操作
+        <div style={{ fontSize: 34, fontWeight: 800, lineHeight: 1.3, textAlign: 'center' }}>系統（例：LPQM 的資料與表格操作）</div>
+        <div style={{ marginTop: 6, textAlign: 'center' }}>
+          <b style={{ color: 'var(--osd-accent)' }}>守要求寫在這裡：</b>
+          欄位值檢查、只開放設計好的表格操作——三條路都會經過
+        </div>
       </div>
     </div>
   </Frame>
@@ -3983,14 +3950,14 @@ const SysChain = ({ id, from, mid, verdict }: { id: string; from: string; mid: s
 );
 
 const AgentLadderPage: Page = () => (
-  <Frame arch="System Agent" title="System Agent：替一個系統做判斷，權限追得到負責的人">
+  <Frame title="System Agent：替一個系統做判斷，權限追得到負責的人">
     <LadderHead n="①">
       <b>它負責什麼</b>
     </LadderHead>
     <div style={{ display: 'flex', gap: 20, marginTop: 12 }}>
       <SysDuty k="領域判斷">懂這個系統的術語與規則；<br />先反問，再規劃怎麼查</SysDuty>
       <SysDuty k="操作系統">明確的操作直接執行，模糊的才動用模型</SysDuty>
-      <SysDuty k="守要求">系統的規定集中寫一次，叫用它的每個 Agent 都經過同一套強制</SysDuty>
+      <SysDuty k="守要求">系統的規定集中寫一次，透過它的每個 Agent 都經過同一套強制</SysDuty>
     </div>
     <div style={{ marginTop: 12, fontSize: 23, lineHeight: 1.5, color: c.muted }}>
       對外介面：<b>A2A</b>；對方的 Harness 只支援 MCP 時，包成一個 <b>MCP 工具</b>
@@ -4046,10 +4013,10 @@ const mainPages: Page[] = [
   PluginDelivery,
   DeliverToPage,
   AgentLadderPage,
-  VisionPage,
-  OrgAgentPage,
   OurWork,
   WhoBuilds,
+  VisionPage,
+  OrgAgentPage,
   BackToIlya,
   QA,
   References,
@@ -4218,16 +4185,15 @@ Summarizer：只給最終表格太單薄，也要讓使用者確認操作符合�
 欄位值檢查和只開放設計好的表格操作，都做在 MCP server 端，在 Plugin 外面：就算 Harness 被繞過，也擋得住，模型寫的程式碰不到 prod。Plugin 只帶 MCP 的連線設定。權限做在資料來源或前端，LPQM Agent 就是做在前端；測試題拿來驗證整包。
 重點句：Plugin 是包裝；真正不能錯的，要做在包裝外面。如果把規則寫成 Plugin 裡的 Skill，那只是引導。
 補充（被問到）：Plugin 是 Claude Code 與 claude.ai 的打包格式，其他 Harness 有各自的做法；能跨 Harness 帶著走的是 Skill 和 MCP。Plugin 可以由管理員用 managed settings 統一發布、強制啟用。`,
-  `上一頁回答了「留下的放在哪裡」；這頁回答「交給誰用」，而且這頁是一張地圖：我們的系統有三種被叫用的方式。
+  `上一頁回答了「留下的放在哪裡」；這頁回答「交給誰用」，而且這頁是一張地圖：我們的系統有三條路可以用。
 第一種，使用者自己用：裝成 Plugin（Skill、MCP、Hook），放進使用者自己的 Harness，人在線上，隨時能核准；它直接走到系統，不經過 System Agent。
-第二種，個人型 Agent：個人型 Agent 處理個人的事，要操作我們的系統時，叫用該系統的 System Agent——我們的團隊把這叫 System Agent，每個公司系統都有一個，整個任務交給它，不是只給一個工具；人在，但在對方那一端。
-第三種，職能型 Agent：告警、排程、工單觸發，沒人在線上，它也是叫用 System Agent 去操作系統。
-所以個人型和職能型都經過 System Agent；三條路最後都經過同一套守要求，守要求放在系統那一端。
+第二種，個人型 Agent：個人型 Agent 處理個人的事，要操作我們的系統時，透過該系統的 System Agent——我們的團隊把這叫 System Agent，每個公司系統都有一個，整個任務交給它，不是只給一個工具；人在，但在對方那一端。
+第三種，職能型 Agent：告警、排程、工單觸發，沒人在線上，它也是透過 System Agent 去操作系統。第三條路（職能型）先帶過，最後的展望再講。
+所以個人型和職能型都經過 System Agent；三條路最後都進同一個系統，箭頭終點是下面那個「系統」框，守要求寫在那裡。
 System Agent 與職能型 Agent 都是把 Harness 用 SDK 嵌進服務，差別在誰叫它——System Agent 是別的 Agent 來叫，職能型是事件來叫。現在主要的 Harness 都提供 SDK：Claude Agent SDK 給的是跟 Claude Code 一樣的工具、迴圈和 context 管理，Python、TypeScript 都能用，也有 hooks、子 Agent、MCP、權限、session；Codex SDK（TypeScript、Python）可以開 thread、跑任務，官方列的用途包括放進 CI/CD；OpenCode 有 @opencode/sdk，在程式裡直接起一個 OpenCode。框架那邊反過來：LangChain 的 Deep Agents 自稱 agent harness，跑在 LangGraph 的執行環境上。兩邊收斂成同一個形狀：迴圈、工具、Skill、子 Agent、hook、MCP、session。
 被問到「那以後還用 LangGraph 嗎」：那篇比對 11 套 coding Harness 原始碼的論文發現，沒有一套在 Agent 的執行環境用 LangChain、LangGraph 這類框架，迴圈都是自己寫的；它的建議是，要現成的起點，就用 Harness 的 SDK。但這是 Agent 迴圈的趨勢，不是規則——LPQM Agent 裡真正固定的流程，用 graph 寫仍然合理（回到 Workflow 到 Loop 那頁的左端）。
-最下面那條：守要求只寫一次，放在系統那一端（server 端），不放在任何一種交付形式裡。所以不管是使用者的 Plugin、System Agent 還是職能型 Agent，從哪條路進來都會經過同一套檢查，不能錯的都擋得住。例子就是 LPQM Agent 留下來的那幾項：查詢時檢查欄位值、只開放設計好的表格操作。接回上一頁「真正不能錯的，要做在包裝外面」。
-接下來三頁，依序放大這張圖的三塊：System Agent、職能型 Agent、怎麼一步步放手。右上角的小條標出現在講到哪一塊。
-重點句：三種叫用方式，最後都經過同一套守要求；守要求只寫一次，放在系統那一端。`,
+最下面的「系統」框：守要求只寫一次，放在系統那一端（server 端），不放在任何一種交付形式裡。所以不管是使用者的 Plugin、System Agent 還是職能型 Agent，從哪條路進來都會經過同一套檢查，不能錯的都擋得住。例子就是 LPQM Agent 留下來的那幾項：查詢時檢查欄位值、只開放設計好的表格操作。接回上一頁「真正不能錯的，要做在包裝外面」。
+重點句：三條路最後都進同一個系統；守要求只寫一次，寫在系統那一端。`,
   `上一頁第二欄：個人型 Agent 要操作我們的系統。團隊目前的方向：公司內每個系統都長出一個 System Agent，負責操作原本的系統；個人型 Agent 處理個人業務，透過 A2A 等協議找 System Agent。LPQM Agent 就是 LPQM 這個系統的 System Agent。角度也翻過來：第一部分的 MCP、A2A 是我們用別人的；這頁是我們做的東西被別人的 Agent 用。
 ① 它負責三件事：領域判斷、操作系統、守要求集中。為什麼要有判斷：個人型 Agent 缺的是領域判斷——要懂術語和規則才知道怎麼問、怎麼查；只給知識或工具，判斷還在對方的模型，品質我們管不到。System Agent 價值之一：系統負責人把守要求集中寫一次，所有個人型 Agent 都經過同一套強制。
 成本提醒（可能被問）：多一層模型就多一次判斷、多一份 token；所以 System Agent 內部，明確的操作直接執行，模糊的才動用模型。
@@ -4235,8 +4201,24 @@ System Agent 與職能型 Agent 都是把 Harness 用 SDK 嵌進服務，差別�
 ② 用誰的權限，這是 System Agent 最重要的工程重點，分兩種情況。個人型 Agent 來叫：用原始使用者的權限操作系統，身分沿著整條鏈傳下去，系統用這個身分查權限。職能型 Agent 來叫（事件觸發，沒有使用者可以代表）：用它自己的最小權限，而且背後要有指定的負責人——例如 Microsoft Entra 替每個 agent 身分指定負責人（sponsor），agent 身分也不能擁有高權限管理角色。兩種都不能用 System Agent 自己的高權限，否則別人就能借它的權限做事——這是 confused deputy，也就是權限破口，而且出事追不到人。這就是貫穿全場的一條原則：權限永遠追得到一個負責的人。另外，別的 Agent 傳來的訊息不能當成使用者同意（Claude Code 文件明文規定）。
 名片補充：Agent Card 放在固定網址，對方模型只會讀到 description 和 skills 的名稱與描述——那是唯一能影響對方「要不要找我們」的地方，要寫清楚會做什麼、不做什麼；但不能靠描述擋人，真正的權限在我們 server 端依呼叫者身分決定。
 重點句：判斷在 System Agent；權限永遠追得到一個負責的人。`,
-  `（展望）這是一種 Agent 型態的想像，團隊目前還沒有這類需求。
-對照架構圖：這是職能型那一塊——這批貨的 Agent 就是一個職能型 Agent，它去叫各段的 System Agent；權限照上一頁，用它自己的最小權限，背後有負責的工程師。
+  `把同一個問題，問在我們自己身上：我們替使用者做 Agent，這件事為什麼存在？（逐列按 →）
+第一列：把需求寫成 graph、做成 service——這是補能力。使用者不會寫程式、模型不夠強、通用 Harness 還不存在。LPQM Agent 就是例子，而它正在過期。
+第二列：術語與業務規則本來就在使用者身上，我們只是轉譯；使用者現在能自己寫 Skill，轉譯會過期。
+第三列：讓不能錯的事不可能錯——守要求，不會過期。
+第四列：共用的工具與測試方法——看規模與成本，不在今天的兩類裡。
+補充：有些部門的資料只能留在需求單位內，這時更傾向讓使用者自己做，因為資料出不來，我們也碰不到。
+重點句：我們過去的工作量，大宗是補能力；它正在過期。直接陳述，不修飾。`,
+  `這個需求，該誰來做？把上一頁收成一個分工。
+左邊，使用者自己做——大部分需求在這裡：代表使用者本人、用自己的權限、自己看結果，拿來探索、看一次就好。怎麼做：通用 Harness 加上自己寫的 Skill。單看一次答案，使用者是領域專家，判斷得比我們好。
+右邊，需要我們——兩個條件任一成立：
+一是線上沒有人：代表單位或流程，例如排程、系統事件、寫進共用系統（職能型 Agent）。OpenCode 是例子：TUI 只是連到 server 的用戶端，opencode serve 只啟動 server；引擎一樣，差在線上有沒有人，而 server 沒有多使用者的設計，身分、權限、紀錄要另外補。
+二是要每次都對：重複使用、拿去做決策。一次對不代表每次對——同一題跑十次可能錯一次，模型升級後原本對的可能變錯，邊界情況平常遇不到（pass^k：k 次要全對）。
+我們負責：身分與權限、事前的強制（例如 LPQM Agent 的欄位值檢查）、測試題與 eval。分工：需求單位知道什麼是對的，提供題目和標準答案；我們知道怎麼大量、重複地檢查——跑多次、換模型重跑、處理輸出不固定的比對——這是 eval，ML 工程師的專業。Anthropic 的建議也是這樣分：domain expert 出題，eval 團隊負責基礎設施；起步只要 20 到 50 題，從真實的失敗挑。
+資料規定與成本：看部門，沒有通用答案，跟需求單位一起決定。有些部門的資料只能留在需求單位內，這時更傾向讓使用者自己做。
+被問到「把守要求做成強制很難嗎？」：寫一條檢查不難，難的是三件事——先問出哪些規則不能錯；再決定工具切多細，太窄做不了事、太寬等於沒把關；最後用測試題證明它守得住，模型換了還要重跑。
+重點句：大部分需求使用者自己做；使用者知道什麼是對的，我們負責讓它每次都對。`,
+  `最後，一個想像——這是一種 Agent 型態的想像，團隊目前還沒有這類需求。
+對照前面的架構圖：這是職能型那一條路——這批貨的 Agent 就是一個職能型 Agent，它去找各段的 System Agent；權限照 System Agent 那頁，用它自己的最小權限，背後有負責的工程師。
 情境：一批貨在後段量測異常，要回頭找 root cause——可能在前段、中段、也可能在後段。難處是資料和專業知識分散在不同單位，人工追查要跨部門來回問。
 做法：這批貨的 Agent 被事件喚醒，用 lot ID 當線索，去問前、中、後段的 System Agent（就是前面那頁：每個系統一個 System Agent，懂自己那段的資料和術語）。各段回假設和證據，再互相反駁，留下證據最強的——這就是附錄辯論那頁：單一調查者容易被第一個假設牽著走，互相反駁比較可靠。最後整理成建議，扣貨、改 recipe 這類影響產線的決定，由工程師核准。
 「一批貨綁一個 Agent」不是幾千個模型一直開著：這批貨的 Agent ＝ 這批貨的狀態紀錄 ＋ 事件來時才喚醒的 Harness。平常不跑模型，進站、量測超規、被後段退回時才醒來處理，處理完把結果寫回狀態。它不取代 MES：派工、hold、規格是寫死的守要求，Agent 不能覆蓋；它的價值在例外處理。
@@ -4253,23 +4235,8 @@ System Agent 與職能型 Agent 都是把 Harness 用 SDK 嵌進服務，差別�
 回扣第二部分：這就是「放不放，用證據決定」——證據是核准紀錄，放寬的單位是一類觸發。回扣主線：補能力的會變薄，守要求的不會；越自主，守要求越重要。
 工程上還要改的（被問到再講）：context 從事件本身組，記憶跟著職位、不跟著某個人；入口用 Workflow 依觸發類型分流，裡面再用 Loop；不能當場問人，把關事前寫成規則；用自己的身分、權限最小化、背後有指定的負責人（例如 Microsoft Entra 的 agent 身分不能擁有高權限管理角色；Azure SRE Agent 沒有權限時，透過 Entra 的 OBO 流程代使用者申請暫時存取）；每次都要對，留紀錄，非同步通知負責人。
 其他業界實例：AWS DevOps Agent（自動調查告警與工單）、Datadog Bits AI SRE（調查每個告警）。
-重點句：越自主，守要求越重要；放寬的依據，是一筆一筆的核准紀錄；權限始終追得到負責的人。`,
-  `把同一個問題，問在我們自己身上：我們替使用者做 Agent，這件事為什麼存在？（逐列按 →）
-第一列：把需求寫成 graph、做成 service——這是補能力。使用者不會寫程式、模型不夠強、通用 Harness 還不存在。LPQM Agent 就是例子，而它正在過期。
-第二列：術語與業務規則本來就在使用者身上，我們只是轉譯；使用者現在能自己寫 Skill，轉譯會過期。
-第三列：讓不能錯的事不可能錯——守要求，不會過期。
-第四列：共用的工具與測試方法——看規模與成本，不在今天的兩類裡。
-補充：有些部門的資料只能留在需求單位內，這時更傾向讓使用者自己做，因為資料出不來，我們也碰不到。
-重點句：我們過去的工作量，大宗是補能力；它正在過期。直接陳述，不修飾。`,
-  `這個需求，該誰來做？把前兩頁收成一個分工。
-左邊，使用者自己做——大部分需求在這裡：代表使用者本人、用自己的權限、自己看結果，拿來探索、看一次就好。怎麼做：通用 Harness 加上自己寫的 Skill。單看一次答案，使用者是領域專家，判斷得比我們好。
-右邊，需要我們——兩個條件任一成立：
-一是線上沒有人：代表單位或流程，例如排程、系統事件、寫進共用系統（職能型 Agent）。OpenCode 是例子：TUI 只是連到 server 的用戶端，opencode serve 只啟動 server；引擎一樣，差在線上有沒有人，而 server 沒有多使用者的設計，身分、權限、紀錄要另外補。
-二是要每次都對：重複使用、拿去做決策。一次對不代表每次對——同一題跑十次可能錯一次，模型升級後原本對的可能變錯，邊界情況平常遇不到（pass^k：k 次要全對）。
-我們負責：身分與權限、事前的強制（例如 LPQM Agent 的欄位值檢查）、測試題與 eval。分工：需求單位知道什麼是對的，提供題目和標準答案；我們知道怎麼大量、重複地檢查——跑多次、換模型重跑、處理輸出不固定的比對——這是 eval，ML 工程師的專業。Anthropic 的建議也是這樣分：domain expert 出題，eval 團隊負責基礎設施；起步只要 20 到 50 題，從真實的失敗挑。
-資料規定與成本：看部門，沒有通用答案，跟需求單位一起決定。有些部門的資料只能留在需求單位內，這時更傾向讓使用者自己做。
-被問到「把守要求做成強制很難嗎？」：寫一條檢查不難，難的是三件事——先問出哪些規則不能錯；再決定工具切多細，太窄做不了事、太寬等於沒把關；最後用測試題證明它守得住，模型換了還要重跑。
-重點句：大部分需求使用者自己做；使用者知道什麼是對的，我們負責讓它每次都對。`,
+重點句：越自主，守要求越重要；放寬的依據，是一筆一筆的核准紀錄；權限始終追得到負責的人。
+下一頁回到封面的問題：哪些交給模型，哪些留給人——這兩頁的答案就是：影響產線的決定、核准，留給人。`,
   `【結尾 3 分鐘】
 回到封面的問題：哪些交給模型，哪些留給人？三張卡就是答案。
 交給模型的——會被吸收的：因為能力不足而存在的，補能力的流程與提示。注意是「終究會」，不是「現在就會」——哪些已經被吸收，要用測試題驗證。
