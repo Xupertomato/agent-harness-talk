@@ -3106,6 +3106,127 @@ const ModeCol = ({ head, items }: { head: string; items: string }) => (
   </div>
 );
 
+const VBox = ({
+  w,
+  navy = false,
+  sub,
+  children,
+}: {
+  w: number | string;
+  navy?: boolean;
+  sub?: ReactNode;
+  children: ReactNode;
+}) => (
+  <div
+    style={{
+      width: w,
+      flexShrink: 0,
+      boxSizing: 'border-box',
+      border: navy ? '2px solid var(--osd-accent)' : `1.5px solid ${c.line}`,
+      background: c.panel,
+      borderRadius: 'var(--osd-radius)',
+      padding: '14px 18px',
+      textAlign: 'center',
+      fontSize: 28,
+      fontWeight: 800,
+      lineHeight: 1.4,
+    }}
+  >
+    {children}
+    {sub ? <div style={{ fontSize: 21, fontWeight: 400, color: c.muted, marginTop: 4, lineHeight: 1.4 }}>{sub}</div> : null}
+  </div>
+);
+
+const VLines = ({ down }: { down: boolean }) => {
+  const xs = [172, 540, 908];
+  const h = 64;
+  return (
+    <svg width={1080} height={h} viewBox={`0 0 1080 ${h}`} style={{ display: 'block' }} aria-hidden="true">
+      <defs>
+        <marker id="osd-ah-vision-head" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto" markerUnits="userSpaceOnUse">
+          <path d="M1 1 L9 5 L1 9" fill="none" stroke={c.dim} strokeWidth="1.8" />
+        </marker>
+      </defs>
+      {xs.map((x) =>
+        down ? (
+          <path key={x} id={`osd-ah-vision-d${x}`} d={`M540 2 C540 ${h / 2}, ${x} ${h / 2}, ${x} ${h - 4}`} fill="none" stroke={c.dim} strokeWidth="2" markerEnd="url(#osd-ah-vision-head)" />
+        ) : (
+          <path key={x} id={`osd-ah-vision-u${x}`} d={`M${x} 2 C${x} ${h / 2}, 540 ${h / 2}, 540 ${h - 4}`} fill="none" stroke={c.dim} strokeWidth="2" markerEnd="url(#osd-ah-vision-head)" />
+        ),
+      )}
+    </svg>
+  );
+};
+
+const VisionNote = ({ head, children, strong = false }: { head: string; children: ReactNode; strong?: boolean }) => (
+  <div
+    style={{
+      boxSizing: 'border-box',
+      border: `1.5px solid ${c.line}`,
+      borderLeft: strong ? '4px solid var(--osd-accent)' : `1.5px solid ${c.line}`,
+      background: c.panel,
+      borderRadius: 'var(--osd-radius)',
+      padding: strong ? '24px 28px' : '20px 26px',
+    }}
+  >
+    <div style={{ fontSize: strong ? 30 : 28, fontWeight: 800, lineHeight: 1.35 }}>{head}</div>
+    {children}
+  </div>
+);
+
+const VisionPage: Page = () => (
+  <Frame title="跨段找 root cause：一個 Agent 統籌，各段回證據">
+    <div style={{ display: 'flex', gap: 56, alignItems: 'flex-start' }}>
+      <div style={{ width: 1080, flexShrink: 0 }}>
+        <div style={{ display: 'flex', alignItems: 'center' }}>
+          <div style={{ width: 220 }}>
+            <div style={{ fontFamily: mono, fontSize: 20, letterSpacing: '0.12em', color: c.muted, marginBottom: 6, textAlign: 'center' }}>事件</div>
+            <VBox w={220}>
+              <K>後段量測異常</K>
+            </VBox>
+          </div>
+          <div style={{ width: 100, textAlign: 'center', fontFamily: mono, fontSize: 34, color: c.dim, paddingTop: 26 }}>→</div>
+          <div style={{ paddingTop: 26 }}>
+            <VBox w={440} navy sub={<>職能型：事件來才醒，<K>狀態寫回紀錄</K></>}>
+              這批貨的 Agent
+            </VBox>
+          </div>
+        </div>
+        <VLines down />
+        <div style={{ display: 'flex', gap: 24 }}>
+          {['前段', '中段', '後段'].map((s) => (
+            <VBox key={s} w={344} sub="回：假設＋證據">
+              <K>{s} System Agent</K>
+            </VBox>
+          ))}
+        </div>
+        <VLines down={false} />
+        <div style={{ display: 'flex', alignItems: 'center', paddingLeft: 320 }}>
+          <VBox w={440}>互相反駁，留下證據最強的</VBox>
+          <div style={{ width: 80, textAlign: 'center', fontFamily: mono, fontSize: 34, color: c.dim }}>→</div>
+          <VBox w={240} navy sub="扣貨、改 recipe">
+            工程師核准
+          </VBox>
+        </div>
+      </div>
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 28 }}>
+        <VisionNote head="固定格式，不自由聊天">
+          <div style={{ fontFamily: mono, fontSize: 22, lineHeight: 1.6, marginTop: 10 }}>lot ID ｜ 假設 ｜ 證據 ｜ 信心</div>
+          <div style={{ fontSize: 22, color: c.muted, marginTop: 8, lineHeight: 1.5 }}>每多傳一手，就多一次失真</div>
+        </VisionNote>
+        <VisionNote head="為什麼要一個 Agent 統籌？" strong>
+          <div style={{ fontSize: 25, lineHeight: 1.55, marginTop: 10 }}>
+            Anthropic 的多 Agent 研究系統：<K>LLM Agent</K> 目前還不擅長<K><b>即時協調、互相委派</b></K>工作。
+          </div>
+        </VisionNote>
+      </div>
+    </div>
+    <p style={{ fontSize: 32, fontWeight: 800, lineHeight: 1.5, margin: '36px 0 0' }}>
+      一個 Agent 統籌、固定格式交換證據；<Hi>影響產線的決定，留給人</Hi>。
+    </p>
+  </Frame>
+);
+
 const OrgAgentPage: Page = () => (
   <Frame title="職能型 Agent：沒人在線上，放寬要一類一類來">
     <div style={{ fontSize: 24, color: c.muted, marginBottom: 14 }}>實例：Azure SRE Agent，值班處理告警</div>
@@ -3854,6 +3975,7 @@ const mainPages: Page[] = [
   PluginDelivery,
   DeliverToPage,
   AgentLadderPage,
+  VisionPage,
   OrgAgentPage,
   OurWork,
   WhoBuilds,
@@ -4042,7 +4164,15 @@ Summarizer：只給最終表格太單薄，也要讓使用者確認操作符合�
 ② 用誰的權限，這是 System Agent 最重要的工程重點：它要用原始使用者的權限操作系統，身分沿著整條鏈傳下去，系統用這個身分查權限；不能用它自己的高權限，否則別人就能借它的權限做事——這是 confused deputy，也就是權限破口。另外，別的 Agent 傳來的訊息不能當成使用者同意（Claude Code 文件明文規定）。
 名片補充：Agent Card 放在固定網址，對方模型只會讀到 description 和 skills 的名稱與描述——那是唯一能影響對方「要不要找我們」的地方，要寫清楚會做什麼、不做什麼；但不能靠描述擋人，真正的權限在我們 server 端依呼叫者身分決定。
 重點句：判斷在 System Agent；權限，永遠是原始使用者的。`,
-  `這頁是展望，口頭說明：目前團隊還沒有這類需求，這是一種 Agent 型態的想像。
+  `（展望）這是一種 Agent 型態的想像，團隊目前還沒有這類需求。
+情境：一批貨在後段量測異常，要回頭找 root cause——可能在前段、中段、也可能在後段。難處是資料和專業知識分散在不同單位，人工追查要跨部門來回問。
+做法：這批貨的 Agent 被事件喚醒，用 lot ID 當線索，去問前、中、後段的 System Agent（就是前面那頁：每個系統一個 System Agent，懂自己那段的資料和術語）。各段回假設和證據，再互相反駁，留下證據最強的——這就是附錄辯論那頁：單一調查者容易被第一個假設牽著走，互相反駁比較可靠。最後整理成建議，扣貨、改 recipe 這類影響產線的決定，由工程師核准。
+「一批貨綁一個 Agent」不是幾千個模型一直開著：這批貨的 Agent ＝ 這批貨的狀態紀錄 ＋ 事件來時才喚醒的 Harness。平常不跑模型，進站、量測超規、被後段退回時才醒來處理，處理完把結果寫回狀態。它不取代 MES：派工、hold、規格是寫死的守要求，Agent 不能覆蓋；它的價值在例外處理。
+為什麼要一個 Agent 統籌、而不是各段 Agent 自由溝通：Anthropic 在多 Agent 研究系統的文章裡寫，LLM Agent 目前還不擅長即時協調、互相委派工作。每多傳一手就多一次失真，也多一次「別人的訊息被當成指令」的風險。所以溝通用固定格式（lot ID、假設、證據、信心），由一個 Agent 當中心去問各段。
+口頭可以補（不上投影片）：部門 Agent 的想像——它不必「知道部門所有事情」，知道的應該是系統（工單、MES、文件），部門 Agent 是在上面做判斷的那一層；個人 Agent 回報結構化事件，不是自由摘要（模型寫的摘要會漏、會越傳越失真）。它的定位是幕僚長：彙整、建議、草擬分派，由主管核准；誰能問它什麼，照提問者本人的權限回答，否則它就變成全部門權限的聯集。
+下一頁：要怎麼一步一步走到這裡——一類一類放手。
+重點句：一個 Agent 統籌、固定格式交換證據；影響產線的決定，留給人。`,
+  `上一頁是想像，這頁講怎麼一步一步走到那裡：用一個已經上線的產品當例子。
 定義：職能型 Agent 在組織裡擔任一個職位，由告警、排程、工單觸發，沒人開口、線上沒人。引擎跟個人型 Agent 一樣，差別都在引擎外面那一圈。
 用一個實例走一遍：Azure SRE Agent 值班處理告警（依 Microsoft Learn「run modes」文件，2026-10）。
 01：告警進來，例如正式環境的服務延遲飆高。沒人開口，Agent 自己調查：查 log、指標、最近的部署，找出處置。（這個情境是舉例。）
