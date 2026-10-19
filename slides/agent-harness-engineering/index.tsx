@@ -2832,8 +2832,8 @@ const Reasons = ({ children }: { children: ReactNode }) => (
 );
 
 const RedrawBefore: Page = () => (
-  <Frame title="LPQM Agent 的每個節點，都在補能力或守要求">
-    <p style={{ fontSize: 28, color: c.muted, margin: '0 0 20px' }}>2025.03 · 用 LangGraph 打造 · 給 RD 工程師用的 service</p>
+  <Frame title="拆開一個舊 Agent：每個節點都在補能力或守要求">
+    <p style={{ fontSize: 28, color: c.muted, margin: '0 0 20px' }}>例：LPQM Agent，製程品質資料問答 · 2025.03 用 LangGraph 打造 · 給 RD 工程師用的 service</p>
     <Steps>
       <div style={{ display: 'grid', gridTemplateColumns: TABLE_COLS, alignItems: 'center' }}>
         <div />
@@ -2947,7 +2947,7 @@ const KeptRow = ({ item, kind }: { item: string; kind: WhyKind | '業務知識' 
 };
 
 const RedrawAfter: Page = () => (
-  <Frame title="LPQM Agent 也跟著重構：補能力的拆掉，守要求的留下">
+  <Frame title="重構舊 Agent：補能力的拆掉，守要求的留下">
     <div style={{ display: 'flex', gap: 40, alignItems: 'stretch' }}>
       <Panel tone="muted" style={{ flex: 1, padding: '24px 32px 8px' }}>
         <p style={{ fontSize: 32, fontWeight: 800, color: c.muted, margin: '0 0 8px' }}>交給通用 Harness</p>
