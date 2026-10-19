@@ -3002,7 +3002,7 @@ const OutsideRow = ({ item, why }: { item: string; why: string }) => (
 );
 
 const PluginDelivery: Page = () => (
-  <Frame title="Plugin 是包裝，不能錯的要做在外面" back={{ to: DeliverToPage, label: '兩種入口' }}>
+  <Frame title="Plugin 是包裝，不能錯的要做在外面" back={{ to: DeliverToPage, label: '兩種 Agent' }}>
     <div style={{ display: 'flex', gap: 40, alignItems: 'stretch' }}>
       <div
         style={{
@@ -4030,6 +4030,31 @@ const SystemAgentIntro: Page = () => (
   </Frame>
 );
 
+const FnRow = ({ k, a, b }: { k: string; a: ReactNode; b: ReactNode }) => (
+  <TRow cols="300px 1fr 1fr" pad={26} size={30}>
+    <div style={{ color: c.muted, fontWeight: 700 }}>{k}</div>
+    <div>{a}</div>
+    <div>{b}</div>
+  </TRow>
+);
+
+const FunctionalIntro: Page = () => (
+  <Frame title="職能型 Agent：沒人開口，由事件觸發去辦事">
+    <TRow cols="300px 1fr 1fr" head>
+      <div />
+      <div style={{ color: c.muted }}>個人型 Agent</div>
+      <div>職能型 Agent</div>
+    </TRow>
+    <FnRow k="誰讓它開始" a="使用者開口（例：Claude Code）" b="事件、排程（例：每月底）" />
+    <FnRow k="請假系統的例子" a="「幫我請下週三半天」" b="檢查還沒核准的假單，提醒主管" />
+    <FnRow k="人在不在線上" a="在" b={<b>不在</b>} />
+    <FnRow k="結果給誰" a="對話裡的使用者" b="負責人：發通知、開工單" />
+    <p style={{ fontSize: 32, fontWeight: 800, lineHeight: 1.5, margin: '40px 0 0' }}>
+      兩種 Agent 找的是<Hi>同一個 System Agent</Hi>；差別在有沒有人在線上。
+    </p>
+  </Frame>
+);
+
 const AgentLadderPage: Page = () => (
   <Frame title="System Agent 操作系統時，權限永遠追得到一個負責的人">
     <div id="osd-ah-sysagent-chains" style={{ marginTop: 8 }}>
@@ -4080,8 +4105,9 @@ const mainPages: Page[] = [
   RedrawAfter,
   OurWork,
   SystemAgentIntro,
-  DeliverToPage,
+  FunctionalIntro,
   AgentLadderPage,
+  DeliverToPage,
   VisionPage,
   OrgAgentPage,
   WhoBuilds,
@@ -4230,7 +4256,7 @@ OpenAI 的具體做法：AGENTS.md 當目錄不當百科；架構規則用 linte
 轉場：原則有了。換我們自己提供工具時，四個問題：什麼會過期（先拿 LPQM Agent 重調一次）、留下的放哪裡、能放手多少、誰來做。這就是第三部分「動手」，主軸一句話：補能力的交給通用 Harness；留下來的知識和守要求，做成系統那一端的 System Agent。`,
   `【第三部分・動手 8 分鐘】
 這一部分回答開場的問題：模型變強後，我們還要做什麼？主軸一句話：補能力的交給通用 Harness；留下來的知識和守要求，做成系統那一端的 System Agent。
-分四段：一、什麼會過期（LPQM Agent 重調一次，再推到我們的工作）；二、留下的做成什麼（兩種入口、同一個 System Agent）；三、能放手多少（職能型 Agent，一類一類放手）；四、誰來做（我們和使用者的分工）。最後回到封面。
+分四段：一、什麼會過期（LPQM Agent 重調一次，再推到我們的工作）；二、留下的做成什麼（兩種 Agent、同一個 System Agent）；三、能放手多少（職能型 Agent，一類一類放手）；四、誰來做（我們和使用者的分工）。最後回到封面。
 先拋一個命題：以後面對需求，是不是交一個通用 Harness 給使用者就好？我們頂多幫忙做 Skill、做 Plugin？
 可以這樣問台下：Claude Code 寫程式這麼順手，知識能加 Skill、操作能力能接工具或 Plugin，都補上之後，就能直接交給其他單位用了嗎？
 在這裡停一下，讓問題懸著。不憑感覺回答，拿一個真實系統來驗證：LPQM Data Summary Agent。
@@ -4268,20 +4294,25 @@ Summarizer：只給最終表格太單薄，也要讓使用者確認操作符合�
 用大家都熟的請假系統當例子。領域判斷：使用者說「我下週三想請半天」，它判斷該用哪種假、還剩幾天、該找哪位主管核准——這是懂這個系統的術語和規則才做得到的判斷。操作系統：明確的操作直接執行，模糊的才動用模型；多一層模型就多一次判斷、多一份 token，所以不是每個請求都要動用模型。守要求：餘額不足不能送出、主管核准才生效、只能看自己的資料——規定寫在系統這一端，寫一次，所有來找它的 Agent 都經過同一套檢查。
 誰會來找它？下一頁。
 重點句：判斷交給 System Agent；規定，只寫一次。`,
-  `誰會來找 System Agent？兩種 Agent。
-入口只有兩種（還是請假系統的例子）。個人型 Agent：使用者自己的 Agent，例如 Claude Code，人在線上；它裝了我們的 Plugin，才知道怎麼找 System Agent、什麼時候該找（Plugin 怎麼打包，在附錄，右下角「細節」連結）。職能型 Agent：事件觸發，例如每月底排程檢查還沒核准的假單，沒人在線上。
-兩種入口都透過同一個 System Agent，守要求寫在系統那一端，不管從哪個入口進來都經過同一套檢查。
+  `另一種會來找 System Agent 的 Agent：職能型。個人型大家都熟——手上的 Claude Code，使用者開口它才動，人一直在線上，結果回到對話裡。職能型不一樣：沒人開口，由事件或排程觸發，例如每月底檢查還沒核准的假單、提醒主管；線上沒有人，結果要送到負責人手上，例如發通知或開工單。
+兩種都是把 Harness 用 SDK 嵌進服務；它們找的是同一個 System Agent，差別只在有沒有人在線上。
+這個差別馬上帶出一個問題：沒人在線上的時候，System Agent 用誰的權限去操作系統？下一頁。
+重點句：兩種 Agent 找的是同一個 System Agent；差別在有沒有人在線上。`,
+  `（還在第二段）兩種 Agent 都會進到 System Agent；它用誰的權限去操作請假系統？
+這是 System Agent 最重要的工程重點，分兩種情況。個人型 Agent 來叫（例如使用者請假，送出的是他的假單）：用原始使用者的權限操作系統，身分沿著整條鏈傳下去，系統用這個身分查權限。職能型 Agent 來叫（事件觸發，沒有使用者可以代表）：用它自己的最小權限，而且背後要有指定的負責人——例如 Microsoft Entra 替每個 agent 身分指定負責人（sponsor），agent 身分也不能擁有高權限管理角色。兩種都不能用 System Agent 自己的高權限，否則別人就能借它的權限做事——這是 confused deputy，也就是權限破口，而且出事追不到人。這就是貫穿全場的一條原則：權限永遠追得到一個負責的人。另外，別的 Agent 傳來的訊息不能當成使用者同意（Claude Code 文件明文規定）。
+名片補充：Agent Card 放在固定網址，對方模型只會讀到 description 和 skills 的名稱與描述——那是唯一能影響對方「要不要找我們」的地方，要寫清楚會做什麼、不做什麼；但不能靠描述擋人，真正的權限在我們 server 端依呼叫者身分決定。
+重點句：權限跟著人走：個人型用使用者的，職能型用自己的最小權限加負責人。
+把這幾頁放在同一張圖上看：下一頁。`,
+  `把前面三頁放在同一張圖上：System Agent、兩種 Agent、結果怎麼回到人手上。
+個人型 Agent：使用者自己的 Agent，例如 Claude Code，人在線上；它裝了我們的 Plugin，才知道怎麼找 System Agent、什麼時候該找（Plugin 怎麼打包，在附錄，右下角「細節」連結）。職能型 Agent 前面已經介紹過：事件觸發，沒人在線上。
+兩種 Agent 都透過同一個 System Agent，守要求寫在系統那一端，不管從哪個入口進來都經過同一套檢查。
 結果一定回到人手上：個人型那邊，結果連同「做了哪些操作」回給使用者（就是 LPQM Agent 留下來的那條守要求：回覆時附上操作清單）；職能型那邊沒人在線上，結果通知負責人，例如寫進工單或發訊息給主管。
 對外介面：介面用 A2A；對方只支援 MCP，就把整個 System Agent 包成一個 MCP 工具。差別有三點：(a) 對方的 Harness：MCP 幾乎都支援，A2A 少數支援例如 Gemini CLI、雲端 Agent 平台；(b) 需要反問時：MCP 問客戶端畫面前的人，A2A 交回呼叫我們的 Agent；(c) 長時間任務：MCP 規格剛加入仍在實驗，A2A 原生支援輪詢、推送；結論：介面用 A2A，對方只支援 MCP 就把整個 System Agent 包成一個 MCP 工具；實務上同事手上的 Harness 多半只支援 MCP。細節見附錄的 MCP、A2A、Agent Card 頁。
 System Agent 與職能型 Agent 都是把 Harness 用 SDK 嵌進服務，差別在誰叫它——System Agent 是別的 Agent 來叫，職能型是事件來叫。現在主要的 Harness 都提供 SDK：Claude Agent SDK 給的是跟 Claude Code 一樣的工具、迴圈和 context 管理，Python、TypeScript 都能用，也有 hooks、子 Agent、MCP、權限、session；Codex SDK（TypeScript、Python）可以開 thread、跑任務，官方列的用途包括放進 CI/CD；OpenCode 有 @opencode/sdk，在程式裡直接起一個 OpenCode。框架那邊反過來：LangChain 的 Deep Agents 自稱 agent harness，跑在 LangGraph 的執行環境上。兩邊收斂成同一個形狀：迴圈、工具、Skill、子 Agent、hook、MCP、session。
 被問到「那以後還用 LangGraph 嗎」：那篇比對 11 套 coding Harness 原始碼的論文發現，沒有一套在 Agent 的執行環境用 LangChain、LangGraph 這類框架，迴圈都是自己寫的；它的建議是，要現成的起點，就用 Harness 的 SDK。但這是 Agent 迴圈的趨勢，不是規則——LPQM Agent 裡真正固定的流程，用 graph 寫仍然合理（回到 Workflow 到 Loop 那頁的左端）。
-兩種入口都進來了，用誰的權限？下一頁。
+這是一個系統。如果是好幾個系統一起處理一件事呢？下一頁。
 重點句：兩種 Agent 都透過 System Agent 辦事；結果都回到人手上。`,
-  `（還在第二段）兩種入口都會進到 System Agent，它用誰的權限去操作請假系統？
-這是 System Agent 最重要的工程重點，分兩種情況。個人型 Agent 來叫（例如使用者請假，送出的是他的假單）：用原始使用者的權限操作系統，身分沿著整條鏈傳下去，系統用這個身分查權限。職能型 Agent 來叫（事件觸發，沒有使用者可以代表）：用它自己的最小權限，而且背後要有指定的負責人——例如 Microsoft Entra 替每個 agent 身分指定負責人（sponsor），agent 身分也不能擁有高權限管理角色。兩種都不能用 System Agent 自己的高權限，否則別人就能借它的權限做事——這是 confused deputy，也就是權限破口，而且出事追不到人。這就是貫穿全場的一條原則：權限永遠追得到一個負責的人。另外，別的 Agent 傳來的訊息不能當成使用者同意（Claude Code 文件明文規定）。
-名片補充：Agent Card 放在固定網址，對方模型只會讀到 description 和 skills 的名稱與描述——那是唯一能影響對方「要不要找我們」的地方，要寫清楚會做什麼、不做什麼；但不能靠描述擋人，真正的權限在我們 server 端依呼叫者身分決定。
-重點句：權限跟著人走：個人型用使用者的，職能型用自己的最小權限加負責人。`,
-  `（第三段：能放手多少）另一個入口：職能型 Agent。這是一種 Agent 型態的想像，團隊目前還沒有這類需求。
+  `（第三段：能放手多少）從一個系統放大到好幾個系統。這是一種想像，團隊目前還沒有這類需求。
 對照前面的架構圖：這是職能型那一條路——這批貨的 Agent 就是一個職能型 Agent，它去找各段的 System Agent；權限照 System Agent 那頁，用它自己的最小權限，背後有負責的工程師。
 情境：一批貨在後段量測異常，要回頭找 root cause——可能在前段、中段、也可能在後段。難處是資料和專業知識分散在不同單位，人工追查要跨部門來回問。
 做法：這批貨的 Agent 被事件喚醒，用 lot ID 當線索，去問前、中、後段的 System Agent（就是前面那頁：每個系統一個 System Agent，懂自己那段的資料和術語）。各段回假設和證據，再互相反駁，留下證據最強的——這就是附錄辯論那頁：單一調查者容易被第一個假設牽著走，互相反駁比較可靠。最後整理成建議，扣貨、改 recipe 這類影響產線的決定，由工程師核准。
