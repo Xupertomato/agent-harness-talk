@@ -2781,7 +2781,7 @@ const Part3Preview: Page = () => (
   <Frame title="交一個通用 Harness 給使用者就好嗎？分三段回答">
     <div style={{ display: 'flex', gap: 28 }}>
       <PreviewCard label="現在 · 證據" q="什麼會過期？" line="拆一個舊 Agent：LPQM Agent" />
-      <PreviewCard label="未來幾年 · 團隊方向" q="留下來的放在哪裡？" line="每個系統的 System Agent" />
+      <PreviewCard label="未來幾年 · 提案" q="留下來的放在哪裡？" line="每個系統的 System Agent" />
       <PreviewCard label="再往後 · 推論" q="我們的工作變成什麼？" line="從做出來，到定義和證明" />
     </div>
     <div style={{ display: 'flex', alignItems: 'center', gap: 18, marginTop: 36, fontSize: 24, color: c.muted }}>
@@ -4065,7 +4065,7 @@ const IntroCard = ({ k, children }: { k: string; children: ReactNode }) => (
 );
 
 const SystemAgentIntro: Page = () => (
-  <Frame title={<>團隊的方向：<br />留下的知識和守要求，放進每個系統的 System Agent</>}>
+  <Frame title={<>提案：<br />替每個系統建一個 System Agent，承接留下的知識和守要求</>}>
     <div style={{ display: 'flex', gap: 56, alignItems: 'center' }}>
       <div style={{ width: 640, flexShrink: 0, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
         <div style={{ width: 460, boxSizing: 'border-box', border: '2px solid var(--osd-accent)', background: c.panel, borderRadius: 'var(--osd-radius)', padding: '20px 24px', textAlign: 'center' }}>
@@ -4316,7 +4316,7 @@ OpenAI 的具體做法：AGENTS.md 當目錄不當百科；架構規則用 linte
 重點句：鬆緊不靠感覺：紀錄指出哪裡錯，測試題決定能不能放。`,
   `第二部分結論：補能力的會放寬，守要求的不會；放不放，用證據決定。
 兩種理由，各自什麼時候放寬：守要求做成強制，模型再強都不放寬；補能力先收緊、標記理由，模型升級就檢查能不能放寬。
-轉場：原則有了。換我們自己提供工具時，只有一個問題：模型變強後，我們還要做什麼？這就是第三部分「定位」，分三段回答：現在（證據）、未來幾年（團隊方向）、再往後（推論）。主軸一句話：補能力的交給通用 Harness；留下來的知識和守要求，做成系統那一端的 System Agent。`,
+轉場：原則有了。換我們自己提供工具時，只有一個問題：模型變強後，我們還要做什麼？這就是第三部分「定位」，分三段回答：現在（證據）、未來幾年（提案）、再往後（推論）。主軸一句話：補能力的交給通用 Harness；留下來的知識和守要求，做成系統那一端的 System Agent。`,
   `【第三部分・定位 8 分鐘】
 第三部分回答一個問題：模型變強後，我們還要做什麼？這裡的「我們」是替別人做 Agent 的人——在座每一位，不只講者。
 先拋一個命題：以後面對需求，是不是交一個通用 Harness 給使用者就好？我們頂多幫忙做 Skill、做 Plugin？
@@ -4325,7 +4325,7 @@ OpenAI 的具體做法：AGENTS.md 當目錄不當百科；架構規則用 linte
 這裡說的通用 Harness，指的是引擎（迴圈、工具呼叫、context 管理）；預設要為使用者重新設定——後面要講的就是怎麼重新調鬆緊。`,
   `（第三部分的地圖）先回答開場的命題：交一個通用 Harness 給使用者就好嗎？分三段，時間一段比一段遠，確定程度也一段比一段低。
 第一段是現在，拿證據說話：拆一個真實的舊 Agent，看什麼會過期。
-第二段是未來幾年，是團隊的方向，不是已經證實的事：留下來的知識和守要求，放進每個系統的 System Agent。
+第二段是未來幾年，是我的提案，不是已經證實的事：留下來的知識和守要求，放進每個系統的 System Agent。
 第三段是再往後，是推論：這些變化對我們的工作代表什麼。
 講的時候，每一段都會說清楚它是證據、方向還是推論。
 重點句：時間越遠，越不確定；每一段都說清楚是證據、方向還是推論。`,
@@ -4347,8 +4347,8 @@ Summarizer：只給最終表格太單薄，也要讓使用者確認操作符合�
 口頭回扣第一部分：這些控制還是落在資訊、行動、驗收這幾個著力點上。
 重點句：迴圈交給通用 Harness 就夠；業務知識和守要求，需要另外找地方放。
 注意：「現在模型做得到」要用舊的測試題重跑過才能說——這也是後面「需要保證每次都對」那一題。`,
-  `（第二段：未來幾年，團隊方向）這一段是團隊的方向，不是已經證實的事。上一頁留下的問題：知識和守要求放在哪裡？答案：放進每個系統的 System Agent。
-定義：團隊目前的方向——公司內每個系統都長出一個 System Agent，負責操作原本的系統。它是一個 Agent，不只是工具：它替這個系統做判斷。LPQM Agent 就是 LPQM 這個系統的 System Agent。
+  `（第二段：未來幾年，提案）這一段是我的提案，不是已經證實的事。上一頁留下的問題：知識和守要求放在哪裡？答案：放進每個系統的 System Agent。
+提案：替公司內每個系統建一個 System Agent，負責操作原本的系統。它是一個 Agent，不只是工具：它替這個系統做判斷。LPQM Agent 就是 LPQM 這個系統的 System Agent。
 用大家都熟的請假系統當例子。領域判斷：使用者說「我下週三想請半天」，它判斷該用哪種假、還剩幾天、該找哪位主管核准——這是懂這個系統的術語和規則才做得到的判斷。操作系統：明確的操作直接執行，模糊的才動用模型；多一層模型就多一次判斷、多一份 token，所以不是每個請求都要動用模型。守要求：餘額不足不能送出、主管核准才生效、只能看自己的資料——規定寫在系統這一端，寫一次，所有來找它的 Agent 都經過同一套檢查。
 誰會來找它？下一頁。
 重點句：判斷交給 System Agent；規定，只寫一次。`,
