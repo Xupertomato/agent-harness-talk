@@ -1076,7 +1076,7 @@ const Reason = ({
   </div>
 );
 
-const ReasonCard = ({ name, meaning, eg, handle }: { name: string; meaning: ReactNode; eg: ReactNode; handle: ReactNode }) => (
+const ReasonCard = ({ name, meaning, eg, test, handle }: { name: string; meaning: ReactNode; eg: ReactNode; test: ReactNode; handle: ReactNode }) => (
   <div
     style={{
       width: 804,
@@ -1093,6 +1093,7 @@ const ReasonCard = ({ name, meaning, eg, handle }: { name: string; meaning: Reac
     <p style={{ fontSize: 48, fontWeight: 900, lineHeight: 1.25, margin: 0 }}>{name}</p>
     <p style={{ fontSize: 29, lineHeight: 1.5, margin: '12px 0 0' }}>{meaning}</p>
     <p style={{ fontSize: 25, lineHeight: 1.5, color: c.muted, margin: '10px 0 18px' }}>例：{eg}</p>
+    <p style={{ fontSize: 24, lineHeight: 1.5, color: 'var(--osd-accent)', margin: '0 0 18px' }}>{test}</p>
     <p style={{ fontSize: 27, lineHeight: 1.5, margin: 'auto 0 0', paddingTop: 18, borderTop: `1px solid ${c.hair}` }}>{handle}</p>
   </div>
 );
@@ -1105,7 +1106,8 @@ const ThreeReasons: Page = () => (
           <ReasonCard
             name="守要求"
             meaning="工作本身的規定"
-            eg={<>deny 規則擋 rm -rf；<br />模型寫的程式不能在 prod 跑</>}
+            eg={<>deny 規則擋 rm -rf；<br />餘額不足的假單不能送出</>}
+            test={<>判斷：<b>換成人來做，也要遵守</b></>}
             handle={
               <>
                 一直緊：模型再強都需要 → <b style={{ color: 'var(--osd-accent)' }}>做成強制</b>
@@ -1118,6 +1120,7 @@ const ThreeReasons: Page = () => (
             name="補能力"
             meaning="替模型做它還做不到的判斷"
             eg={<>每個動作都問人；模型會判斷<br />危險了，就換成 auto mode</>}
+            test={<>判斷：<b>只針對模型</b>，模型變強就該檢討</>}
             handle={
               <>
                 暫時緊：先收緊、標記理由；<b>模型變強就放寬</b>
@@ -3027,38 +3030,60 @@ const PluginDelivery: Page = () => (
   </Frame>
 );
 
+const WORK_ROWS = [
+  { work: '把需求做成 graph、service', to: '→ 通用 Harness', keep: '判斷哪些不能錯', line: '換成人來做，也要遵守嗎？' },
+  { work: '整理術語、轉譯業務規則', to: '→ 使用者自己寫 Skill', keep: '證明它每次都對', line: '測試題、核准紀錄' },
+  { work: '寫檢查程式', to: '→ 平台、系統內建', keep: '出事有人負責', line: '權限追得到人' },
+];
+
+const WorkPanel = ({ keep, heading, children }: { keep: boolean; heading: string; children: ReactNode }) => (
+  <div
+    style={{
+      flex: 1,
+      boxSizing: 'border-box',
+      border: keep ? '2px solid var(--osd-accent)' : `1.5px solid ${c.line}`,
+      background: keep ? c.panel : c.mutedSoft,
+      borderRadius: 'var(--osd-radius)',
+      padding: '26px 36px',
+      display: 'flex',
+      flexDirection: 'column',
+    }}
+  >
+    <p style={{ fontSize: 34, fontWeight: 800, margin: '0 0 8px', color: keep ? 'var(--osd-accent)' : c.amber }}>{heading}</p>
+    {children}
+  </div>
+);
+
+const WorkRow = ({ first, children }: { first: boolean; children: ReactNode }) => (
+  <div style={{ height: 120, boxSizing: 'border-box', padding: '16px 0', borderTop: first ? 'none' : `1px solid ${c.hair}`, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+    {children}
+  </div>
+);
+
 const OurWork: Page = () => (
-  <Frame title="我們的工作：補能力的那部分正在過期">
+  <Frame title="我們的工作：實作會被接手，判斷與證明留下來">
     <Steps>
-      <TRow cols="500px 1fr 440px" head>
-        <div>我們做的事</div>
-        <div>為什麼存在</div>
-        <div>會不會過期</div>
-      </TRow>
-      <Step>
-        <TRow cols="500px 1fr 440px" pad={24} size={30}>
-          <div style={{ fontWeight: 800 }}>把需求寫成 graph、做成 service</div>
-          <div>補能力：使用者不會寫程式、模型不夠強、<K>通用 Harness 還不存在</K></div>
-          <div>會，<b>正在過期</b></div>
-        </TRow>
-      </Step>
-      <Step>
-        <TRow cols="500px 1fr 440px" pad={24} size={30}>
-          <div style={{ fontWeight: 800 }}>整理術語與業務規則</div>
-          <div>資訊：本來就在使用者身上，我們只是轉譯</div>
-          <div>轉譯會過期，<K>使用者能自己寫 Skill</K></div>
-        </TRow>
-      </Step>
-      <Step>
-        <TRow cols="500px 1fr 440px" pad={24} size={30}>
-          <div style={{ fontWeight: 800 }}>讓不能錯的事不可能錯</div>
-          <div>守要求</div>
-          <div>不會</div>
-        </TRow>
-      </Step>
+      <div style={{ display: 'flex', gap: 32 }}>
+        <WorkPanel keep={false} heading="會被接手的：實作">
+          {WORK_ROWS.map((r, i) => (
+            <WorkRow key={r.work} first={i === 0}>
+              <div style={{ fontSize: 26, lineHeight: 1.4, fontWeight: 800 }}>{r.work}</div>
+              <div style={{ fontSize: 24, lineHeight: 1.4, color: c.muted, marginTop: 4 }}>{r.to}</div>
+            </WorkRow>
+          ))}
+        </WorkPanel>
+        <WorkPanel keep heading="留下來的：判斷與證明">
+          {WORK_ROWS.map((r, i) => (
+            <WorkRow key={r.keep} first={i === 0}>
+              <div style={{ fontSize: 26, lineHeight: 1.4, fontWeight: 800 }}>{r.keep}</div>
+              <div style={{ fontSize: 24, lineHeight: 1.4, color: c.muted, marginTop: 4 }}>{r.line}</div>
+            </WorkRow>
+          ))}
+        </WorkPanel>
+      </div>
     </Steps>
-    <p style={{ fontSize: 40, fontWeight: 800, lineHeight: 1.5, margin: '44px 0 0' }}>
-      我們過去的工作量，大宗是補能力；<Hi>它正在過期</Hi>。
+    <p style={{ fontSize: 32, fontWeight: 800, lineHeight: 1.5, margin: '36px 0 0' }}>
+      模型越強，實作越便宜；<Hi>判斷什麼不能錯、證明它每次都對</Hi>，越值錢。
     </p>
   </Frame>
 );
@@ -4163,12 +4188,13 @@ Workflow 比較便宜、比較快，這是成本選擇，不在今天的範圍�
   `【第二部分・判斷 10 分鐘】
 這一部分是今天的核心：判斷與控制的鬆緊，怎麼拿捏？方法只有一個——每一個控制，先問它為什麼存在。`,
   `每一個控制，先問它為什麼存在（逐張按 →）。只有兩種理由，這頁的例子都是第一部分講過的 Harness 元件。
-守要求：工作本身的規定。例如 deny 規則擋 rm -rf；LPQM Agent 被規定「模型寫的程式不能在 prod 跑」。模型再強都需要，做成強制。
+守要求：工作本身的規定。例如 deny 規則擋 rm -rf；餘額不足的假單不能送出——人來送也一樣。模型再強都需要，做成強制。（不用「模型寫的程式不能在 prod 跑」當例子：它有一半只針對模型，LPQM Agent 那頁會拆開示範。）
 為什麼守要求不會過期（口頭帶）：紅燈要停，不是因為駕駛開得不好，開了三十年的老司機也要停。守要求跟能力無關，是因為有人要負責。
 補能力：替模型做它還做不到的判斷。例如每個動作都停下來問人（Manual mode）：人在替模型判斷危不危險。模型判斷危險的能力夠了，Claude Code 就把預設換成 auto mode——這已經放寬過一次。先收緊、標記理由；模型變強就放寬。
 兩種理由的差別，一句話：守要求一直緊，補能力暫時緊。
 成本（更快、更省）是另一種取捨，不在今天範圍，被問到再說。
 可能被問：auto mode 能取代守要求嗎？不能。分類器擋的是一般的危險，那是它的判斷；工作上明確的規定，例如某個欄位不准改，仍要寫成 deny 規則——回到第一部分：要不論模型怎麼判斷都擋下，就用強制。auto mode 取代的是「人逐步確認」這個補能力，不是守要求。現成的例子：auto mode 現在預設會直接 push 到 main（後面 Harness Engineering 那頁會講它怎麼一路放寬）。原廠把「push 到 main 要不要問人」當成補能力；如果團隊規定不准直接 push main，那是團隊的守要求——要寫 deny 規則或設遠端的分支保護，原廠的預設不會替你守。
+怎麼分：把模型換成人，這條規則還成立嗎？成立，就是守要求——例如人送請假單，餘額不足也不能送；人改 prod 也要經過 review。只針對模型的，是補能力，即使它寫成了規定的樣子。
 注意：給它資訊和回饋不算補能力——那是給它判斷需要的材料，不是替它判斷，模型再強都需要。
 重點句：補能力的控制過期了，就會變成限制；模型變強時，最先放寬的就是它。守要求永遠不放寬。
 旁證：比對 11 套 Harness 原始碼的論文作者這樣寫——production 系統投資在 scaffold 上，不是因為模型需要它才能完成任務，而是因為使用者需要安全、穩定、能接進工作流程。換成我們的話：補能力在縮小，守要求留下。`,
@@ -4215,7 +4241,8 @@ Plan & Execute 也有兩個：原本是 Plan & ReAct，但執行的模型常不�
 Summarizer：只給最終表格太單薄，也要讓使用者確認操作符合他的要求（守要求，是我們對「完成」的定義）。
 按 → 前先問台下：這些節點，哪些模型變強後會過期？再按 → 揭曉（上面是各節點的原因）。顏色是設計目的：橘色是補能力——第二部分說的，過期後會變成限制的那種；深藍是守要求。
 揭曉顏色時口頭說：同一個節點，可能一半會過期、一半不會（Extractor 一橘一藍、Plan & Execute 一橘一藍）；所以要一個一個問它為什麼存在——這就是第二部分的方法。
-最後一句是問句，用來翻到下一頁：那麼，哪些會留下來？`,
+最後一句是問句，用來翻到下一頁：那麼，哪些會留下來？
+可以現場示範判斷方法：『模型寫的程式不能在 prod 執行』要拆開看——『任何程式進 prod 都要經過審查』對人也成立，是守要求；『模型寫的不行』只針對模型，是補能力，sandbox 成熟、證據累積後可能放寬。對照「欄位值必須 100% 正確」：人來查也一樣要對，是真的守要求。`,
   `同一個系統，鬆緊重調一次。左邊是交給通用 Harness 的，右邊是留下來的。
 左邊都是補能力：術語表放不進 prompt，所以先固定篩一次——現在模型需要時自己查；模型不會主動反問，所以固定一個 Clarifier——現在 Harness 本來就能隨時反問，而且模糊常常要看到資料才出現；執行時偏離計畫，所以強制照計畫走——這是當初收緊來換穩定——鬆緊不是只會往放寬的方向調；Summarizer 另外用一個模型寫說明——現在執行的模型自己就能說明。
 右邊只回答一件事：哪些留下來。每一項後面的標籤，就是上一頁那兩種理由的顏色。三項守要求的留下來：查詢時檢查欄位值、只開放設計好的表格操作、回覆時附上操作清單——這些不會因為模型變強而消失。術語表和判斷框架是業務知識，標灰色，留下來是因為它是資訊；過期的是當初補能力的節點結構，知識留了下來——對應結尾的「要有人提供」。
@@ -4224,14 +4251,16 @@ Summarizer：只給最終表格太單薄，也要讓使用者確認操作符合�
 口頭回扣第一部分：這些控制還是落在資訊、行動、驗收這幾個著力點上。
 重點句：迴圈交給通用 Harness；業務知識和守要求留下，換到更好的位置——這是對命題的第一個回答。
 注意：「現在模型做得到」要用舊的測試題重跑過才能說——這也是後面「需要保證每次都對」那一題。`,
-  `（第一段的收尾）從 LPQM Agent 推到整個團隊：把同一個問題，問在我們自己身上：我們替使用者做 Agent，這件事為什麼存在？（逐列按 →）
-第一列：把需求寫成 graph、做成 service——這是補能力。使用者不會寫程式、模型不夠強、通用 Harness 還不存在。LPQM Agent 就是例子，而它正在過期。
-第二列：術語與業務規則本來就在使用者身上，我們只是轉譯；使用者現在能自己寫 Skill，轉譯會過期。
-第三列：讓不能錯的事不可能錯——守要求，不會過期。
-第四列：共用的工具與測試方法——看規模與成本，不在今天的兩類裡。
-補充：有些部門的資料只能留在需求單位內，這時更傾向讓使用者自己做，因為資料出不來，我們也碰不到。
-重點句：我們過去的工作量，大宗是補能力；它正在過期。直接陳述，不修飾。
-留下來的知識和守要求放在哪裡？下一頁。`,
+  `（第一段的收尾）從 LPQM Agent 推到整個團隊：我們替使用者做 Agent，這些工作哪些會被接手？
+左邊是實作，都在被接手：把需求做成 graph、service——通用 Harness 接手（補能力）；整理術語、轉譯業務規則——使用者現在能自己寫 Skill；寫檢查程式——連守要求的實作，也會被平台或系統本身吸收，例如權限平台、系統內建的檢查。
+所以「守要求不會過期」要說清楚：要求本身不會過期，因為它來自業務、法規、責任，不是模型；但怎麼保證、誰來寫，會變。
+右邊是留下來的，是三個動作，不是三樣東西：
+判斷哪些不能錯——最難，也最需要懂業務。檢驗方法：把模型換成人，這條規則還成立嗎？成立，是真的守要求；只針對模型，是補能力偽裝成規定，遲早會被檢討。
+證明它每次都對——測試題、pass^k、核准紀錄，就是第二部分「用證據決定」。
+出事有人負責——權限追得到人、結果回到人手上，後面 System Agent 那頁會講。
+有些部門的資料只能留在需求單位內，這時更傾向讓使用者自己做，因為資料出不來，我們也碰不到。
+留下來的知識和守要求放在哪裡？下一頁。
+重點句：模型越強，實作越便宜；判斷什麼不能錯、證明它每次都對，越值錢。`,
   `（第二段：留下的做成什麼）這頁是第三部分的全貌：我們做的東西，會從哪裡被用到、結果怎麼回來。用一個大家都熟的例子：請假系統。
 入口只有兩種。個人型 Agent：使用者自己的 Agent，例如 Claude Code，人在線上；它裝了我們的 Plugin，才知道怎麼找 System Agent、什麼時候該找（Plugin 怎麼打包，在附錄，右下角「細節」連結）。職能型 Agent：事件觸發，例如每月底排程檢查還沒核准的假單，沒人在線上。
 兩種入口都透過同一個 System Agent。它負責判斷：使用者說「我下週三想請半天」，它判斷該用哪種假、還剩幾天、該找哪位主管核准，然後去操作請假系統。
