@@ -122,49 +122,6 @@ const Footer = () => {
   );
 };
 
-type StageName = '資訊' | '模型判斷' | '把關' | '行動' | '狀態・驗收';
-
-const CRUMBS: { name: string; model?: boolean }[] = [
-  { name: '資訊' },
-  { name: '模型判斷', model: true },
-  { name: '把關' },
-  { name: '行動' },
-  { name: '狀態・驗收' },
-];
-
-const Crumbs = ({ stage }: { stage: StageName }) => (
-  <div style={{ position: 'absolute', top: 82, right: 140, display: 'flex', alignItems: 'center', gap: 5 }} aria-hidden="true">
-    {CRUMBS.map((cr, i) => {
-      const active = cr.name === stage;
-      return (
-        <Fragment key={cr.name}>
-          {i > 0 ? <span style={{ fontSize: 15, color: c.dim, lineHeight: 1 }}>›</span> : null}
-          <span
-            style={{
-              fontSize: 17,
-              lineHeight: 1.2,
-              fontWeight: active ? 800 : 500,
-              padding: '4px 11px',
-              borderRadius: 999,
-              whiteSpace: 'nowrap',
-              boxSizing: 'border-box',
-              color: active ? '#ffffff' : c.muted,
-              background: active ? (cr.model ? c.muted : 'var(--osd-accent)') : cr.model ? c.mutedSoft : 'transparent',
-              border: active
-                ? `1.5px solid ${cr.model ? c.muted : 'var(--osd-accent)'}`
-                : cr.model
-                  ? `1.5px dashed ${c.dim}`
-                  : `1.5px solid ${c.hair}`,
-            }}
-          >
-            {cr.name}
-          </span>
-        </Fragment>
-      );
-    })}
-  </div>
-);
-
 const NavRow = ({ back, next }: { back?: { to: Page; label: string }; next?: { to: Page; label: string } }) => (
   <div style={{ position: 'absolute', right: 140, bottom: 82, display: 'flex', alignItems: 'baseline', gap: 40 }}>
     {back ? <BackLink to={back.to} label={back.label} /> : null}
@@ -232,7 +189,6 @@ const Frame = ({
   intro,
   title,
   children,
-  stage,
   back,
   next,
 }: {
@@ -240,13 +196,10 @@ const Frame = ({
   intro?: ReactNode;
   title: ReactNode;
   children: ReactNode;
-  stage?: StageName;
   back?: { to: Page; label: string };
   next?: { to: Page; label: string };
 }) => (
   <div style={{ ...canvas, padding: '84px 140px 100px', display: 'flex', flexDirection: 'column' }}>
-    <div style={{ height: 29, flexShrink: 0 }} aria-hidden="true" />
-    {stage ? <Crumbs stage={stage} /> : null}
     <h2
       style={{
         fontFamily: 'var(--osd-font-display)',
@@ -262,7 +215,7 @@ const Frame = ({
       <div style={{ fontSize: 24, lineHeight: 1.3, fontWeight: 400, color: c.muted, marginTop: 8 }}>{scope}</div>
     ) : null}
     {intro ? <div style={{ fontSize: 26, lineHeight: 1.3, fontWeight: 400, color: c.muted, marginTop: 10 }}>{intro}</div> : null}
-    <div style={{ marginTop: scope || intro ? 16 : 44, flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column', justifyContent: 'center', paddingBottom: 24 }}>
+    <div style={{ marginTop: scope || intro ? 32 : 56, flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', paddingBottom: 24 }}>
       {children}
     </div>
     {back || next ? <NavRow back={back} next={next} /> : null}
@@ -842,66 +795,42 @@ const TrackRow = ({ label, sub, children, muted = false }: { label: string; sub?
   </div>
 );
 
-const LessonQuote = ({ label, children }: { label: string; children: ReactNode }) => (
-  <div style={{ borderLeft: '4px solid var(--osd-accent)', padding: '4px 0 4px 28px' }}>
-    <Label>{label}</Label>
-    <div style={{ marginTop: 10 }}>{children}</div>
-  </div>
-);
-
 const BitterLesson: Page = () => (
   <Frame title="The Bitter Lesson：模型變強，補能力的控制就該放寬">
-    <LessonQuote label="原理 · RICH SUTTON · 2019（意譯）">
-      <p style={{ fontSize: 34, lineHeight: 1.4, margin: 0 }}>「算力越多就越強的方法，終究<b>勝過人寫進去的知識</b>。」</p>
-      <p style={{ fontSize: 26, lineHeight: 1.5, margin: '8px 0 0' }}>
-        放到 Agent：<Hi>模型變強了，替它補的控制就該放寬；不放寬，就從幫手變成阻礙。</Hi>
-      </p>
-    </LessonQuote>
-    <p style={{ fontSize: 24, letterSpacing: '0.04em', color: c.muted, margin: '36px 0 14px' }}>實例：Lance Martin 的 Open Deep Research</p>
+    <div style={{ fontSize: 24, letterSpacing: '0.04em', color: c.muted }}>原理 · RICH SUTTON · 2019（意譯）</div>
+    <p style={{ fontSize: 32, lineHeight: 1.5, margin: '10px 0 0' }}>「算力越多就越強的方法，終究<b>勝過人寫進去的知識</b>。」</p>
+    <p style={{ fontSize: 32, lineHeight: 1.5, margin: '6px 0 0' }}>
+      放到 Agent：<Hi>模型變強了，替它補的控制就該放寬；不放寬，就從幫手變成阻礙。</Hi>
+    </p>
+    <p style={{ fontSize: 24, letterSpacing: '0.04em', color: c.muted, margin: '56px 0 20px' }}>實例：Lance Martin 的 Open Deep Research</p>
     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', columnGap: 40, marginBottom: 10 }}>
-      <div style={{ fontFamily: mono, fontSize: 22, color: c.muted }}>2024 年底</div>
-      <div style={{ fontFamily: mono, fontSize: 22, color: c.muted }}>2025 年初</div>
-      <div style={{ fontFamily: mono, fontSize: 22, color: c.muted }}>改寫兩次後</div>
+      <div style={{ fontFamily: mono, fontSize: 24, color: c.muted }}>2024 年底</div>
+      <div style={{ fontFamily: mono, fontSize: 24, color: c.muted }}>2025 年初</div>
+      <div style={{ fontFamily: mono, fontSize: 24, color: c.muted }}>改寫兩次後</div>
     </div>
     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', columnGap: 40, position: 'relative' }}>
       <div style={{ position: 'absolute', left: 0, right: 0, top: 6, height: 2, background: c.line }} />
       <TrackCell>
-        <div style={{ fontSize: 23, fontWeight: 400, color: c.muted, marginBottom: 6 }}>模型：工具呼叫還不可靠</div>
+        <div style={{ fontSize: 24, fontWeight: 400, color: c.muted, marginBottom: 6 }}>模型：工具呼叫還不可靠</div>
         <div style={{ fontSize: 32, fontWeight: 900 }}>固定分工流程</div>
-        <div style={{ fontSize: 22, fontWeight: 400, color: c.muted, marginTop: 4 }}>
-          先拆章節、分頭寫、再合併 <Pill size={18}>補能力</Pill>
+        <div style={{ fontSize: 24, fontWeight: 400, color: c.muted, marginTop: 6 }}>
+          先拆章節、分頭寫、再合併 <Pill size={24}>補能力</Pill>
         </div>
       </TrackCell>
       <TrackCell tone="amber">
-        <div style={{ fontSize: 23, fontWeight: 400, color: c.muted, marginBottom: 6 }}>模型：工具呼叫變可靠了</div>
+        <div style={{ fontSize: 24, fontWeight: 400, color: c.muted, marginBottom: 6 }}>模型：工具呼叫變可靠了</div>
         <div style={{ fontSize: 32, fontWeight: 900 }}>結構反而礙事</div>
-        <div style={{ fontSize: 22, fontWeight: 400, color: c.muted, marginTop: 4 }}>固定流程用不了新工具</div>
+        <div style={{ fontSize: 24, fontWeight: 400, color: c.muted, marginTop: 6 }}>固定流程用不了新工具</div>
       </TrackCell>
       <TrackCell>
-        <div style={{ fontSize: 23, fontWeight: 400, color: c.muted, marginBottom: 6 }}>模型：持續變強</div>
+        <div style={{ fontSize: 24, fontWeight: 400, color: c.muted, marginBottom: 6 }}>模型：持續變強</div>
         <div style={{ fontSize: 32, fontWeight: 900 }}>拆掉結構</div>
-        <div style={{ fontSize: 22, fontWeight: 400, color: c.muted, marginTop: 4 }}>
+        <div style={{ fontSize: 24, fontWeight: 400, color: c.muted, marginTop: 6 }}>
           Agent 自己規劃研究，
           <br />
           排進 Deep Research Bench 前十
         </div>
       </TrackCell>
-    </div>
-    <div style={{ marginTop: 36 }}>
-      <LessonQuote label="LANCE MARTIN · 他自己的三個教訓（意譯）">
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-          {[
-            ['1', '看清楚設計裡，假設了模型做不到什麼'],
-            ['2', '模型進步時，重新檢查這些假設'],
-            ['3', '讓結構容易拆掉'],
-          ].map(([no, t]) => (
-            <div key={no} style={{ display: 'flex', gap: 18, alignItems: 'baseline' }}>
-              <span style={{ fontFamily: mono, fontSize: 26, fontWeight: 700, color: 'var(--osd-accent)', width: 22 }}>{no}.</span>
-              <span style={{ fontSize: 28, lineHeight: 1.45 }}>{t}</span>
-            </div>
-          ))}
-        </div>
-      </LessonQuote>
     </div>
   </Frame>
 );
@@ -1404,7 +1333,7 @@ const HarnessMap: Page = () => {
   const mids = LOOP_NODES.map((n) => n.deg + 36);
   return (
     <Frame title="模型只負責想；看、擋、做、記，都靠 Harness">
-      <div style={{ position: 'relative', width: W, height: H, marginTop: 10 }}>
+      <div style={{ position: 'relative', width: W, height: H }}>
         <svg width={W} height={H} style={{ position: 'absolute', inset: 0 }} aria-hidden="true">
           <ellipse cx={cx} cy={cy} rx={rx} ry={ry} fill="none" stroke={c.line} strokeWidth={2} />
           {mids.map((d) => {
@@ -1460,7 +1389,7 @@ const RouteCard = ({ term, who, good, cost }: { term: string; who: ReactNode; go
 );
 
 const RouteSpectrum: Page = () => (
-  <Frame stage="模型判斷" title="模型判斷：越往右，越多決定交給模型">
+  <Frame title="模型判斷：越往右，越多決定交給模型">
     <div style={{ display: 'flex', gap: 40 }}>
       <RouteCard term="Workflow" who="設計者事先排好路線" good="可預期、好測、出錯好查" cost="沒畫到的狀況，只能轉人工" />
       <RouteCard term="Loop" who="模型每一輪決定下一步" good="預想不到的狀況" cost="每次路徑不同，要靠把關與驗收" />
@@ -1496,8 +1425,8 @@ const INFO_ROWS: { label: string; sub?: string; idx: ReactNode; full: ReactNode 
 ];
 
 const InfoPage: Page = () => (
-  <Frame stage="資訊" title="資訊：只放索引，用到才載入">
-    <div style={{ display: 'grid', gridTemplateColumns: '210px 1fr 120px 1fr', gridTemplateRows: '80px repeat(4, 94px)', marginTop: 40 }}>
+  <Frame title="資訊：只放索引，用到才載入">
+    <div style={{ display: 'grid', gridTemplateColumns: '210px 1fr 120px 1fr', gridTemplateRows: '80px repeat(4, 94px)' }}>
       <div style={{ gridColumn: 1, gridRow: 1, display: 'flex', alignItems: 'center', fontSize: 20, color: c.muted, whiteSpace: 'nowrap' }}>以 Claude Code 為例</div>
       <div
         style={{
@@ -1561,7 +1490,7 @@ const GateRowItem = ({ k, children }: { k: string; children: ReactNode }) => (
 );
 
 const GatePage: Page = () => (
-  <Frame stage="把關" title="把關：能退回的才放寬，退不回的才擋">
+  <Frame title="把關：能退回的才放寬，退不回的才擋">
     <div style={{ borderTop: `1.5px solid ${c.line}` }}>
       <GateRowItem k="引導與強制">
         規則寫進 context 是引導，照不照做由模型判斷；檢查在模型之外是強制，<b>越靠近執行越難繞過</b>：<K>Hook → 權限規則 → 沙箱。</K>
@@ -1611,7 +1540,7 @@ const ActHead = ({ children }: { children: ReactNode }) => (
 );
 
 const ActionPage: Page = () => (
-  <Frame stage="行動" title="行動：從工具到 Agent，判斷交出去越來越多">
+  <Frame title="行動：從工具到 Agent，判斷交出去越來越多">
     <div style={{ display: 'grid', gridTemplateColumns: '120px 1fr 1fr', columnGap: 24, rowGap: 16, alignItems: 'center' }}>
       <div />
       <ActHead>Harness 自己的</ActHead>
@@ -1667,7 +1596,7 @@ const StateGroup = ({ k, v, flex, children }: { k: string; v: string; flex: numb
 );
 
 const StatePage: Page = () => (
-  <Frame stage="狀態・驗收" title="狀態・驗收：結束的時候，留下什麼、算不算完成">
+  <Frame title="狀態・驗收：結束的時候，留下什麼、算不算完成">
     <div style={{ display: 'flex', gap: 40, alignItems: 'stretch' }}>
       <StateGroup k="狀態" v="留下什麼" flex={2}>
         <StateCard when="context 滿了" name="壓縮">
@@ -1749,7 +1678,7 @@ const MinHarnessPage: Page = () => (
 );
 
 const ContextPage: Page = () => (
-  <Frame stage="資訊" scope="以 Claude Code 為例" back={{ to: InfoPage, label: '① 資訊' }} title="Context 組裝：模型看到什麼，由 Harness 決定">
+  <Frame scope="以 Claude Code 為例" back={{ to: InfoPage, label: '① 資訊' }} title="Context 組裝：模型看到什麼，由 Harness 決定">
     <div style={{ display: 'flex', gap: 36 }}>
       <ListPanel label="開工前就載入：一直放著" strong>
         <ListItem k="System prompt" />
@@ -1802,7 +1731,7 @@ const CallStep = ({ no, who, text, sub, model = false }: { no: string; who: stri
 );
 
 const ToolPage: Page = () => (
-  <Frame stage="行動" back={{ to: ActionPage, label: '④ 行動' }} title="Tool calling：工具描述就是 prompt">
+  <Frame back={{ to: ActionPage, label: '④ 行動' }} title="Tool calling：工具描述就是 prompt">
     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'stretch' }}>
       <CallStep no="1" who="HARNESS" text="把工具定義放進 context" sub={<>名稱、描述、參數 schema；<br />每一輪都佔 token</>} />
       <StageArrow />
@@ -1847,7 +1776,7 @@ const CostRow = ({ cost, fix }: { cost: ReactNode; fix: ReactNode }) => (
 );
 
 const McpPage: Page = () => (
-  <Frame stage="行動" back={{ to: ActionPage, label: '④ 行動' }} title="MCP：外部工具接進來，判斷仍在我們的模型">
+  <Frame back={{ to: ActionPage, label: '④ 行動' }} title="MCP：外部工具接進來，判斷仍在我們的模型">
     <div style={{ display: 'flex', gap: 56, alignItems: 'center' }}>
       <div style={{ width: 600, flexShrink: 0 }}>
         <div style={{ display: 'flex', alignItems: 'flex-end', gap: 20, marginBottom: 12 }}>
@@ -1964,7 +1893,7 @@ const A2aSide = ({ title, lines, ours }: { title: string; lines: ReactNode; ours
 );
 
 const A2aPage: Page = () => (
-  <Frame stage="行動" back={{ to: ActionPage, label: '④ 行動' }} title="A2A：判斷整段交給別人的 Agent">
+  <Frame back={{ to: ActionPage, label: '④ 行動' }} title="A2A：判斷整段交給別人的 Agent">
     <p style={{ fontSize: 26, lineHeight: 1.5, color: c.muted, margin: '0 0 22px' }}>
       MCP 接進來的是工具和資料，判斷還在我們的模型；A2A 接進來的是另一個 Agent，中間的判斷在對方。
     </p>
@@ -2001,9 +1930,9 @@ const CARD_ROWS: { t: string; title?: string; who?: string; note?: string; model
 ];
 
 const AgentCardPage: Page = () => (
-  <Frame stage="行動" back={{ to: ActionPage, label: '④ 行動' }} title="Agent Card：交出去之前，先讀對方的名片">
+  <Frame back={{ to: ActionPage, label: '④ 行動' }} title="Agent Card：交出去之前，先讀對方的名片">
     <Label>放在固定網址 /.well-known/agent-card.json（虛構範例）</Label>
-    <div style={{ position: 'relative', marginTop: 12 }}>
+    <div style={{ position: 'relative' }}>
       <div
         style={{
           position: 'absolute',
@@ -2133,7 +2062,7 @@ const GuideStep = ({ children }: { children: ReactNode }) => (
 );
 
 const GateLayers: Page = () => (
-  <Frame stage="把關" scope="以 Claude Code 為例" back={{ to: GatePage, label: '③ 把關' }} title="引導與強制：越靠近執行，越難被繞過">
+  <Frame scope="以 Claude Code 為例" back={{ to: GatePage, label: '③ 把關' }} title="引導與強制：越靠近執行，越難被繞過">
     <div style={{ display: 'flex', gap: 32, alignItems: 'stretch' }}>
       <div
         style={{
@@ -2209,7 +2138,7 @@ const AutoBox = ({ who, text, strong = false }: { who: string; text: ReactNode; 
 const DownArrow = () => <div style={{ fontFamily: mono, fontSize: 26, color: c.dim, textAlign: 'center', lineHeight: 1.3 }}>↓</div>;
 
 const RecoveryPage: Page = () => (
-  <Frame stage="把關" scope="比較 Claude Code、OpenCode、Codex" back={{ to: GatePage, label: '③ 把關' }} title="復原：做錯了能不能退，決定要擋多嚴">
+  <Frame scope="比較 Claude Code、OpenCode、Codex" back={{ to: GatePage, label: '③ 把關' }} title="復原：做錯了能不能退，決定要擋多嚴">
     <Cmp3Row head k="" a="Claude Code" b="OpenCode" c3="Codex" />
     <Cmp3Row k="何時記下" a="每次送出 prompt 前" b={<>每一步的前後，<br />替整個工作目錄拍快照</>} c3={<>不記<br />（舊版的檔案快照已移除）</>} />
     <Cmp3Row k="退得回什麼" a={<>Claude 用編輯工具改的檔；<br />對話可分開或一起退</>} b={<>整個工作目錄，含 bash 改的；<br />對話一起退</>} c3="只退對話，檔案不動" />
@@ -2238,7 +2167,7 @@ const Cmp3Row = ({ k, a, b, c3, head = false }: { k: ReactNode; a: ReactNode; b:
 const Unstated = () => <span style={{ color: c.dim }}>官方未細列</span>;
 
 const CompactPage: Page = () => (
-  <Frame stage="狀態・驗收" scope="比較 Claude Code、OpenCode、Codex" back={{ to: StatePage, label: '⑤ 狀態・驗收' }} title="Compaction：壓縮後，什麼一定留下">
+  <Frame scope="比較 Claude Code、OpenCode、Codex" back={{ to: StatePage, label: '⑤ 狀態・驗收' }} title="Compaction：壓縮後，什麼一定留下">
     <Cmp3Row head k="" a="Claude Code" b="OpenCode" c3="Codex" />
     <Cmp3Row
       k="何時觸發"
@@ -2276,7 +2205,7 @@ const CompactPage: Page = () => (
 
 
 const MemoryPage: Page = () => (
-  <Frame stage="狀態・驗收" scope="比較 Claude Code、OpenCode、Codex" back={{ to: StatePage, label: '⑤ 狀態・驗收' }} title="Memory：誰來寫，新 session 帶進多少">
+  <Frame scope="比較 Claude Code、OpenCode、Codex" back={{ to: StatePage, label: '⑤ 狀態・驗收' }} title="Memory：誰來寫，新 session 帶進多少">
     <Cmp3Row head k="" a="Claude Code" b="OpenCode" c3="Codex" />
     <Cmp3Row
       k="人寫的指示檔"
@@ -2312,7 +2241,7 @@ const MemoryPage: Page = () => (
 );
 
 const VerifyPage: Page = () => (
-  <Frame stage="狀態・驗收" scope="以 Claude Code 為例" back={{ to: StatePage, label: '⑤ 狀態・驗收' }} title="完成判定：「完成了」是模型的判斷">
+  <Frame scope="以 Claude Code 為例" back={{ to: StatePage, label: '⑤ 狀態・驗收' }} title="完成判定：「完成了」是模型的判斷">
     <div style={{ display: 'flex', alignItems: 'stretch' }}>
       <div style={{ width: 420 }}>
         <AutoBox who="模型" text="「完成了」" />
@@ -2815,7 +2744,7 @@ const TriangleDiagram = ({ edges, showEg = true, id }: { edges?: TriEdge[]; show
   const W = 1640;
   const bw = 520;
   const bh = showEg ? 156 : 118;
-  const H = showEg ? 440 : 380;
+  const H = showEg ? 440 : edges ? 470 : 380;
   const pos: Record<TriKey, { x: number; y: number }> = {
     person: { x: (W - bw) / 2, y: 0 },
     func: { x: 40, y: H - bh },
@@ -2877,7 +2806,6 @@ const TriangleDiagram = ({ edges, showEg = true, id }: { edges?: TriEdge[]; show
             const mx = (g.x1 + g.x2) / 2;
             const my = (g.y1 + g.y2) / 2;
             const horizontal = Math.abs(g.y1 - g.y2) < 1;
-            const leftSide = !horizontal && mx < W / 2;
             const st: CSSProperties = {
               position: 'absolute',
               fontSize: 23,
@@ -2889,14 +2817,26 @@ const TriangleDiagram = ({ edges, showEg = true, id }: { edges?: TriEdge[]; show
               st.left = mx - 260;
               st.width = 520;
               st.textAlign = 'center';
-              st.top = my - 44;
-            } else if (leftSide) {
-              st.right = W - (mx - 40);
-              st.textAlign = 'right';
-              st.top = my - 16;
+              st.top = my - 42;
             } else {
-              st.left = mx + 40;
-              st.top = my - 16;
+              // 斜邊：標籤沿著邊旋轉，放在邊外側，貼著邊的中點
+              let ang = (Math.atan2(g.y2 - g.y1, g.x2 - g.x1) * 180) / Math.PI;
+              if (ang > 90) ang -= 180;
+              if (ang < -90) ang += 180;
+              const rad = (ang * Math.PI) / 180;
+              let nx = -Math.sin(rad);
+              let ny = Math.cos(rad);
+              if (nx * (mx - W / 2) + ny * (my - H * 0.6) < 0) {
+                nx = -nx;
+                ny = -ny;
+              }
+              const off = 26;
+              st.left = mx + nx * off - 260;
+              st.width = 520;
+              st.textAlign = 'center';
+              st.top = my + ny * off - 16;
+              st.transform = `rotate(${ang}deg)`;
+              st.transformOrigin = '50% 50%';
             }
             return (
               <div key={e.from + e.to + 'l'} style={st}>
@@ -3002,7 +2942,7 @@ const Reasons = ({ children }: { children: ReactNode }) => (
 
 const RedrawBefore: Page = () => (
   <Frame title={<>拆開一個系統型 Agent：<br />LPQM 的每個節點，都在補能力或守要求</>}>
-    <p style={{ fontSize: 28, color: c.muted, margin: '0 0 20px' }}>例：LPQM Agent，製程品質資料問答 · 2025.03 用 LangGraph 打造 · 給 RD 工程師用的 service</p>
+    <p style={{ fontSize: 28, color: c.muted, margin: '0 0 14px' }}>例：LPQM Agent，製程品質資料問答 · 2025.03 用 LangGraph 打造 · 給 RD 工程師用的 service</p>
     <Steps>
       <div style={{ display: 'grid', gridTemplateColumns: TABLE_COLS, alignItems: 'center' }}>
         <div />
@@ -3238,8 +3178,8 @@ const OurWork: Page = () => (
           <StatTile value="0 行" caption="手寫的程式碼" />
           <StatTile value="約 1/10" caption="手寫所需的時間" />
         </div>
-        <p style={{ fontFamily: mono, fontSize: 34, fontWeight: 700, lineHeight: 1.45, margin: '24px 0 0' }}>
-          Humans steer. Agents execute.
+        <p style={{ fontSize: 36, fontWeight: 900, lineHeight: 1.45, margin: '24px 0 0', whiteSpace: 'nowrap' }}>
+          <Hi>Humans steer.</Hi> Agents execute.
         </p>
       </Panel>
       <Panel style={{ flex: 58, minWidth: 0, padding: '22px 34px', border: '2px solid var(--osd-accent)' }}>
@@ -3837,7 +3777,7 @@ const SubWhenItem = ({ no, k, children, link }: { no: number; k: string; childre
 );
 
 const SubagentPage: Page = () => (
-  <Frame stage="行動" scope="以 Claude Code 為例" back={{ to: ActionPage, label: '④ 行動' }} next={{ to: DebatePage, label: '互相辯論' }} title="Subagent：過程不必留下、或需要另一雙眼睛時，才開">
+  <Frame scope="以 Claude Code 為例" back={{ to: ActionPage, label: '④ 行動' }} next={{ to: DebatePage, label: '互相辯論' }} title="Subagent：過程不必留下、或需要另一雙眼睛時，才開">
     <div style={{ display: 'flex', alignItems: 'center', width: 900 }}>
       <SubMini title="主 Agent" sub="對話、讀過的檔案" />
       <div style={{ width: 160, display: 'flex', flexDirection: 'column', justifyContent: 'space-evenly' }}>
@@ -3941,8 +3881,8 @@ const DebatePage: Page = () => {
     </defs>
   );
   return (
-    <Frame stage="行動" scope="以 Claude Code 為例" back={{ to: SubagentPage, label: 'Subagent' }} title={<>子 Agent 要互相辯論：<br />主 Agent 轉述，或改用 Agent teams</>}>
-      <div style={{ borderLeft: '3px solid var(--osd-accent)', background: c.mutedSoft, padding: '8px 24px', fontSize: 24, lineHeight: 1.4, marginTop: 14 }}>
+    <Frame scope="以 Claude Code 為例" back={{ to: SubagentPage, label: 'Subagent' }} title={<>子 Agent 要互相辯論：<br />主 Agent 轉述，或改用 Agent teams</>}>
+      <div style={{ borderLeft: '3px solid var(--osd-accent)', background: c.mutedSoft, padding: '8px 24px', fontSize: 24, lineHeight: 1.4 }}>
         開兩個子 Agent，一個當正方、一個當反方，辯論這個問題
       </div>
       <p style={{ fontSize: 23, lineHeight: 1.4, color: c.muted, margin: '8px 0 0' }}>
@@ -4031,13 +3971,13 @@ const LoopStep = ({ no, title, sub }: { no: string; title: string; sub: ReactNod
     style={{
       flex: 1,
       boxSizing: 'border-box',
-      border: '2px solid var(--osd-accent)',
+      border: `1.5px solid ${c.line}`,
       background: c.panel,
       borderRadius: 'var(--osd-radius)',
       padding: '20px 26px',
     }}
   >
-    <div style={{ fontFamily: mono, fontSize: 22, letterSpacing: '0.1em', color: 'var(--osd-accent)' }}>{no}</div>
+    <div style={{ fontFamily: mono, fontSize: 22, letterSpacing: '0.1em', color: c.muted }}>{no}</div>
     <div style={{ fontSize: 34, fontWeight: 800, lineHeight: 1.35, marginTop: 4 }}>{title}</div>
     <div style={{ fontSize: 23, lineHeight: 1.5, color: c.muted, marginTop: 8 }}>{sub}</div>
   </div>
@@ -4142,14 +4082,14 @@ const CompRow = ({ k, a, b, head = false }: { k: string; a: string; b: string; h
   </div>
 );
 
-const SysBox = ({ children }: { children: ReactNode }) => (
+const SysBox = ({ children, subject = false }: { children: ReactNode; subject?: boolean }) => (
   <div
     style={{
       width: 220,
       flexShrink: 0,
       boxSizing: 'border-box',
       textAlign: 'center',
-      border: `1.5px solid ${c.line}`,
+      border: subject ? '2px solid var(--osd-accent)' : `1.5px solid ${c.line}`,
       background: c.panel,
       borderRadius: 'var(--osd-radius)',
       padding: '14px 8px',
@@ -4169,13 +4109,13 @@ const SysPath = ({ ok, children }: { ok: boolean; children: ReactNode }) => (
   </div>
 );
 
-const SysChain = ({ id, from, mid, to, verdict }: { id: string; from: string; mid: string; to: string; verdict: ReactNode }) => (
-  <div id={id} style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 36 }}>
+const SysChain = ({ id, from, mid, to, verdict, first = false }: { id: string; from: string; mid: string; to: string; verdict: ReactNode; first?: boolean }) => (
+  <div id={id} style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: first ? 0 : 36 }}>
     <SysBox>{from}</SysBox>
     <span style={{ fontSize: 28, color: c.dim }}>→</span>
     <SysBox>{mid}</SysBox>
     <span style={{ fontSize: 28, color: c.dim }}>→</span>
-    <SysBox>系統型 Agent</SysBox>
+    <SysBox subject>系統型 Agent</SysBox>
     <span style={{ fontSize: 28, color: c.dim }}>→</span>
     <SysBox>{to}</SysBox>
     <div style={{ marginLeft: 16, fontSize: 26, lineHeight: 1.45, color: 'var(--osd-accent)', display: 'flex', gap: 10 }}>
@@ -4306,8 +4246,8 @@ const FunctionalIntro: Page = () => {
 
 const AgentLadderPage: Page = () => (
   <Frame title="系統型不另外加權限，只檢查呼叫者帶來的權限">
-    <div id="osd-ah-sysagent-chains" style={{ marginTop: 8 }}>
-      <SysChain id="osd-ah-sysagent-chain-a" from="使用者" mid="個人型 Agent" to="請假系統" verdict={<>用這位<b>使用者</b>的權限：送出的是他的假單</>} />
+    <div id="osd-ah-sysagent-chains">
+      <SysChain first id="osd-ah-sysagent-chain-a" from="使用者" mid="個人型 Agent" to="請假系統" verdict={<>用這位<b>使用者</b>的權限：送出的是他的假單</>} />
       <SysChain
         id="osd-ah-sysagent-chain-b"
         from="到職資料"
@@ -4484,7 +4424,7 @@ Workflow 比較便宜、比較快，這是成本選擇，不在今天的範圍�
 怎麼講（一分鐘內）：AI 七十年來有兩類做法——把專家的規則、特徵寫進去；或用通用方法讓系統自己算、自己學。算力每幾年便宜好幾倍，所以長期看，吃算力的方法一定追上。「苦澀」是因為研究者花心血寫進去的知識，最後都被取代。做影像的都親身經歷過：手工特徵被 CNN 取代。
 放到 Agent：模型變強了，替它補的控制就該放寬；不放寬，就從幫手變成阻礙。
 看時間軸：每個時間點，上面一行小字是當時的模型能力，下面是 Harness 的結構。Lance Martin 的 Open Deep Research，2024 年底工具呼叫還不可靠，所以用固定分工——補能力；2025 年初工具呼叫變可靠了，結構反而礙事；改寫兩次、拆掉結構後，排進 Deep Research Bench 前十。模型能力一動，結構就該跟著動。
-下面是他自己在文章〈Learning the Bitter Lesson〉（2025-07）裡寫的三個教訓：1. 看清楚設計裡，假設了模型做不到什麼（原文：consider what LLM performance assumptions are baked into the design）——他當初因為工具呼叫不可靠而避開它，「幾個月後就不是這樣了」。這就是第二部分說的補能力。2. 模型進步時，重新檢查這些假設——他自己承認，工具呼叫變可靠之後，他重新檢查得太慢。3. 讓結構容易拆掉。
+這頁沒有放，Lance Martin 自己在文章〈Learning the Bitter Lesson〉（2025-07）裡寫的三個教訓：1. 看清楚設計裡，假設了模型做不到什麼（原文：consider what LLM performance assumptions are baked into the design）——他當初因為工具呼叫不可靠而避開它，「幾個月後就不是這樣了」。這就是第二部分說的補能力。2. 模型進步時，重新檢查這些假設——他自己承認，工具呼叫變可靠之後，他重新檢查得太慢。3. 讓結構容易拆掉。
 保留一句：現在加補能力的結構沒有錯，只是要當成會過期的東西。下一頁把這三個教訓收成兩個動作。
 被問到 LangGraph（第 3 點的原文）：他認為框架的抽象可能讓結構更難拆；他仍然用 LangGraph，但只用最底層的 node 和 edge，方便隨時重組。所以問題不在用不用框架，而在結構拆不拆得掉。
 注意範圍：該放寬的是「為了補能力」寫死的控制，不是所有流程。守要求的控制不在此列。
@@ -4595,6 +4535,7 @@ Summarizer：只給最終表格太單薄，也要讓使用者確認操作符合�
 他們的結論一句話：Humans steer. Agents execute. 工程師的主要工作變成讓 Agent 能做有用的事：設計環境、說清楚意圖、建立回饋迴路。Agent 失敗時，他們問的不是「再試一次」，而是「缺了什麼能力，怎麼讓它對 Agent 看得懂、也強制得了」——這就是第二部分「看、擋、做、記」那幾格。
 對照我們：說清楚意圖，是把需求單位的「什麼才算對」寫成驗收標準和題目；設計環境，是系統型那頁的強制、權限和規則；建回饋迴路，是測試題、pass^k、模型換了要重跑。
 他們也很誠實：最難的挑戰變成設計環境、回饋迴路和控制系統；而且還在學人的判斷在哪裡最有槓桿、怎麼把判斷寫下來讓它累積。
+這句第二部分提過，這裡是同一句話。
 重點句：做出來交給 Agent；意圖、環境、回饋迴路，是我們的工作。`,
   `（還在第三段，推論）掌舵會一直留在人手上嗎？看 Anthropic 調查自己的工程師（2025 年 12 月發表，132 位工程師與研究員問卷、53 個訪談、二十萬筆內部 Claude Code 紀錄；資料收集於 2025 年 8 月）。
 他們自評每天有六成工作用 Claude，越來越把自己看成 Agent 的管理者，有人說七成以上的工作變成審查和修改。但超過一半的人說，能完全交出去的工作只有 0 到 20%；交出去的，大多是容易驗證、低風險、繁瑣的事。
