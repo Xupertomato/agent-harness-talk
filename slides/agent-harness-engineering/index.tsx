@@ -2923,7 +2923,7 @@ const Part3Preview: Page = () => (
     <div style={{ display: 'flex', gap: 28 }}>
       <PreviewCard label="提案" q="會有哪些 Agent？" line="代表人、流程、系統的三種 Agent" />
       <PreviewCard label="證據" q="Agent 裡什麼會過期？" line="拆一個舊 Agent：LPQM Agent" />
-      <PreviewCard label="推論" q="我們的工作變成什麼？" line="從做出來，到定義和證明" />
+      <PreviewCard label="推論" q="我們的工作變成什麼？" line="從做出來，到掌舵" />
     </div>
   </Frame>
 );
@@ -3199,27 +3199,59 @@ const PluginDelivery: Page = () => (
   </Frame>
 );
 
-const WorkRow = ({ now, taken, kept, muted = false }: { now: string; taken: string; kept: string; muted?: boolean }) => (
-  <TRow cols="440px 400px 1fr" pad={22} size={28}>
-    <div style={{ fontWeight: 700 }}>{now}</div>
-    <div style={{ color: c.muted }}>{taken}</div>
-    <div style={muted ? { color: c.muted } : undefined}>{kept}</div>
-  </TRow>
+const SourceLine = ({ children, tight = false }: { children: ReactNode; tight?: boolean }) => (
+  <p style={{ fontSize: 20, lineHeight: 1.45, color: c.dim, margin: tight ? '12px 0 0' : '20px 0 0' }}>{children}</p>
+);
+
+const StatTile = ({ value, caption }: { value: string; caption: string }) => (
+  <div
+    style={{
+      boxSizing: 'border-box',
+      border: `1.5px solid ${c.hair}`,
+      background: c.mutedSoft,
+      borderRadius: 'var(--osd-radius)',
+      padding: '16px 20px',
+    }}
+  >
+    <div style={{ fontFamily: mono, fontSize: 48, fontWeight: 700, lineHeight: 1.15, color: 'var(--osd-accent)', whiteSpace: 'nowrap' }}>
+      {value}
+    </div>
+    <p style={{ fontSize: 24, lineHeight: 1.4, color: c.muted, margin: '6px 0 0' }}>{caption}</p>
+  </div>
+);
+
+const SteerRow = ({ head, sub, last = false }: { head: string; sub: string; last?: boolean }) => (
+  <div style={{ padding: '18px 0', borderBottom: last ? 'none' : `1px solid ${c.hair}` }}>
+    <div style={{ fontSize: 36, fontWeight: 800, lineHeight: 1.35 }}>{head}</div>
+    <div style={{ fontSize: 26, lineHeight: 1.45, color: c.muted, marginTop: 4 }}>{sub}</div>
+  </div>
 );
 
 const OurWork: Page = () => (
-  <Frame title={<>所以我們的瓶頸：<br />從做出來，移到定義和證明什麼叫做對</>}>
-    <TRow cols="440px 400px 1fr" head>
-      <div style={{ color: c.muted }}>我們現在做的</div>
-      <div style={{ color: c.amber }}>被接手的：做出來</div>
-      <div>留下來的：定義和證明</div>
-    </TRow>
-    <WorkRow now="把流程做成 graph、service" taken="→ 通用 Harness" kept="— 整件都是補能力" muted />
-    <WorkRow now="整理術語、業務規則" taken="→ 使用者自己寫 Skill" kept="和使用者一起，把「什麼才算對」定成題目" />
-    <WorkRow now="寫檢查程式" taken="→ 平台、系統內建" kept="判斷哪些不能錯：換成人來做，也要遵守嗎？" />
-    <WorkRow now="跑測試" taken="→ 越來越自動" kept="決定驗到什麼才算夠：pass^k、換模型重跑" />
-    <p style={{ fontSize: 32, fontWeight: 800, lineHeight: 1.5, margin: '40px 0 0' }}>
-      模型越強，做出來越便宜；<Hi>定義和證明什麼叫做對</Hi>，越值錢。
+  <Frame title={<>做出來變便宜，工程師的工作變成掌舵：<br />說清楚意圖、設計環境、建回饋迴路</>}>
+    <div style={{ display: 'flex', gap: 36, alignItems: 'stretch' }}>
+      <Panel style={{ flex: 42, minWidth: 0, padding: '22px 26px' }}>
+        <Label tone="muted">OpenAI 自己的團隊</Label>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14, marginTop: 14 }}>
+          <StatTile value="3 位" caption="工程師驅動 Codex" />
+          <StatTile value="約 100 萬行" caption="程式碼，五個月" />
+          <StatTile value="0 行" caption="手寫的程式碼" />
+          <StatTile value="約 1/10" caption="手寫所需的時間" />
+        </div>
+        <p style={{ fontFamily: mono, fontSize: 34, fontWeight: 700, lineHeight: 1.45, margin: '24px 0 0' }}>
+          Humans steer. Agents execute.
+        </p>
+      </Panel>
+      <Panel style={{ flex: 58, minWidth: 0, padding: '22px 34px', border: '2px solid var(--osd-accent)' }}>
+        <p style={{ fontSize: 30, fontWeight: 800, color: 'var(--osd-accent)', margin: '0 0 4px' }}>人在做的事</p>
+        <SteerRow head="說清楚意圖" sub="把使用者回饋寫成驗收標準" />
+        <SteerRow head="設計環境" sub="工具、權限、規則：讓 Agent 看得懂，也守得住" />
+        <SteerRow last head="建回饋迴路" sub="讓 Agent 自己知道做對了沒有" />
+      </Panel>
+    </div>
+    <SourceLine>出處：OpenAI，Harness engineering: leveraging Codex in an agent-first world（2026.02）</SourceLine>
+    <p style={{ fontSize: 34, fontWeight: 800, lineHeight: 1.5, margin: '22px 0 0' }}>
+      做出來交給 Agent；<Hi>意圖、環境、回饋迴路</Hi>，是我們的工作。
     </p>
   </Frame>
 );
@@ -3233,52 +3265,71 @@ const DurBlock = ({ tag, tagColor, head, sub, navy = false }: { tag: string; tag
       border: navy ? '2px solid var(--osd-accent)' : `1.5px solid ${c.line}`,
       background: c.panel,
       borderRadius: 'var(--osd-radius)',
-      padding: '26px 30px 30px',
+      padding: '14px 28px 16px',
     }}
   >
-    <div style={{ fontSize: 26, fontWeight: 800, lineHeight: 1.3, color: tagColor }}>{tag}</div>
-    <p style={{ fontSize: 40, fontWeight: 900, lineHeight: 1.3, margin: '12px 0 0' }}>{head}</p>
-    <p style={{ fontSize: 26, lineHeight: 1.5, color: c.muted, margin: '10px 0 0' }}>{sub}</p>
+    <div style={{ fontSize: 24, fontWeight: 800, lineHeight: 1.3, color: tagColor }}>{tag}</div>
+    <p style={{ fontSize: 34, fontWeight: 900, lineHeight: 1.25, margin: '2px 0 0' }}>{head}</p>
+    <p style={{ fontSize: 24, lineHeight: 1.4, color: c.muted, margin: '2px 0 0' }}>{sub}</p>
   </div>
 );
 
 const DurabilityPage: Page = () => (
-  <Frame title="定義和證明也是能力，只是比較晚被接手">
-    <div style={{ display: 'flex', alignItems: 'center', gap: 18, marginBottom: 20, fontSize: 24, color: c.muted }}>
-      <span style={{ whiteSpace: 'nowrap' }}>模型越強</span>
-      <div style={{ flex: 1, borderTop: `2px solid ${c.hair}` }} />
-      <span style={{ fontFamily: mono, color: c.dim }}>→</span>
+  <Frame title={<>掌舵也在移動：<br />交得出去的是容易驗證的，驗證本身也會被接手</>}>
+    <div style={{ display: 'flex', gap: 36, alignItems: 'stretch' }}>
+      <Panel style={{ flex: 45, minWidth: 0, padding: '22px 30px' }}>
+        <Label tone="muted">Anthropic 內部調查：132 位工程師與研究員</Label>
+        <div style={{ fontFamily: mono, fontSize: 84, fontWeight: 700, lineHeight: 1.1, color: 'var(--osd-accent)', marginTop: 14 }}>0–20%</div>
+        <p style={{ fontSize: 26, lineHeight: 1.45, color: c.muted, margin: '8px 0 0' }}>
+          超過一半的人說，能完全交出去的工作只有這麼多
+        </p>
+        <p style={{ fontSize: 28, lineHeight: 1.45, margin: '18px 0 0', paddingTop: 16, borderTop: `1px solid ${c.hair}` }}>
+          交出去的：<b>容易驗證</b>、低風險、繁瑣的事
+        </p>
+        <p style={{ fontSize: 26, lineHeight: 1.5, color: c.muted, margin: '16px 0 0', paddingLeft: 16, borderLeft: `3px solid ${c.line}` }}>
+          監督的悖論：用好 AI 需要監督；監督需要的技能，卻可能因為依賴 AI 而退化。
+        </p>
+      </Panel>
+      <div style={{ flex: 55, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 10 }}>
+        <div style={{ fontSize: 24, color: c.muted, textAlign: 'right', lineHeight: 1.1 }}>模型越強 ↓</div>
+        <DurBlock tag="現在就被接手" tagColor={c.amber} head="寫出來" sub="程式碼、流程、檢查程式" />
+        <DurBlock tag="界線正在移動" head="驗證與設計" sub="交出去的範圍，跟著驗證能力一起變大" />
+        <DurBlock navy tag="三家都說要留" tagColor="var(--osd-accent)" head="控制者的位置" sub="誰代表誰、權力多大、核准與撤回" />
+      </div>
     </div>
-    <div style={{ display: 'flex', gap: 28 }}>
-      <DurBlock tag="現在就被接手" tagColor={c.amber} head="做出來" sub="graph、轉譯術語、檢查程式" />
-      <DurBlock tag="比較晚才被接手" head="定義和證明" sub={<>定成題目、判斷哪些不能錯、<br />驗到什麼算夠</>} />
-      <DurBlock navy tag="不是能力問題" tagColor="var(--osd-accent)" head="偏好、存取與信任" sub={<>要什麼、誰被允許碰資料、<br />誰的判斷被相信</>} />
-    </div>
-    <p style={{ fontSize: 34, fontWeight: 800, lineHeight: 1.5, margin: '44px 0 0' }}>
+    <SourceLine tight>出處：Anthropic，How AI is transforming work at Anthropic（2025.12）</SourceLine>
+    <p style={{ fontSize: 34, fontWeight: 800, lineHeight: 1.5, margin: '12px 0 0' }}>
       判斷題：<Hi>模型再強十倍，這件事還需要人嗎？</Hi>
     </p>
-    <p style={{ fontSize: 26, lineHeight: 1.5, color: c.muted, margin: '14px 0 0' }}>留下來的是人的角色，不是人數。</p>
+    <p style={{ fontSize: 26, lineHeight: 1.5, color: c.muted, margin: '4px 0 0' }}>留下來的是人的角色，不是人數。</p>
   </Frame>
 );
 
-const ShovelPage: Page = () => (
-  <Frame title={<>技能是鏟子，不是護城河：<br />趁現在，累積模型拿不走的東西</>}>
-    <div style={{ display: 'flex', gap: 40, alignItems: 'stretch' }}>
-      <Panel style={{ flex: 1, padding: '24px 32px 8px' }}>
-        <p style={{ fontSize: 32, fontWeight: 800, color: c.muted, margin: '0 0 8px' }}>鏟子：今天很值錢，要學</p>
-        <OutsideRow item="測試題與 eval" why="證明它每次都對" />
-        <OutsideRow item="把模糊需求寫成標準" why="什麼才算對，寫成題目" />
-        <OutsideRow last item="設計 Agent 的工作環境" why="工具、權限、Harness 設定" />
-      </Panel>
-      <Panel style={{ flex: 1, padding: '24px 32px 8px', border: '2px solid var(--osd-accent)' }}>
-        <p style={{ fontSize: 32, fontWeight: 800, color: 'var(--osd-accent)', margin: '0 0 8px' }}>要累積的：模型拿不走</p>
-        <OutsideRow item="懂使用者要什麼" why="貼近需求單位，知道他們真正在意什麼" />
-        <OutsideRow item="被允許碰系統和資料" why="信任與存取" />
-        <OutsideRow last item="判斷的紀錄" why="說「這樣夠了」的時候，事後證明是對的" />
-      </Panel>
-    </div>
-    <p style={{ fontSize: 32, fontWeight: 800, lineHeight: 1.5, margin: '36px 0 0' }}>
-      技能拿來做事；<Hi>做事累積的信任和紀錄</Hi>，才帶得走。
+const ConsensusRow = ({ k, a, b, g }: { k: string; a: ReactNode; b: ReactNode; g: ReactNode }) => (
+  <TRow cols="280px 1fr 1fr 1fr" pad={20} size={28}>
+    <div style={{ fontWeight: 800, color: 'var(--osd-accent)' }}>{k}</div>
+    <div>{a}</div>
+    <div>{b}</div>
+    <div>{g}</div>
+  </TRow>
+);
+
+const ConsensusPage: Page = () => (
+  <Frame title={<>三家模型供應商的共識：<br />每個 Agent 都要有明確的人在控制，權力在模型之外限制</>}>
+    <TRow cols="280px 1fr 1fr 1fr" head>
+      <div style={{ color: c.muted }}>共識</div>
+      <div>OpenAI</div>
+      <div>Anthropic</div>
+      <div>Google</div>
+    </TRow>
+    <ConsensusRow k="背後有明確的人" a={<>每個 Agent 都能追溯到<br />它代表的使用者</>} b={<>高風險決定之前，<br />人保有控制權</>} g={<>每個 Agent 要有明確的<br />人類控制者</>} />
+    <ConsensusRow k="權力在模型之外限制" a={<>規則式防護、<br />工具依風險分級</>} b={<>每個動作設定允許、<br />要核准或封鎖</>} g={<>模型之外的確定性政策引擎，<br />在動作執行前檢查</>} />
+    <ConsensusRow k="可靠了才放手" a={<>高風險動作要人監督，<br />直到可靠度被建立</>} b={<>信任的例行工作，<br />給持續權限</>} g={<>不可逆的動作，<br />要使用者確認</>} />
+    <SourceLine>
+      出處：OpenAI，Practices for Governing Agentic AI Systems（2023）、A practical guide to building agents；Anthropic，Our framework for developing safe and trustworthy agents（2025.08）；Google，Google's Approach for Secure AI Agents（2025）
+    </SourceLine>
+    <p style={{ fontSize: 34, fontWeight: 800, lineHeight: 1.5, margin: '22px 0 0' }}>
+      三家都沒說設計和驗證會永遠留給人；<Hi>控制者的位置</Hi>，三家都說要留。
     </p>
   </Frame>
 );
@@ -3613,7 +3664,7 @@ const Takeaway = ({ no, title, text }: { no: string; title: string; text: ReactN
   </TRow>
 );
 
-const Fate = ({ title, tone, why, items }: { title: string; tone: Tone; why: ReactNode; items: string }) => (
+const Fate = ({ title, tone, why, items }: { title: string; tone: Tone; why: ReactNode; items: ReactNode }) => (
   <div
     style={{
       flex: 1,
@@ -3633,9 +3684,9 @@ const Fate = ({ title, tone, why, items }: { title: string; tone: Tone; why: Rea
 const BackToIlya: Page = () => (
   <Frame title="哪些交給模型，哪些留給人？">
     <div style={{ display: 'flex', gap: 28 }}>
-      <Fate title="會被吸收" tone="cyan" why={<>因為<b>能力不足</b>而存在的</>} items="補能力的流程、實作與驗證的技巧" />
+      <Fate title="會被吸收" tone="cyan" why={<>因為<b>能力不足</b>而存在的</>} items="補能力的流程、寫出來的程式與檢查" />
       <Fate title="要有人決定" tone="cyan" why={<>因為<b>偏好在人身上</b>而存在的</>} items="要什麼、哪些不能錯、什麼才算對" />
-      <Fate title="要有人授權" tone="cyan" why={<>因為<b>存取與授權</b>而存在的</>} items="核准、誰能碰哪些資料" />
+      <Fate title="要有人授權" tone="cyan" why={<>因為<b>存取與授權</b>而存在的</>} items={<>誰能碰哪些資料、<br />哪些要核准、隨時能撤回</>} />
     </div>
     <p style={{ fontSize: 48, fontWeight: 900, lineHeight: 1.45, margin: '64px 0 0' }}>
       模型越強，可以放得越寬；
@@ -3667,9 +3718,9 @@ const QA: Page = () => (
 );
 
 const Ref = ({ who, what }: { who: string; what: string }) => (
-  <div style={{ padding: '5px 0', borderBottom: `1px solid ${c.hair}`, lineHeight: 1.35 }}>
-    <span style={{ fontSize: 23, fontWeight: 700 }}>{who}</span>
-    <span style={{ fontSize: 20, color: c.muted, marginLeft: 12 }}>{what}</span>
+  <div style={{ padding: '3px 0', borderBottom: `1px solid ${c.hair}`, lineHeight: 1.3 }}>
+    <span style={{ fontSize: 22, fontWeight: 700 }}>{who}</span>
+    <span style={{ fontSize: 19, color: c.muted, marginLeft: 12 }}>{what}</span>
   </div>
 );
 
@@ -3691,6 +3742,10 @@ const References: Page = () => (
         <Ref who="Qianyu Meng et al." what="Agent Harness for LLM Agents: A Survey, 2026-04" />
         <Ref who="Harrison Chase (LangChain)" what="Introducing ambient agents, 2025-01" />
         <Ref who="Gartner" what="Agentic AI 專案預測, 2025-06" />
+        <Ref who="Anthropic" what="How AI is transforming work at Anthropic, 2025-12" />
+        <Ref who="Anthropic" what="Our framework for developing safe and trustworthy agents, 2025-08" />
+        <Ref who="Anthropic" what="Trustworthy agents in practice, 2026-04" />
+        <Ref who="Google" what="Google's Approach for Secure AI Agents, 2025" />
       </div>
       <div style={{ flex: 1 }}>
         <Ref who="Claude Code 官方文件" what="context window、memory、permissions、permission modes、hooks、sandboxing、checkpointing、settings、subagents" />
@@ -3707,6 +3762,9 @@ const References: Page = () => (
         <Ref who="Microsoft Entra 官方文件" what="Agent ID governance（sponsors）" />
         <Ref who="Claude Managed Agents 官方文件" what="vaults" />
         <Ref who="Model Context Protocol 規格" what="elicitation、tasks" />
+        <Ref who="OpenAI" what="Practices for Governing Agentic AI Systems, 2023" />
+        <Ref who="OpenAI" what="A practical guide to building agents" />
+        <Ref who="Google Cloud" what="Agent Identity overview" />
       </div>
     </div>
   </Frame>
@@ -4305,7 +4363,7 @@ const mainPages: Page[] = [
   WhoBuilds,
   OurWork,
   DurabilityPage,
-  ShovelPage,
+  ConsensusPage,
   BackToIlya,
   QA,
   References,
@@ -4457,7 +4515,7 @@ OpenAI 的具體做法：AGENTS.md 當目錄不當百科；架構規則用 linte
 在這裡停一下，讓問題懸著。不憑感覺回答，分三段：會有哪些 Agent（提案）、Agent 裡什麼會過期（證據，拿一個真實系統來驗證：LPQM Data Summary Agent）、我們的工作變成什麼（推論）。
 這裡說的通用 Harness，指的是引擎（迴圈、工具呼叫、context 管理）；預設要為使用者重新設定——後面要講的就是怎麼重新調鬆緊。`,
   `（第三部分的地圖）回答開場的命題：交一個通用 Harness 給使用者就好嗎？分三段，每段開頭都說清楚它是提案、證據還是推論。
-第一段是提案：會有哪些 Agent。第二段是證據：拆一個真實的舊 Agent，看裡面什麼會過期。第三段是推論：這些對我們的工作代表什麼。
+第一段是提案：會有哪些 Agent。第二段是證據：拆一個真實的舊 Agent，看裡面什麼會過期。第三段是推論：我們的工作從做出來，變成掌舵——看 OpenAI、Anthropic、Google 三家自己怎麼說。
 這一部分用第一性原則推。地基有四塊，性質不一樣，要講清楚：Agent＝模型＋Harness，是定義；模型會持續變強，是假設，整份簡報都靠它；每個控制只看兩種理由——補能力、守要求——是我們選的範圍，成本不在今天範圍；要求只能在資源那一端強制，是資安設計的老原則（complete mediation：每次存取都要經過檢查，能檢查到所有呼叫者的只有資源端）。
 重點句：每一段都說清楚是提案、證據還是推論。`,
   `（第一段：會有哪些 Agent，提案）從第一性原則出發：每個 Agent 都代表某個對象，這個對象決定它想要什麼、用誰的權限。組織裡能被代表的對象，我們看到三種：一個人、一個流程、一個系統——所以有三種 Agent。
@@ -4532,32 +4590,32 @@ Summarizer：只給最終表格太單薄，也要讓使用者確認操作符合�
 被問到「把守要求做成強制很難嗎？」：寫一條檢查不難，難的是三件事——先問出哪些規則不能錯；再決定工具切多細，太窄做不了事、太寬等於沒把關；最後用測試題證明它守得住，模型換了還要重跑。
 所以，我們的工作會變成什麼？下一頁。
 重點句：交一個通用 Harness 給使用者，只夠個人型那一角；系統型和職能型，需要我們。`,
-  `上一頁：系統型和職能型需要我們。所以我們的工作變成什麼？把第二部分的方法用在我們自己身上：每一件工作，拆成「做出來」和「定義和證明」兩半。
-第一列：把流程做成 graph、service——整件都是補能力，通用 Harness 接手，右邊是空的。LPQM Agent 那張 graph 就是這樣。
-第二列：整理術語、業務規則——寫成 Skill 這件事，使用者自己會做；留下來的是和使用者一起，把「什麼才算對」定成題目和標準答案。
-第三列：寫檢查程式——連守要求的實作，也會被平台或系統本身吸收；留下來的是判斷哪些不能錯。判斷方法還是那一題：換成人來做，也要遵守嗎？所以「守要求不會過期」要說清楚：要求本身不會過期，但怎麼保證、誰來寫，會變。
-第四列：跑測試——越來越自動；留下來的是決定驗到什麼才算夠：pass^k、模型換了要重跑。
-有些部門的資料只能留在需求單位內，這時更傾向讓使用者自己做，因為資料出不來，我們也碰不到。
-但右邊這欄真的會一直留下嗎？下一頁。
-重點句：模型越強，做出來越便宜；定義和證明什麼叫做對，越值錢。`,
-  `（還在第三段，推論）上一頁右邊那欄，定義和證明，會一直留下嗎？老實說不會。它們本質上還是能力問題：把模糊的需求寫成標準、判斷哪些規則重要、設計驗證方法——模型越強，越會自己做。只是比做出來晚很多，我自己的估計是還能撐五到十年，這是推論，不是證據。
-怎麼分：問一句「模型再強十倍，這件事還需要人嗎？」還需要的，才不是能力問題。剩下三樣，跟智力無關：
-偏好——我們到底要什麼、什麼才算對，不是算出來的。
-存取——隱性知識看起來像能力問題，其實是存取問題：最後是誰允許模型看。
-信任——誰的判斷被相信、誰被允許碰系統。
-最後一行要誠實講：這保證的是人的角色，不是人數。一個人能做的事變多了，需要的人不一定一樣多。
-那現在該做什麼？下一頁。
-重點句：只有不是能力問題的，才真的留下來；判斷題是：模型再強十倍，這件事還需要人嗎？`,
-  `（還在第三段，推論）那現在該做什麼？左邊的技能要學——eval、把需求寫成標準、設計 Agent 的工作環境，今天很值錢，未來幾年都用得到。但它們是鏟子，不是護城河：模型越強，這些技能越便宜。
-用鏟子去挖右邊的東西：懂使用者真正要什麼，這要貼近需求單位才累積得到；被允許碰系統和資料，這是信任，一次一次給出來的；判斷的紀錄，過去說「這樣夠了」的時候，事後證明是對的——下一次別人才會相信你說的「夠了」。
-學東西時可以問自己兩題：如果模型再強十倍，這還有用嗎？它能幫我判斷模型的產出對不對嗎？
-重點句：技能拿來做事；做事累積的信任和紀錄，才帶得走。`,
+  `（還在第三段，推論）上一頁說系統型和職能型需要我們。那這份工作會變成什麼樣子？看一個已經走在前面的例子：OpenAI 自己的團隊。
+2026 年 2 月 OpenAI 發表〈Harness engineering〉——跟今天的主題同名。三位工程師驅動 Codex，五個月做出約一百萬行程式碼，手寫的是零行，時間大約是手寫的十分之一；後來團隊長到七個人。
+他們的結論一句話：Humans steer. Agents execute. 工程師的主要工作變成讓 Agent 能做有用的事：設計環境、說清楚意圖、建立回饋迴路。Agent 失敗時，他們問的不是「再試一次」，而是「缺了什麼能力，怎麼讓它對 Agent 看得懂、也強制得了」——這就是第二部分「看、擋、做、記」那幾格。
+對照我們：說清楚意圖，是把需求單位的「什麼才算對」寫成驗收標準和題目；設計環境，是系統型那頁的強制、權限和規則；建回饋迴路，是測試題、pass^k、模型換了要重跑。
+他們也很誠實：最難的挑戰變成設計環境、回饋迴路和控制系統；而且還在學人的判斷在哪裡最有槓桿、怎麼把判斷寫下來讓它累積。
+重點句：做出來交給 Agent；意圖、環境、回饋迴路，是我們的工作。`,
+  `（還在第三段，推論）掌舵會一直留在人手上嗎？看 Anthropic 調查自己的工程師（2025 年 12 月發表，132 位工程師與研究員問卷、53 個訪談、二十萬筆內部 Claude Code 紀錄；資料收集於 2025 年 8 月）。
+他們自評每天有六成工作用 Claude，越來越把自己看成 Agent 的管理者，有人說七成以上的工作變成審查和修改。但超過一半的人說，能完全交出去的工作只有 0 到 20%；交出去的，大多是容易驗證、低風險、繁瑣的事。
+所以現在決定能交多少的，是驗證：驗得了，才交得出去。
+但要誠實：這條界線在移動。報告自己說，需要組織脈絡和品味的設計判斷現在還留在人手上，但界線隨著模型進步在移動。而且有一個悖論——用好 AI 需要監督，監督需要的技能，卻可能因為依賴 AI 而退化；有些工程師刻意不用 AI 練習，維持手感。
+所以分三層：寫出來的，現在就被接手；驗證與設計，界線在移動；只有一樣，三家模型供應商都說要留——控制者的位置。下一頁。
+判斷題還是那一題：模型再強十倍，這件事還需要人嗎？最後一行要誠實講：這保證的是人的角色，不是人數。
+重點句：交得出去的是容易驗證的；驗證本身也在移動，三家都說要留的，是控制者的位置。`,
+  `（還在第三段，推論）掌舵在移動，那什麼不移動？看三家模型供應商自己怎麼說。它們是最想讓 Agent 越做越多的一方，說法卻高度一致。
+OpenAI〈Practices for Governing Agentic AI Systems〉（約 2023 年底）提出七項做法：高風險動作要使用者核准、有些動作直接封鎖；每個 Agent 實例要能追溯到它代表的使用者；人隨時能中止 Agent，Agent 不能抗拒。它也提醒：要核准的事太多，核准會變成橡皮圖章。〈A practical guide to building agents〉說：敏感、不可逆、高風險的動作要觸發人工監督，直到 Agent 的可靠度被建立。
+Anthropic〈Our framework for developing safe and trustworthy agents〉（2025 年 8 月）：核心張力是自主和人的監督之間的平衡，高風險決定之前人要保有控制權；Claude Code 預設唯讀，改程式或系統前要人核准，信任的例行工作可以給持續權限。2026 年 4 月的〈Trustworthy agents in practice〉補充：使用者替每個動作設定允許、要核准或封鎖；多 Agent 的監督還沒解決；所有防護加起來也不是保證。
+Google〈Google's Approach for Secure AI Agents〉（2025）三條原則：每個 Agent 要有明確的人類控制者，系統要分得出指令來自授權的使用者還是來自它處理的資料；權力要受限、依用途動態調整，Agent 不能自己擴權，使用者要能查看和撤回；動作和規劃要可觀察、可稽核。防線分兩層：模型之外的確定性政策引擎，加上模型推理式的防禦；關鍵和不可逆的動作由確定性那層兜底。Google Cloud 的 Agent Identity 也把每個 Agent 做成獨立的身分，代表使用者行動時，紀錄裡同時看得到 Agent 和使用者。
+三家的共識，剛好對上前面幾頁：背後有明確的人——權限那頁；權力在模型之外限制——系統型那頁的強制；可靠了才放手——人工核准那頁。
+注意它們都沒說設計或驗證會永遠留給人；一致說要留的，只有控制者這個位置。也要提醒：這些是賣 Agent 的公司寫的，多半從安全角度出發，不是中立研究。
+重點句：三家都沒說設計和驗證會永遠留給人；控制者的位置，三家都說要留。`,
   `【結尾 3 分鐘】
 回到封面的問題：哪些交給模型，哪些留給人？三張卡就是答案。
 交給模型的——會被吸收的：因為能力不足而存在的，補能力的流程與提示。注意是「終究會」，不是「現在就會」——哪些已經被吸收，要用測試題驗證。
 留給人的有兩種。要有人決定的：因為偏好在人身上而存在的——要什麼、哪些不能錯、什麼才算對。這不是知識多寡的問題，模型再強，也不能替我們決定我們想要什麼。業務知識、術語呢？寫得下來的，會變成 Skill 交給模型；寫不下來的隱性知識，最後是存取問題——誰允許模型看。
-要有人授權的：因為存取與授權而存在的——核准、誰能碰哪些資料。模型能力再強，誰被允許做什麼，還是由人決定。
-注意「會被吸收」那張也包括驗證的技巧：eval、測試題今天很值錢，但它們是能力問題，長期一樣會被吸收；留下來的是決定和授權。
+要有人授權的：因為存取與授權而存在的——誰能碰哪些資料、哪些要核准、隨時能撤回。模型能力再強，誰被允許做什麼，還是由人決定。
+前三頁的證據收在這三張卡：寫出來的會被吸收；要什麼由人決定；控制者的位置——誰能碰、哪些要核准、隨時能撤回——三家模型供應商都說要留給人。
 （成本（更快、更省）是另一種取捨，不在今天範圍，被問到再說。）
 講者自己的心得（LPQM Agent）：我花了很久讓那張 graph 能用，現在大部分都能交給通用 Harness。但拆開來看，被取代的是補能力的結構；術語表、判斷框架，是對業務的理解，現在變成 Skill；「不能在 prod 跑模型寫的程式」這條規定，到今天依然成立。如果被問到要不要繼續用 LangGraph：一份比對 11 套 coding Harness 原始碼的研究（2026-07）發現，沒有一套在 agent 迴圈裡用 LangGraph、LangChain 這類框架；LangChain 自己也做了 Deep Agents 這個 Harness。對照第一部分的光譜：graph 適合左半邊、路線事先排好的流程；越往右邊的開放 Loop，越是 Harness 的地盤——不是誰對誰錯，是位置不同。
 最後一句回到第 3 頁的鬆緊：哪些判斷交給模型，哪些由 Harness 控制。模型越強，可以放得越寬；決定要什麼、授權給誰，留在人這邊。
