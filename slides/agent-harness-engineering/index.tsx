@@ -2777,18 +2777,153 @@ const PreviewCard = ({ label, q, line }: { label: string; q: string; line: strin
   </div>
 );
 
+type TriKey = 'person' | 'func' | 'system';
+const TRI_INFO: Record<TriKey, { name: string; line: string; eg: string }> = {
+  person: { name: '個人型', line: '代表一個人', eg: '例：「幫我請下週三半天」' },
+  func: { name: '職能型', line: '代表一個跨系統的流程', eg: '例：新人到職' },
+  system: { name: '系統型', line: '代表一個系統', eg: '例：請假系統的 Agent' },
+};
+
+const TriBox = ({ k, x, y, w, h, showEg }: { k: TriKey; x: number; y: number; w: number; h: number; showEg: boolean }) => (
+  <div
+    style={{
+      position: 'absolute',
+      left: x,
+      top: y,
+      width: w,
+      height: h,
+      boxSizing: 'border-box',
+      border: `1.5px solid ${c.line}`,
+      background: c.panel,
+      borderRadius: 'var(--osd-radius)',
+      padding: '10px 16px',
+      textAlign: 'center',
+      display: 'flex',
+      flexDirection: 'column',
+      justifyContent: 'center',
+    }}
+  >
+    <div style={{ fontSize: 36, fontWeight: 800, lineHeight: 1.3 }}>{TRI_INFO[k].name}</div>
+    <div style={{ fontSize: 25, lineHeight: 1.4, color: c.muted, marginTop: 2 }}>{TRI_INFO[k].line}</div>
+    {showEg ? <div style={{ fontSize: 22, lineHeight: 1.4, color: c.dim, marginTop: 6 }}>{TRI_INFO[k].eg}</div> : null}
+  </div>
+);
+
+type TriEdge = { from: TriKey; to: TriKey; label: string };
+
+const TriangleDiagram = ({ edges, showEg = true, id }: { edges?: TriEdge[]; showEg?: boolean; id: string }) => {
+  const W = 1640;
+  const bw = 520;
+  const bh = showEg ? 156 : 118;
+  const H = showEg ? 440 : 380;
+  const pos: Record<TriKey, { x: number; y: number }> = {
+    person: { x: (W - bw) / 2, y: 0 },
+    func: { x: 40, y: H - bh },
+    system: { x: W - 40 - bw, y: H - bh },
+  };
+  const ctr = (k: TriKey) => ({ x: pos[k].x + bw / 2, y: pos[k].y + bh / 2 });
+  const gap = edges ? 10 : 4;
+  const clip = (a: { x: number; y: number }, b: { x: number; y: number }) => {
+    const dx = b.x - a.x;
+    const dy = b.y - a.y;
+    const tx = dx === 0 ? Infinity : (bw / 2 + gap) / Math.abs(dx);
+    const ty = dy === 0 ? Infinity : (bh / 2 + gap) / Math.abs(dy);
+    const t = Math.min(tx, ty);
+    return t;
+  };
+  const seg = (from: TriKey, to: TriKey) => {
+    const a = ctr(from);
+    const b = ctr(to);
+    const t1 = clip(a, b);
+    const t2 = clip(b, a);
+    return {
+      x1: a.x + (b.x - a.x) * t1,
+      y1: a.y + (b.y - a.y) * t1,
+      x2: b.x + (a.x - b.x) * t2,
+      y2: b.y + (a.y - b.y) * t2,
+    };
+  };
+  const list: TriEdge[] = edges ?? [
+    { from: 'person', to: 'system', label: '' },
+    { from: 'person', to: 'func', label: '' },
+    { from: 'func', to: 'system', label: '' },
+  ];
+  return (
+    <div style={{ position: 'relative', width: W, height: H }}>
+      <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`} style={{ position: 'absolute', left: 0, top: 0 }} aria-hidden="true">
+        <defs>
+          <RtMarker id={`${id}-head`} />
+        </defs>
+        {list.map((e) => {
+          const g = seg(e.from, e.to);
+          return (
+            <path
+              key={e.from + e.to}
+              d={`M${g.x1} ${g.y1} L${g.x2} ${g.y2}`}
+              fill="none"
+              stroke={c.dim}
+              strokeWidth="2"
+              markerEnd={edges ? `url(#${id}-head)` : undefined}
+            />
+          );
+        })}
+      </svg>
+      {(['person', 'func', 'system'] as TriKey[]).map((k) => (
+        <TriBox key={k} k={k} x={pos[k].x} y={pos[k].y} w={bw} h={bh} showEg={showEg} />
+      ))}
+      {edges
+        ? edges.map((e) => {
+            const g = seg(e.from, e.to);
+            const mx = (g.x1 + g.x2) / 2;
+            const my = (g.y1 + g.y2) / 2;
+            const horizontal = Math.abs(g.y1 - g.y2) < 1;
+            const leftSide = !horizontal && mx < W / 2;
+            const st: CSSProperties = {
+              position: 'absolute',
+              fontSize: 23,
+              lineHeight: 1.35,
+              color: c.muted,
+              whiteSpace: 'nowrap',
+            };
+            if (horizontal) {
+              st.left = mx - 260;
+              st.width = 520;
+              st.textAlign = 'center';
+              st.top = my - 44;
+            } else if (leftSide) {
+              st.right = W - (mx - 40);
+              st.textAlign = 'right';
+              st.top = my - 16;
+            } else {
+              st.left = mx + 40;
+              st.top = my - 16;
+            }
+            return (
+              <div key={e.from + e.to + 'l'} style={st}>
+                {e.label}
+              </div>
+            );
+          })
+        : null}
+    </div>
+  );
+};
+
+const TrianglePage: Page = () => (
+  <Frame title={<>一個 Agent 先問它代表誰：<br />一個人、一個流程，或一個系統</>}>
+    <TriangleDiagram id="osd-ah-tri-a" />
+    <p style={{ fontSize: 32, fontWeight: 800, lineHeight: 1.5, margin: '36px 0 0' }}>
+      判斷題：<Hi>它替誰要東西？</Hi>一個人、一個流程，或它只守住一個系統。
+    </p>
+  </Frame>
+);
+
 const Part3Preview: Page = () => (
   <Frame title="交一個通用 Harness 給使用者就好嗎？分三段回答">
     <div style={{ display: 'flex', gap: 28 }}>
-      <PreviewCard label="現在 · 證據" q="什麼會過期？" line="拆一個舊 Agent：LPQM Agent" />
-      <PreviewCard label="未來幾年 · 提案" q="留下來的放在哪裡？" line="每個系統的 System Agent" />
-      <PreviewCard label="再往後 · 推論" q="我們的工作變成什麼？" line="從做出來，到定義和證明" />
-    </div>
-    <div style={{ display: 'flex', alignItems: 'center', gap: 18, marginTop: 36, fontSize: 24, color: c.muted }}>
-      <span style={{ whiteSpace: 'nowrap' }}>越確定</span>
-      <div style={{ flex: 1, borderTop: `2px solid ${c.hair}` }} />
-      <span style={{ fontFamily: mono, color: c.dim }}>→</span>
-      <span style={{ whiteSpace: 'nowrap' }}>越不確定</span>
+      <PreviewCard label="提案" q="會有哪些 Agent？" line="代表人、流程、系統的三種 Agent" />
+      <PreviewCard label="證據" q="Agent 裡什麼會過期？" line="拆一個舊 Agent：LPQM Agent" />
+      <PreviewCard label="推論" q="我們的工作變成什麼？" line="從做出來，到定義和證明" />
     </div>
   </Frame>
 );
@@ -2866,7 +3001,7 @@ const Reasons = ({ children }: { children: ReactNode }) => (
 );
 
 const RedrawBefore: Page = () => (
-  <Frame title="拆開一個舊 Agent：每個節點都在補能力或守要求">
+  <Frame title={<>拆開一個系統型 Agent：<br />LPQM 的每個節點，都在補能力或守要求</>}>
     <p style={{ fontSize: 28, color: c.muted, margin: '0 0 20px' }}>例：LPQM Agent，製程品質資料問答 · 2025.03 用 LangGraph 打造 · 給 RD 工程師用的 service</p>
     <Steps>
       <div style={{ display: 'grid', gridTemplateColumns: TABLE_COLS, alignItems: 'center' }}>
@@ -2981,7 +3116,7 @@ const KeptRow = ({ item, kind }: { item: string; kind: WhyKind | '業務知識' 
 };
 
 const RedrawAfter: Page = () => (
-  <Frame title="重構舊 Agent：補能力的拆掉，守要求的留下">
+  <Frame title="重構 LPQM Agent：補能力的拆掉，系統型的位置留下">
     <div style={{ display: 'flex', gap: 40, alignItems: 'stretch' }}>
       <Panel tone="muted" style={{ flex: 1, padding: '24px 32px 8px' }}>
         <p style={{ fontSize: 32, fontWeight: 800, color: c.muted, margin: '0 0 8px' }}>交給通用 Harness</p>
@@ -3000,7 +3135,7 @@ const RedrawAfter: Page = () => (
       </Panel>
     </div>
     <p style={{ fontSize: 40, fontWeight: 800, lineHeight: 1.5, margin: '36px 0 0' }}>
-      迴圈交給通用 Harness 就夠；<Hi>業務知識和守要求，需要另外找地方放</Hi>。
+      <Hi>形態留下，內部變薄</Hi>：迴圈交給通用 Harness，強制、資料和知識留在系統端。
     </p>
   </Frame>
 );
@@ -3036,7 +3171,7 @@ const OutsideRow = ({ item, why, last = false }: { item: string; why: string; la
 );
 
 const PluginDelivery: Page = () => (
-  <Frame title="Plugin 是包裝，不能錯的要做在外面" back={{ to: DeliverToPage, label: '兩種 Agent' }}>
+  <Frame title="Plugin 是包裝，不能錯的要做在外面" back={{ to: DeliverToPage, label: '三種 Agent' }}>
     <div style={{ display: 'flex', gap: 40, alignItems: 'stretch' }}>
       <div
         style={{
@@ -3252,7 +3387,7 @@ const VisionNote = ({ head, children, strong = false }: { head: string; children
 );
 
 const VisionPage: Page = () => (
-  <Frame title={<>再往前想一步：<br />跨段找 root cause，一個 Agent 統籌，各段回證據</>}>
+  <Frame title="跨段找 root cause：一個 Agent 統籌，各段回證據" back={{ to: OrgAgentPage, label: '人工核准' }}>
     <div style={{ display: 'flex', gap: 56, alignItems: 'flex-start' }}>
       <div style={{ width: 1080, flexShrink: 0 }}>
         <div style={{ display: 'flex', alignItems: 'center' }}>
@@ -3273,7 +3408,7 @@ const VisionPage: Page = () => (
         <div style={{ display: 'flex', gap: 24 }}>
           {['前段', '中段', '後段'].map((s) => (
             <VBox key={s} w={344} sub="回：假設＋證據">
-              <K>{s} System Agent</K>
+              <K>{s}系統型 Agent</K>
             </VBox>
           ))}
         </div>
@@ -3305,12 +3440,12 @@ const VisionPage: Page = () => (
 );
 
 const OrgAgentPage: Page = () => (
-  <Frame title="走到那一步：先提建議，有核准紀錄才一類一類放手">
+  <Frame title={<>人工核准也一樣拆：<br />補能力的，有紀錄就放手；守要求的，永遠留給人</>}>
     <div style={{ display: 'flex', alignItems: 'stretch' }}>
       <LoopStep
         no="01"
         title="異常進來，先調查"
-        sub={<>例：這批貨在後段量測異常。Agent 醒來，問各段的 System Agent，<K>整理出處置建議。</K></>}
+        sub={<>例：這批貨在後段量測異常。<K>職能型 Agent</K> 醒來，問前中後段的<K>系統型 Agent</K>，整理出處置建議。</>}
       />
       <StageArrow />
       <LoopStep
@@ -3340,47 +3475,72 @@ const OrgAgentPage: Page = () => (
       <b>業界已經這樣做：</b>Azure SRE Agent 的執行模式依每個 response plan 分開設定；<br />官方建議先用 Review 跑 2–4 週，一直被核准的那類再切成 Autonomous。
     </div>
     <p style={{ fontSize: 32, fontWeight: 800, lineHeight: 1.5, margin: '30px 0 0' }}>
-      越自主，<Hi>守要求越重要</Hi>；放寬的依據，是一筆一筆的核准紀錄。
+      放手的依據是<Hi>一筆一筆的核准紀錄</Hi>；守要求的那幾類，不在放手的範圍。
     </p>
+    <DetailLinks items={[{ label: '跨段找 root cause', to: VisionPage }]} />
   </Frame>
 );
 
+const WhoRow = ({ k, children }: { k: string; children: ReactNode }) => (
+  <div style={{ display: 'grid', gridTemplateColumns: '110px 1fr', columnGap: 14, padding: '14px 0', borderTop: `1px solid ${c.hair}` }}>
+    <div style={{ fontSize: 22, color: c.muted, paddingTop: 4 }}>{k}</div>
+    <div style={{ fontSize: 26, lineHeight: 1.5 }}>{children}</div>
+  </div>
+);
+
+const WhoCol = ({ word, who, navy = false, children }: { word: string; who: string; navy?: boolean; children: ReactNode }) => (
+  <Panel style={{ flex: 1, minWidth: 0, padding: '24px 30px 10px', border: navy ? '2px solid var(--osd-accent)' : `1.5px solid ${c.line}` }}>
+    <div style={{ fontSize: 44, fontWeight: 900, lineHeight: 1.2, color: navy ? 'var(--osd-accent)' : undefined }}>{word}</div>
+    <div style={{ fontSize: 28, fontWeight: 800, lineHeight: 1.3, margin: '4px 0 12px' }}>{who}</div>
+    {children}
+  </Panel>
+);
+
 const WhoBuilds: Page = () => (
-  <Frame title={<>交通用 Harness 就好嗎？<br />大部分是；要每次都對的，才需要我們</>}>
-    <div style={{ display: 'flex', gap: 36 }}>
-      <FixCard word="使用者自己做" when="大部分需求">
-        <FixRow k="什麼情況">
-          代表使用者本人；
-          <br />
-          結果看一次就好、拿來探索
-        </FixRow>
-        <FixRow k="怎麼做">
+  <Frame title={<>個人型交給使用者自己做；<br />系統型和職能型，才需要我們</>}>
+    <div style={{ display: 'flex', gap: 28, alignItems: 'stretch' }}>
+      <WhoCol word="個人型" who="使用者自己做">
+        <WhoRow k="怎麼做">
           通用 Harness，
           <br />
           加上自己寫的 Skill
-        </FixRow>
-      </FixCard>
-      <FixCard word="需要我們" when="任一條成立">
-        <FixRow k="什麼情況">
-          線上沒有人：代表單位或流程；
+        </WhoRow>
+        <WhoRow k="誰判斷">
+          使用者自己看結果，
           <br />
-          或要每次都對：重複使用、拿去做決策
-        </FixRow>
-        <FixRow k="我們提供">
-          身分與權限、事前的強制、
+          他是領域專家
+        </WhoRow>
+      </WhoCol>
+      <WhoCol word="系統型" who="需要我們" navy>
+        <WhoRow k="做什麼">
+          把規則寫成強制、
+          <br />
+          守住資料
+        </WhoRow>
+        <WhoRow k="跟誰">
+          和懂系統的人
+          <br />
+          一起維護知識
+        </WhoRow>
+      </WhoCol>
+      <WhoCol word="職能型" who="需要我們" navy>
+        <WhoRow k="做什麼">
+          跨系統的
+          <br />
+          身分與權限
+        </WhoRow>
+        <WhoRow k="標準">
+          每次都對：
           <br />
           測試題與 eval
-        </FixRow>
-        <FixRow k="分工">
-          需求單位給題目和標準答案；
-          <br />
-          我們大量、重複地檢查
-        </FixRow>
-      </FixCard>
+        </WhoRow>
+      </WhoCol>
     </div>
-    <p style={{ fontSize: 22, lineHeight: 1.5, color: c.muted, margin: '18px 0 0' }}>資料規定與成本看部門，沒有通用答案，跟需求單位一起決定。</p>
+    <p style={{ fontSize: 24, lineHeight: 1.5, color: c.muted, margin: '20px 0 0' }}>
+      需求單位給題目和標準答案；我們大量、重複地檢查。資料規定與成本看部門，跟需求單位一起決定。
+    </p>
     <p style={{ fontSize: 34, fontWeight: 800, lineHeight: 1.5, margin: '22px 0 0' }}>
-      使用者知道什麼是對的；<Hi>我們讓它每次都對</Hi>。
+      交一個通用 Harness 給使用者，<Hi>只夠個人型那一角</Hi>。
     </p>
   </Frame>
 );
@@ -3871,45 +4031,6 @@ const RtMarker = ({ id }: { id: string }) => (
   </marker>
 );
 
-const RtSmall = ({ head, sub, w }: { head: string; sub?: string; w: number }) => (
-  <div
-    style={{
-      width: w,
-      flexShrink: 0,
-      boxSizing: 'border-box',
-      border: `1.5px solid ${c.line}`,
-      background: c.panel,
-      borderRadius: 'var(--osd-radius)',
-      padding: '12px 10px',
-      textAlign: 'center',
-      display: 'flex',
-      flexDirection: 'column',
-      justifyContent: 'center',
-    }}
-  >
-    <div style={{ fontSize: 28, fontWeight: 700, lineHeight: 1.3, color: c.muted }}>{head}</div>
-    {sub && <div style={{ fontSize: 20, lineHeight: 1.4, color: c.muted, marginTop: 4 }}>{sub}</div>}
-  </div>
-);
-
-const RtBig = ({ head, sub, tag }: { head: string; sub: ReactNode; tag?: string }) => (
-  <div
-    style={{
-      flex: 1,
-      boxSizing: 'border-box',
-      border: `1.5px solid ${c.line}`,
-      background: c.panel,
-      borderRadius: 'var(--osd-radius)',
-      padding: '16px 18px',
-      textAlign: 'center',
-    }}
-  >
-    <div style={{ fontSize: 34, fontWeight: 800, lineHeight: 1.3 }}>{head}</div>
-    <div style={{ fontSize: 23, lineHeight: 1.45, color: c.muted, marginTop: 4 }}>{sub}</div>
-    {tag && <div style={{ fontSize: 20, lineHeight: 1.45, color: 'var(--osd-accent)', marginTop: 6 }}>{tag}</div>}
-  </div>
-);
-
 const RtH = ({ w, id, both, label }: { w: number; id: string; both?: boolean; label?: string }) => (
   <div style={{ width: w, flexShrink: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
     {label && <div style={{ fontSize: 20, lineHeight: 1.3, color: c.muted }}>{label}</div>}
@@ -3935,74 +4056,23 @@ const RtV = ({ id, up, label, w }: { id: string; up?: boolean; label: string; w:
 );
 
 const DeliverToPage: Page = () => (
-  <Frame title="兩種 Agent 都透過 System Agent 辦事，結果都回到人手上">
-    <div id="osd-ah-rt-map" style={{ width: 1640 }}>
-      <div style={{ display: 'flex', gap: 40 }}>
-        <div style={{ width: 900, display: 'flex', alignItems: 'stretch' }}>
-          <RtSmall head="使用者" w={170} />
-          <RtH w={130} id="osd-ah-rt-h1" both label="對話" />
-          <RtBig head="個人型 Agent" sub="例：Claude Code，人在線上" tag="裝了我們的 Plugin：知道怎麼找 System Agent" />
-        </div>
-        <div style={{ width: 700, display: 'flex', alignItems: 'stretch' }}>
-          <RtSmall head="事件" sub="例：每月底排程" w={170} />
-          <RtH w={50} id="osd-ah-rt-h2" />
-          <RtBig head="職能型 Agent" sub={<>事件觸發，沒人在線上<br />例：檢查還沒核准的假單</>} />
-        </div>
-      </div>
-
-      <div style={{ display: 'flex', gap: 40, margin: '10px 0' }}>
-        <div style={{ width: 900, display: 'flex' }}>
-          <div style={{ width: 300 }} />
-          <RtV id="osd-ah-rt-a1" label="請求" w={150} />
-          <RtV id="osd-ah-rt-a2" up label="結果＋做了哪些操作" w={300} />
-        </div>
-        <div style={{ width: 700, display: 'flex' }}>
-          <div style={{ width: 220 }} />
-          <RtV id="osd-ah-rt-b1" label="請求" w={120} />
-          <RtV id="osd-ah-rt-b2" up label="結果 → 通知指定的人" w={240} />
-        </div>
-      </div>
-
-      <div
-        style={{
-          boxSizing: 'border-box',
-          border: '2px solid var(--osd-accent)',
-          background: c.panel,
-          borderRadius: 'var(--osd-radius)',
-          padding: '16px 24px',
-          textAlign: 'center',
-        }}
-      >
-        <div style={{ fontSize: 34, fontWeight: 800, lineHeight: 1.3 }}>System Agent（請假系統的 Agent）</div>
-        <div style={{ fontSize: 23, lineHeight: 1.45, color: c.muted, marginTop: 4 }}>判斷、操作請假系統</div>
-      </div>
-
-      <div style={{ display: 'flex', justifyContent: 'center', gap: 90, margin: '10px 0' }}>
-        <RtV id="osd-ah-rt-c1" label="操作" w={130} />
-        <RtV id="osd-ah-rt-c2" up label="結果" w={130} />
-      </div>
-
-      <div
-        style={{
-          boxSizing: 'border-box',
-          border: '2px solid var(--osd-accent)',
-          background: '#ffffff',
-          borderRadius: 'var(--osd-radius)',
-          padding: '16px 30px',
-          textAlign: 'center',
-        }}
-      >
-        <div style={{ fontSize: 34, fontWeight: 800, lineHeight: 1.3 }}>請假系統</div>
-        <div style={{ fontSize: 27, lineHeight: 1.45, marginTop: 6 }}>
-          <b style={{ color: 'var(--osd-accent)' }}>守要求寫在這裡：</b>
-          餘額不足不能送出；主管核准才生效；只能看自己的資料
-        </div>
-      </div>
-      <div style={{ marginTop: 14, fontSize: 23, lineHeight: 1.5, color: c.muted }}>
-        <b>對外介面：</b>A2A；對方的 Harness 只支援 MCP 時，包成一個 MCP 工具
-      </div>
-      <DetailLinks items={[{ label: 'Plugin', to: PluginDelivery }]} />
+  <Frame title={<>三角形的邊：<br />要東西的找系統型辦事，結果回到人手上</>}>
+    <TriangleDiagram
+      id="osd-ah-tri-b"
+      showEg={false}
+      edges={[
+        { from: 'person', to: 'system', label: '我請假：送出的是我的假單' },
+        { from: 'func', to: 'system', label: '到職流程：開帳號、給假別額度' },
+        { from: 'func', to: 'person', label: '需要核准：送到主管手上' },
+      ]}
+    />
+    <div style={{ marginTop: 22, fontSize: 23, lineHeight: 1.5, color: c.muted }}>
+      <b>對外介面：</b>A2A；對方的 Harness 只支援 MCP 時，包成一個 MCP 工具
     </div>
+    <DetailLinks items={[{ label: 'Plugin', to: PluginDelivery }]} />
+    <p style={{ fontSize: 32, fontWeight: 800, lineHeight: 1.5, margin: '14px 0 0' }}>
+      意圖從<Hi>人或流程</Hi>來；系統型照規則把事辦完。
+    </p>
   </Frame>
 );
 
@@ -4041,15 +4111,15 @@ const SysPath = ({ ok, children }: { ok: boolean; children: ReactNode }) => (
   </div>
 );
 
-const SysChain = ({ id, from, mid, verdict }: { id: string; from: string; mid: string; verdict: ReactNode }) => (
+const SysChain = ({ id, from, mid, to, verdict }: { id: string; from: string; mid: string; to: string; verdict: ReactNode }) => (
   <div id={id} style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 36 }}>
     <SysBox>{from}</SysBox>
     <span style={{ fontSize: 28, color: c.dim }}>→</span>
     <SysBox>{mid}</SysBox>
     <span style={{ fontSize: 28, color: c.dim }}>→</span>
-    <SysBox>System Agent</SysBox>
+    <SysBox>系統型 Agent</SysBox>
     <span style={{ fontSize: 28, color: c.dim }}>→</span>
-    <SysBox>請假系統</SysBox>
+    <SysBox>{to}</SysBox>
     <div style={{ marginLeft: 16, fontSize: 26, lineHeight: 1.45, color: 'var(--osd-accent)', display: 'flex', gap: 10 }}>
       <span style={{ fontWeight: 800 }}>✓</span>
       <span>{verdict}</span>
@@ -4065,11 +4135,11 @@ const IntroCard = ({ k, children }: { k: string; children: ReactNode }) => (
 );
 
 const SystemAgentIntro: Page = () => (
-  <Frame title={<>提案：<br />替每個系統建一個 System Agent，承接留下的知識和守要求</>}>
+  <Frame title="系統型：代表一個系統，守住它的規則和資料">
     <div style={{ display: 'flex', gap: 56, alignItems: 'center' }}>
       <div style={{ width: 640, flexShrink: 0, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
         <div style={{ width: 460, boxSizing: 'border-box', border: '2px solid var(--osd-accent)', background: c.panel, borderRadius: 'var(--osd-radius)', padding: '20px 24px', textAlign: 'center' }}>
-          <div style={{ fontSize: 36, fontWeight: 800, lineHeight: 1.3 }}>System Agent</div>
+          <div style={{ fontSize: 36, fontWeight: 800, lineHeight: 1.3 }}>系統型 Agent</div>
           <div style={{ fontSize: 24, lineHeight: 1.45, color: c.muted, marginTop: 4 }}>請假系統的 Agent</div>
         </div>
         <RtV id="osd-ah-sa-intro-arrow" label="操作" w={160} />
@@ -4079,13 +4149,13 @@ const SystemAgentIntro: Page = () => (
         <div style={{ marginTop: 18, fontSize: 22, lineHeight: 1.4, color: c.muted }}>每個系統一個</div>
       </div>
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 18 }}>
-        <IntroCard k="領域判斷">使用者說「我下週三想請半天」：該用哪種假、還剩幾天、該找哪位主管核准</IntroCard>
-        <IntroCard k="操作系統">明確的操作直接執行，模糊的才動用模型</IntroCard>
-        <IntroCard k="守要求">規定寫在系統這一端，寫一次：<br />餘額不足不能送出、主管核准才生效、只能看自己的資料</IntroCard>
+        <IntroCard k="守要求">規定寫成強制，在系統這一端寫一次：<br />餘額不足不能送出、主管核准才生效</IntroCard>
+        <IntroCard k="資料不出系統">只回傳呼叫者有權看的結果：<br />只能看自己的假單</IntroCard>
+        <IntroCard k="知識在這裡維護">懂請假系統的人，在同一個地方改規則和知識</IntroCard>
       </div>
     </div>
     <p style={{ fontSize: 32, fontWeight: 800, lineHeight: 1.5, margin: '36px 0 0' }}>
-      判斷交給 System Agent；<Hi>規定，只寫一次</Hi>。
+      三個理由都<Hi>不是能力問題</Hi>；模型再強，系統型還是要在。
     </p>
   </Frame>
 );
@@ -4098,40 +4168,102 @@ const FnRow = ({ k, a, b }: { k: string; a: ReactNode; b: ReactNode }) => (
   </TRow>
 );
 
-const FunctionalIntro: Page = () => (
-  <Frame title="職能型 Agent：沒人開口，由事件觸發去辦事">
-    <TRow cols="300px 1fr 1fr" head>
-      <div />
-      <div style={{ color: c.muted }}>個人型 Agent</div>
-      <div>職能型 Agent</div>
-    </TRow>
-    <FnRow k="誰讓它開始" a="使用者開口（例：Claude Code）" b="事件、排程（例：每月底）" />
-    <FnRow k="請假系統的例子" a="「幫我請下週三半天」" b="檢查還沒核准的假單，提醒主管" />
-    <FnRow k="人在不在線上" a="在" b={<b>不在</b>} />
-    <FnRow k="結果給誰" a="對話裡的使用者" b="指定的人：發通知、開工單" />
-    <p style={{ fontSize: 32, fontWeight: 800, lineHeight: 1.5, margin: '40px 0 0' }}>
-      兩種 Agent 找的是<Hi>同一個 System Agent</Hi>；差別在有沒有人在線上。
-    </p>
-  </Frame>
+const FnBox = ({ children, navy = false, w }: { children: ReactNode; navy?: boolean; w: number }) => (
+  <div
+    style={{
+      width: w,
+      flexShrink: 0,
+      boxSizing: 'border-box',
+      border: navy ? '2px solid var(--osd-accent)' : `1.5px solid ${c.line}`,
+      background: c.panel,
+      borderRadius: 'var(--osd-radius)',
+      padding: '16px 14px',
+      textAlign: 'center',
+    }}
+  >
+    {children}
+  </div>
 );
 
+const FunctionalIntro: Page = () => {
+  const ys = [70, 154, 238, 322];
+  const names = ['HR 系統', '帳號系統', '門禁系統', '請假系統'];
+  return (
+    <Frame title="職能型：代表一個跨系統的流程，不代表任何一個人">
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <FnBox w={300}>
+          <div style={{ fontSize: 34, fontWeight: 800, lineHeight: 1.3 }}>事件</div>
+          <div style={{ fontSize: 23, lineHeight: 1.45, color: c.muted, marginTop: 4 }}>HR 建立到職資料</div>
+        </FnBox>
+        <RtH w={110} id="osd-ah-fn-h1" />
+        <FnBox w={400} navy>
+          <div style={{ fontSize: 34, fontWeight: 800, lineHeight: 1.3 }}>職能型 Agent</div>
+          <div style={{ fontSize: 23, lineHeight: 1.45, color: c.muted, marginTop: 4 }}>新人到職流程</div>
+        </FnBox>
+        <svg width={150} height={352} viewBox="0 0 150 352" style={{ display: 'block', flexShrink: 0 }} aria-hidden="true">
+          <defs>
+            <RtMarker id="osd-ah-fn-fan" />
+          </defs>
+          {ys.map((y) => (
+            <path key={y} d={`M4 176 C70 176, 70 ${y}, 144 ${y}`} fill="none" stroke={c.dim} strokeWidth="2" markerEnd="url(#osd-ah-fn-fan)" />
+          ))}
+        </svg>
+        <div style={{ width: 360, flexShrink: 0 }}>
+          <div style={{ fontSize: 22, color: c.muted, textAlign: 'center', height: 40, lineHeight: '30px' }}>系統型 Agent</div>
+          <div style={{ position: 'relative', height: 312 }}>
+            {names.map((n, i) => (
+              <div
+                key={n}
+                style={{
+                  position: 'absolute',
+                  left: 0,
+                  right: 0,
+                  top: ys[i] - 70,
+                  height: 60,
+                  boxSizing: 'border-box',
+                  border: `1.5px solid ${c.line}`,
+                  background: c.panel,
+                  borderRadius: 'var(--osd-radius)',
+                  textAlign: 'center',
+                  fontSize: 26,
+                  lineHeight: '57px',
+                }}
+              >
+                <b>{n}</b>
+                <span style={{ color: c.muted }}>的 Agent</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+      <p style={{ fontSize: 24, lineHeight: 1.5, color: c.muted, margin: '36px 0 0' }}>
+        只碰一個系統的流程，不算職能型：例如每月提醒主管核准假單，是請假系統的 Agent 自己的排程。
+      </p>
+      <p style={{ fontSize: 32, fontWeight: 800, lineHeight: 1.5, margin: '24px 0 0' }}>
+        職能型存在的理由是<Hi>跨系統</Hi>；不跨系統，就交給那個系統的 Agent。
+      </p>
+    </Frame>
+  );
+};
+
 const AgentLadderPage: Page = () => (
-  <Frame title="System Agent 操作系統時，權限永遠綁在一個指定的人身上">
+  <Frame title="系統型不另外加權限，只檢查呼叫者帶來的權限">
     <div id="osd-ah-sysagent-chains" style={{ marginTop: 8 }}>
-      <SysChain id="osd-ah-sysagent-chain-a" from="使用者" mid="個人型 Agent" verdict={<>用這位<b>使用者</b>的權限：送出的是他的假單</>} />
+      <SysChain id="osd-ah-sysagent-chain-a" from="使用者" mid="個人型 Agent" to="請假系統" verdict={<>用這位<b>使用者</b>的權限：送出的是他的假單</>} />
       <SysChain
         id="osd-ah-sysagent-chain-b"
-        from="事件"
+        from="到職資料"
         mid="職能型 Agent"
-        verdict={<>用它<b>自己的最小權限</b>，背後綁著一位指定的人</>}
+        to="帳號系統"
+        verdict={<>用它<b>自己的最小權限</b>，綁著一位指定的人</>}
       />
       <div id="osd-ah-sysagent-paths" style={{ marginTop: 26 }}>
-        <SysPath ok={false}>用 System Agent 自己的高權限 → <b>權限破口</b>：誰都能借它的權限做事</SysPath>
+        <SysPath ok={false}>系統型用自己的高權限 → <b>權限破口</b>：誰都能借它的權限做事</SysPath>
       </div>
     </div>
     <div style={{ marginTop: 22, fontSize: 24, lineHeight: 1.5, color: c.muted }}>別的 Agent 傳來的訊息，不能當成使用者的同意。</div>
     <p style={{ fontSize: 32, fontWeight: 800, lineHeight: 1.5, margin: '28px 0 0' }}>
-      <Hi>權限跟著人走</Hi>：個人型用使用者的，職能型用自己的最小權限，綁著指定的人。
+      <Hi>權限跟著代表的對象走</Hi>；系統型只在門口檢查。
     </p>
   </Frame>
 );
@@ -4162,13 +4294,13 @@ const mainPages: Page[] = [
   Part2Close,
   Act4,
   Part3Preview,
+  TrianglePage,
+  FunctionalIntro,
+  SystemAgentIntro,
+  DeliverToPage,
+  AgentLadderPage,
   RedrawBefore,
   RedrawAfter,
-  SystemAgentIntro,
-  FunctionalIntro,
-  AgentLadderPage,
-  DeliverToPage,
-  VisionPage,
   OrgAgentPage,
   WhoBuilds,
   OurWork,
@@ -4195,6 +4327,7 @@ const appendix: [Page, Page][] = [
   [MemoryPage, StatePage],
   [VerifyPage, StatePage],
   [PluginDelivery, DeliverToPage],
+  [VisionPage, OrgAgentPage],
 ];
 
 const pages: Page[] = [...mainPages, ...appendix.map(([p]) => p)];
@@ -4312,24 +4445,56 @@ OpenAI 的具體做法：AGENTS.md 當目錄不當百科；架構規則用 linte
 第二步，失敗變成測試題：Anthropic〈Demystifying evals for AI agents〉（2026-01）的建議是，不用等到有幾百題，「20～50 題從真實失敗來的簡單任務」就是很好的起點；已經上線的，從使用者回報的問題轉成測試題。
 第三步，換模型就重跑：這是 Lance 第二個教訓的具體做法。補能力的控制，換了模型重跑發現不需要了，就拆；守要求的，看下面那個指標。
 兩種算法：pass@k 是 k 次裡至少一次成功，k 越大分數越高；pass^k 是 k 次全部成功，k 越大分數越低。守要求要看的是後者——每次都對，才能放心交出去。
-回扣：第三部分附錄 Plugin 那頁說測試題放在包裝外面、「交通用 Harness 就好嗎」那頁的測試題與 eval，都是這一頁。
+回扣：第三部分附錄 Plugin 那頁說測試題放在包裝外面、「個人型交給使用者自己做」那頁的測試題與 eval，都是這一頁。
 重點句：鬆緊不靠感覺：紀錄指出哪裡錯，測試題決定能不能放。`,
   `第二部分結論：補能力的會放寬，守要求的不會；放不放，用證據決定。
 兩種理由，各自什麼時候放寬：守要求做成強制，模型再強都不放寬；補能力先收緊、標記理由，模型升級就檢查能不能放寬。
-轉場：原則有了。換我們自己提供工具時，只有一個問題：模型變強後，我們還要做什麼？這就是第三部分「定位」，分三段回答：現在（證據）、未來幾年（提案）、再往後（推論）。主軸一句話：補能力的交給通用 Harness；留下來的知識和守要求，做成系統那一端的 System Agent。`,
+轉場：原則有了。換我們自己提供工具時，只有一個問題：模型變強後，我們還要做什麼？這就是第三部分「定位」，分三段回答：會有哪些 Agent（提案）、Agent 裡什麼會過期（證據）、我們的工作變成什麼（推論）。主軸一句話：補能力的交給通用 Harness；留下來的知識和守要求，做成系統那一端的系統型 Agent。`,
   `【第三部分・定位 8 分鐘】
 第三部分回答一個問題：模型變強後，我們還要做什麼？這裡的「我們」是替別人做 Agent 的人——在座每一位，不只講者。
 先拋一個命題：以後面對需求，是不是交一個通用 Harness 給使用者就好？我們頂多幫忙做 Skill、做 Plugin？
 可以這樣問台下：Claude Code 寫程式這麼順手，知識能加 Skill、操作能力能接工具或 Plugin，都補上之後，就能直接交給其他單位用了嗎？
-在這裡停一下，讓問題懸著。不憑感覺回答，拿一個真實系統來驗證：LPQM Data Summary Agent。
+在這裡停一下，讓問題懸著。不憑感覺回答，分三段：會有哪些 Agent（提案）、Agent 裡什麼會過期（證據，拿一個真實系統來驗證：LPQM Data Summary Agent）、我們的工作變成什麼（推論）。
 這裡說的通用 Harness，指的是引擎（迴圈、工具呼叫、context 管理）；預設要為使用者重新設定——後面要講的就是怎麼重新調鬆緊。`,
-  `（第三部分的地圖）先回答開場的命題：交一個通用 Harness 給使用者就好嗎？分三段，時間一段比一段遠，確定程度也一段比一段低。
-第一段是現在，拿證據說話：拆一個真實的舊 Agent，看什麼會過期。
-第二段是未來幾年，是我的提案，不是已經證實的事：留下來的知識和守要求，放進每個系統的 System Agent。
-第三段是再往後，是推論：這些變化對我們的工作代表什麼。
-講的時候，每一段都會說清楚它是證據、方向還是推論。
-重點句：時間越遠，越不確定；每一段都說清楚是證據、方向還是推論。`,
-  `（第一段：現在，證據）LPQM Agent 的每個節點，當初為什麼存在？這是 LPQM Data Summary Agent，講者自己做的專案。
+  `（第三部分的地圖）回答開場的命題：交一個通用 Harness 給使用者就好嗎？分三段，每段開頭都說清楚它是提案、證據還是推論。
+第一段是提案：會有哪些 Agent。第二段是證據：拆一個真實的舊 Agent，看裡面什麼會過期。第三段是推論：這些對我們的工作代表什麼。
+這一部分用第一性原則推。地基有四塊，性質不一樣，要講清楚：Agent＝模型＋Harness，是定義；模型會持續變強，是假設，整份簡報都靠它；每個控制只看兩種理由——補能力、守要求——是我們選的範圍，成本不在今天範圍；要求只能在資源那一端強制，是資安設計的老原則（complete mediation：每次存取都要經過檢查，能檢查到所有呼叫者的只有資源端）。
+重點句：每一段都說清楚是提案、證據還是推論。`,
+  `（第一段：會有哪些 Agent，提案）從第一性原則出發：每個 Agent 都代表某個對象，這個對象決定它想要什麼、用誰的權限。組織裡能被代表的對象，我們看到三種：一個人、一個流程、一個系統——所以有三種 Agent。
+個人型：代表一個人，例如手上的 Claude Code。前兩部分講的都是它。注意：它在背景跑、人不在線上，例如排程替我整理資訊，代表的還是那個人，所以還是個人型。
+職能型：代表一個跨系統的流程，例如新人到職。系統型：代表一個系統，例如請假系統的 Agent。後面兩頁各講一個。
+為什麼不用「人在不在線上」來分：那是實作細節。個人型也能在背景跑，職能型和系統型也都沒人在線上——用它來分，三種會糊在一起。真正分得開的，是它代表誰。
+判斷題：它替誰要東西？替一個人要，是個人型；替一個流程要，是職能型；它不要東西，只守住一個系統，是系統型。
+被問到「代表一個部門的 Agent 算哪一種」：公司內目前還沒有這種案例。真的出現時，用「用誰的權限」拆：替每位成員回答、用提問者的權限，是多人共用的個人型；用自己的身分去完成部門的目標，是職能型。
+這三種存在的理由，都不是能力問題，所以形態會留下來。
+重點句：先問它代表誰——一個人、一個流程，或一個系統。`,
+  `職能型：代表一個流程，不代表任何一個人。例子是新人到職：HR 建立到職資料，這個事件叫醒到職流程的 Agent；它分別去找 HR、帳號、門禁、請假系統的 Agent——開帳號、設門禁、給假別額度、排教育訓練。
+它的意圖來自流程：流程要完成什麼，它就去要什麼。沒有哪一個人在對它下指令。
+邊界規則：只碰一個系統的流程，不算職能型。例如每月底檢查還沒核准的假單、提醒主管——那只碰請假系統，是請假系統的 Agent 自己跑的排程。職能型存在的理由就是跨系統；不跨系統，它就沒有理由存在。
+實作上，職能型和個人型都是把 Harness 用 SDK 嵌進服務（SDK 的細節在後面「三角形的邊」那一頁）。業界例子：Azure SRE Agent 處理告警、AWS DevOps Agent 調查工單——都是代表一個流程、橫跨多個資源。
+下一頁：系統型。
+重點句：職能型存在的理由是跨系統；不跨系統，就交給那個系統的 Agent。`,
+  `系統型：代表一個系統。它不追求自己的目標，只處理別人的請求，並守住這個系統。LPQM Agent 就是 LPQM 這個系統的系統型 Agent。
+為什麼系統那一端要有它？三個理由，都不是能力問題：
+守要求——規定只能在系統這一端強制，因為那是所有呼叫者都必須經過的地方；寫成程式強制，寫一次，所有來找它的 Agent 都經過同一套檢查。餘額不足不能送出、主管核准才生效。
+資料不出系統——呼叫者不一定能拿到原始資料；系統型看得到資料，只回傳呼叫者有權看的結果。
+知識在這裡維護——請假規則、假別定義，由懂這個系統的人在同一個地方改，不用散在每個使用者的 Skill 裡。
+它也可以跑自己系統內的排程，例如每月提醒主管核准。
+要誠實說：系統型裡面也有模型在做判斷，例如判斷該用哪種假；那一層是補能力，會越來越薄——第二段拆 LPQM Agent 時會看到。另外，業界在資源端常見的是工具（MCP server），不是 Agent；我們主張放 Agent，是因為上面三個理由，這是提案。
+下一頁：三種 Agent 放在同一張圖上。
+重點句：三個理由都不是能力問題；模型再強，系統型還是要在。`,
+  `三角形的三條邊，就是三種 Agent 怎麼合作。個人型 → 系統型：我請假，個人型 Agent 透過請假系統的 Agent 辦，送出的是我的假單，結果回到我的對話裡（連同「做了哪些操作」，就是 LPQM Agent 留下來的那條守要求：回覆時附上操作清單）。個人型靠裝在它 Harness 裡的 Plugin，知道怎麼找系統型、什麼時候該找（Plugin 怎麼打包在附錄，右下角「細節」連結）。職能型 → 系統型：到職流程分別找各系統的 Agent。職能型 → 個人型：流程需要核准時，送到主管手上；結果也要回到人手上，例如發通知或開工單。
+對外介面：介面用 A2A；對方只支援 MCP，就把整個系統型 Agent 包成一個 MCP 工具。差別有三點：(a) 對方的 Harness：MCP 幾乎都支援，A2A 少數支援例如 Gemini CLI、雲端 Agent 平台；(b) 需要反問時：MCP 問客戶端畫面前的人，A2A 交回呼叫我們的 Agent；(c) 長時間任務：MCP 規格剛加入仍在實驗，A2A 原生支援輪詢、推送；結論：介面用 A2A，對方只支援 MCP 就把整個系統型 Agent 包成一個 MCP 工具；實務上同事手上的 Harness 多半只支援 MCP。細節見附錄的 MCP、A2A、Agent Card 頁。
+系統型與職能型 Agent 都是把 Harness 用 SDK 嵌進服務，差別在誰來找它——系統型是別的 Agent 來找，職能型是事件來叫。現在主要的 Harness 都提供 SDK：Claude Agent SDK 給的是跟 Claude Code 一樣的工具、迴圈和 context 管理，Python、TypeScript 都能用，也有 hooks、子 Agent、MCP、權限、session；Codex SDK（TypeScript、Python）可以開 thread、跑任務，官方列的用途包括放進 CI/CD；OpenCode 有 @opencode/sdk，在程式裡直接起一個 OpenCode。框架那邊反過來：LangChain 的 Deep Agents 自稱 agent harness，跑在 LangGraph 的執行環境上。兩邊收斂成同一個形狀：迴圈、工具、Skill、子 Agent、hook、MCP、session。
+被問到「那以後還用 LangGraph 嗎」：那篇比對 11 套 coding Harness 原始碼的論文發現，沒有一套在 Agent 的執行環境用 LangChain、LangGraph 這類框架，迴圈都是自己寫的；它的建議是，要現成的起點，就用 Harness 的 SDK。但這是 Agent 迴圈的趨勢，不是規則——LPQM Agent 裡真正固定的流程，用 graph 寫仍然合理（回到 Workflow 到 Loop 那頁的左端）。
+這三條邊說的是誰找誰；那系統型用誰的權限？下一頁。
+重點句：意圖從人或流程來；系統型照規則把事辦完。`,
+  `（還在第一段）三種 Agent 各用誰的權限？
+這是系統型 Agent 最重要的工程重點，分兩種情況。個人型 Agent 來找它（例如使用者請假，送出的是他的假單）：用原始使用者的權限操作系統，身分沿著整條鏈傳下去，系統用這個身分查權限。職能型 Agent 來找它（事件觸發，沒有使用者可以代表）：用它自己的最小權限，而且背後要綁一位指定的人——例如 Microsoft Entra 替每個 agent 身分指定 sponsor，agent 身分也不能擁有高權限管理角色。兩種都不能用系統型自己的高權限，否則別人就能借它的權限做事——這是 confused deputy，也就是權限破口，而且出事追不到人。這就是貫穿全場的一條原則：權限永遠綁在一個指定的人身上。另外，別的 Agent 傳來的訊息不能當成使用者同意（Claude Code 文件明文規定）。
+名片補充：Agent Card 放在固定網址，對方模型只會讀到 description 和 skills 的名稱與描述——那是唯一能影響對方「要不要找我們」的地方，要寫清楚會做什麼、不做什麼；但不能靠描述擋人，真正的權限在我們 server 端依呼叫者身分決定。
+第一段到這裡：三種 Agent 的形態，都因為不是能力的理由而存在。那它們裡面呢？第二段拆一個真的。
+重點句：權限跟著代表的對象走；系統型只在門口檢查。`,
+  `（第二段：Agent 裡什麼會過期，證據）LPQM Agent 是系統型：它代表 LPQM 這一個系統。它的每個節點，當初為什麼存在？這是 LPQM Data Summary Agent，講者自己做的專案。
 先只看上排：四個節點各做什麼。Extractor 依術語表找出問句裡的術語；Clarifier 判斷分析主體、分析方式是否明確，不明確就先反問；接著依條件抓資料（圖上省略）；Plan & Execute 先排步驟，再用設計好的表格工具照著執行；Summarizer 整理工具呼叫過程，說明結果怎麼來。
 Extractor 有兩個原因：術語表太大放不進 prompt（補能力）；欄位值必須 100% 正確（守要求）。
 Clarifier：當時模型不會主動反問（補能力）。
@@ -4342,65 +4507,32 @@ Summarizer：只給最終表格太單薄，也要讓使用者確認操作符合�
   `同一個系統，鬆緊重調一次。左邊是交給通用 Harness 的，右邊是留下來的。
 左邊都是補能力：術語表放不進 prompt，所以先固定篩一次——現在模型需要時自己查；模型不會主動反問，所以固定一個 Clarifier——現在 Harness 本來就能隨時反問，而且模糊常常要看到資料才出現；執行時偏離計畫，所以強制照計畫走——這是當初收緊來換穩定——鬆緊不是只會往放寬的方向調；Summarizer 另外用一個模型寫說明——現在執行的模型自己就能說明。
 右邊只回答一件事：哪些留下來。每一項後面的標籤，就是上一頁那兩種理由的顏色。三項守要求的留下來：查詢時檢查欄位值、只開放設計好的表格操作、回覆時附上操作清單——這些不會因為模型變強而消失。術語表和判斷框架是業務知識，標灰色，留下來是因為它是資訊；過期的是當初補能力的節點結構，知識留了下來，變成 Skill；什麼才算對，則對應結尾的「要有人決定」。
-先不說各自放在哪裡。
-這也回答了命題的前半：只交一個通用 Harness 不夠，留下來的要有地方放。放在哪裡？第二段。
+結論：系統型這個形態留下來，裡面補能力的結構交給通用 Harness——形態留下，內部變薄。這也回答了命題的一半：只交一個通用 Harness 不夠，系統端的強制、資料和知識要有地方放。
 口頭回扣第一部分：這些控制還是落在資訊、行動、驗收這幾個著力點上。
-重點句：迴圈交給通用 Harness 就夠；業務知識和守要求，需要另外找地方放。
-注意：「現在模型做得到」要用舊的測試題重跑過才能說——這也是後面「需要保證每次都對」那一題。`,
-  `（第二段：未來幾年，提案）這一段是我的提案，不是已經證實的事。上一頁留下的問題：知識和守要求放在哪裡？答案：放進每個系統的 System Agent。
-提案：替公司內每個系統建一個 System Agent，負責操作原本的系統。它是一個 Agent，不只是工具：它替這個系統做判斷。LPQM Agent 就是 LPQM 這個系統的 System Agent。
-用大家都熟的請假系統當例子。領域判斷：使用者說「我下週三想請半天」，它判斷該用哪種假、還剩幾天、該找哪位主管核准——這是懂這個系統的術語和規則才做得到的判斷。操作系統：明確的操作直接執行，模糊的才動用模型；多一層模型就多一次判斷、多一份 token，所以不是每個請求都要動用模型。守要求：餘額不足不能送出、主管核准才生效、只能看自己的資料——規定寫在系統這一端，寫一次，所有來找它的 Agent 都經過同一套檢查。
-誰會來找它？下一頁。
-重點句：判斷交給 System Agent；規定，只寫一次。`,
-  `另一種會來找 System Agent 的 Agent：職能型。個人型大家都熟——手上的 Claude Code，使用者開口它才動，人一直在線上，結果回到對話裡。職能型不一樣：沒人開口，由事件或排程觸發，例如每月底檢查還沒核准的假單、提醒主管；線上沒有人，結果要送到負責人手上，例如發通知或開工單。
-兩種都是把 Harness 用 SDK 嵌進服務；它們找的是同一個 System Agent，差別只在有沒有人在線上。
-這個差別馬上帶出一個問題：沒人在線上的時候，System Agent 用誰的權限去操作系統？下一頁。
-重點句：兩種 Agent 找的是同一個 System Agent；差別在有沒有人在線上。`,
-  `（還在第二段）兩種 Agent 都會進到 System Agent；它用誰的權限去操作請假系統？
-這是 System Agent 最重要的工程重點，分兩種情況。個人型 Agent 來叫（例如使用者請假，送出的是他的假單）：用原始使用者的權限操作系統，身分沿著整條鏈傳下去，系統用這個身分查權限。職能型 Agent 來叫（事件觸發，沒有使用者可以代表）：用它自己的最小權限，而且背後要有指定的負責人——例如 Microsoft Entra 替每個 agent 身分指定負責人（sponsor），agent 身分也不能擁有高權限管理角色。兩種都不能用 System Agent 自己的高權限，否則別人就能借它的權限做事——這是 confused deputy，也就是權限破口，而且出事追不到人。這就是貫穿全場的一條原則：權限永遠綁在一個指定的人身上。另外，別的 Agent 傳來的訊息不能當成使用者同意（Claude Code 文件明文規定）。
-名片補充：Agent Card 放在固定網址，對方模型只會讀到 description 和 skills 的名稱與描述——那是唯一能影響對方「要不要找我們」的地方，要寫清楚會做什麼、不做什麼；但不能靠描述擋人，真正的權限在我們 server 端依呼叫者身分決定。
-重點句：權限跟著人走：個人型用使用者的，職能型用自己的最小權限，綁著指定的人。
-把這幾頁放在同一張圖上看：下一頁。`,
-  `把前面三頁放在同一張圖上：System Agent、兩種 Agent、結果怎麼回到人手上。
-個人型 Agent：使用者自己的 Agent，例如 Claude Code，人在線上；它裝了我們的 Plugin，才知道怎麼找 System Agent、什麼時候該找（Plugin 怎麼打包，在附錄，右下角「細節」連結）。職能型 Agent 前面已經介紹過：事件觸發，沒人在線上。
-兩種 Agent 都透過同一個 System Agent，守要求寫在系統那一端，不管從哪個入口進來都經過同一套檢查。
-結果一定回到人手上：個人型那邊，結果連同「做了哪些操作」回給使用者（就是 LPQM Agent 留下來的那條守要求：回覆時附上操作清單）；職能型那邊沒人在線上，結果通知負責人，例如寫進工單或發訊息給主管。
-對外介面：介面用 A2A；對方只支援 MCP，就把整個 System Agent 包成一個 MCP 工具。差別有三點：(a) 對方的 Harness：MCP 幾乎都支援，A2A 少數支援例如 Gemini CLI、雲端 Agent 平台；(b) 需要反問時：MCP 問客戶端畫面前的人，A2A 交回呼叫我們的 Agent；(c) 長時間任務：MCP 規格剛加入仍在實驗，A2A 原生支援輪詢、推送；結論：介面用 A2A，對方只支援 MCP 就把整個 System Agent 包成一個 MCP 工具；實務上同事手上的 Harness 多半只支援 MCP。細節見附錄的 MCP、A2A、Agent Card 頁。
-System Agent 與職能型 Agent 都是把 Harness 用 SDK 嵌進服務，差別在誰叫它——System Agent 是別的 Agent 來叫，職能型是事件來叫。現在主要的 Harness 都提供 SDK：Claude Agent SDK 給的是跟 Claude Code 一樣的工具、迴圈和 context 管理，Python、TypeScript 都能用，也有 hooks、子 Agent、MCP、權限、session；Codex SDK（TypeScript、Python）可以開 thread、跑任務，官方列的用途包括放進 CI/CD；OpenCode 有 @opencode/sdk，在程式裡直接起一個 OpenCode。框架那邊反過來：LangChain 的 Deep Agents 自稱 agent harness，跑在 LangGraph 的執行環境上。兩邊收斂成同一個形狀：迴圈、工具、Skill、子 Agent、hook、MCP、session。
-被問到「那以後還用 LangGraph 嗎」：那篇比對 11 套 coding Harness 原始碼的論文發現，沒有一套在 Agent 的執行環境用 LangChain、LangGraph 這類框架，迴圈都是自己寫的；它的建議是，要現成的起點，就用 Harness 的 SDK。但這是 Agent 迴圈的趨勢，不是規則——LPQM Agent 裡真正固定的流程，用 graph 寫仍然合理（回到 Workflow 到 Loop 那頁的左端）。
-這是一個系統。如果是好幾個系統一起處理一件事呢？下一頁。
-重點句：兩種 Agent 都透過 System Agent 辦事；結果都回到人手上。`,
-  `（還在第二段，這頁是想像）從一個系統放大到好幾個系統。團隊目前還沒有這類需求。
-對照前面的架構圖：這是職能型那一條路——這批貨的 Agent 就是一個職能型 Agent，它去找各段的 System Agent；權限照 System Agent 那頁，用它自己的最小權限，背後有負責的工程師。
-情境：一批貨在後段量測異常，要回頭找 root cause——可能在前段、中段、也可能在後段。難處是資料和專業知識分散在不同單位，人工追查要跨部門來回問。
-做法：這批貨的 Agent 被事件喚醒，用 lot ID 當線索，去問前、中、後段的 System Agent（就是前面那頁：每個系統一個 System Agent，懂自己那段的資料和術語）。各段回假設和證據，再互相反駁，留下證據最強的——這就是附錄辯論那頁：單一調查者容易被第一個假設牽著走，互相反駁比較可靠。最後整理成建議，扣貨、改 recipe 這類影響產線的決定，由工程師核准。
-「一批貨綁一個 Agent」不是幾千個模型一直開著：這批貨的 Agent ＝ 這批貨的狀態紀錄 ＋ 事件來時才喚醒的 Harness。平常不跑模型，進站、量測超規、被後段退回時才醒來處理，處理完把結果寫回狀態。它不取代 MES：派工、hold、規格是寫死的守要求，Agent 不能覆蓋；它的價值在例外處理。
-為什麼要一個 Agent 統籌、而不是各段 Agent 自由溝通：Anthropic 在多 Agent 研究系統的文章裡寫，LLM Agent 目前還不擅長即時協調、互相委派工作。每多傳一手就多一次失真，也多一次「別人的訊息被當成指令」的風險。所以溝通用固定格式（lot ID、假設、證據、信心），由一個 Agent 當中心去問各段。
-口頭可以補（不上投影片）：部門 Agent 的想像——它不必「知道部門所有事情」，知道的應該是系統（工單、MES、文件），部門 Agent 是在上面做判斷的那一層；個人 Agent 回報結構化事件，不是自由摘要（模型寫的摘要會漏、會越傳越失真）。它的定位是幕僚長：彙整、建議、草擬分派，由主管核准；誰能問它什麼，照提問者本人的權限回答，否則它就變成全部門權限的聯集。
-下一頁：要怎麼一步一步走到這裡——一類一類放手。
-重點句：一個 Agent 統籌、固定格式交換證據；影響產線的決定，留給人。`,
-  `上一頁是想像，這頁講怎麼一步一步走到那裡：接著同一批貨的故事，說明職能型 Agent 的信任怎麼一類一類建立。
-定義：職能型 Agent 在組織裡擔任一個職位，由告警、排程、工單觸發，沒人開口、線上沒人。引擎跟個人型 Agent 一樣，差別都在引擎外面那一圈。
-01：異常進來，先調查。這批貨在後段量測異常，Agent 被事件喚醒，去問各段的 System Agent，整理出處置建議。
+注意：「現在模型做得到」要用舊的測試題重跑過才能說——這也是後面「需要保證每次都對」那一題。
+下一頁：人工核准，也可以這樣拆。
+重點句：形態留下，內部變薄：迴圈交給通用 Harness，強制、資料和知識留在系統端。`,
+  `（還在第二段）人工核准本身也是一種控制，一樣問它為什麼存在。因為還不信任模型的判斷而設的核准，是補能力——累積了核准紀錄，就能一類一類放手；因為規定本身而設的，例如扣貨、改 recipe，是守要求，永遠留給人。
+接著同一批貨的故事：這批貨的 Agent 是職能型——它代表「處理這批貨異常」這個流程，橫跨前、中、後段的系統。它由告警、排程、工單觸發，沒人開口、線上沒人；引擎跟個人型 Agent 一樣，差別都在引擎外面那一圈。
+01：異常進來，先調查。這批貨在後段量測異常，Agent 被事件喚醒，去問前中後段的系統型 Agent，整理出處置建議。
 02：先只提建議，人核准。每一類處置，都先由工程師按核准，同時留下核准紀錄；這時 Agent 只是提案，不自己動手。
 03：一直被核准的那類，才放手。例如「量測異常就安排重測」一直被核准，這一類才改成自己執行、事後回報（這是舉例）；扣貨、改 recipe 這類影響產線的決定，永遠留給人。
 業界已經這樣做（依 Microsoft Learn「run modes」文件，2026-10）：Azure SRE Agent 的 Review 模式，是在執行 Azure 基礎設施的寫入操作（Azure CLI、Resource Manager 這類）前等核准，只有 SRE Agent 管理員能按核准；發 email、貼 Teams、查外部資料不用等，依 Agent 的判斷和 response plan 的指示進行。執行模式是依每個 response plan、每個排程任務分開設定的，不是整個 Agent 一起切——所以叫一類一類放。官方建議先用 Review，觀察它建議什麼，跑兩到四週，發現某些模式一直都核准，再把那些觸發切成 Autonomous。官方建議的分法：正式環境事故、資安告警留在 Review；測試環境事故、每日健康檢查、成本與用量報表可以 Autonomous。
 回扣第二部分：這就是「放不放，用證據決定」——證據是核准紀錄，放寬的單位是一類觸發。回扣主線：補能力的會變薄，守要求的不會；越自主，守要求越重要。
-工程上還要改的（被問到再講）：context 從事件本身組，記憶跟著職位、不跟著某個人；入口用 Workflow 依觸發類型分流，裡面再用 Loop；不能當場問人，把關事前寫成規則；用自己的身分、權限最小化、背後有指定的負責人（例如 Microsoft Entra 的 agent 身分不能擁有高權限管理角色；Azure SRE Agent 沒有權限時，透過 Entra 的 OBO 流程代使用者申請暫時存取）；每次都要對，留紀錄，非同步通知負責人。
+工程上還要改的（被問到再講）：context 從事件本身組，記憶跟著職位、不跟著某個人；入口用 Workflow 依觸發類型分流，裡面再用 Loop；不能當場問人，把關事前寫成規則；用自己的身分、權限最小化、背後有指定的人（例如 Microsoft Entra 的 agent 身分不能擁有高權限管理角色；Azure SRE Agent 沒有權限時，透過 Entra 的 OBO 流程代使用者申請暫時存取）；每次都要對，留紀錄，非同步通知指定的人。
 其他業界實例：AWS DevOps Agent（自動調查告警與工單）、Datadog Bits AI SRE（調查每個告警）。
-重點句：越自主，守要求越重要；放寬的依據，是一筆一筆的核准紀錄；權限始終綁在一個指定的人身上。
-第二段到這裡。接下來第三段，是推論：回到開場的命題。`,
-  `（第三段：再往後，推論）回到開場的命題：交一個通用 Harness 給使用者就好嗎？答案：大部分是。
-左邊，使用者自己做——大部分需求在這裡：代表使用者本人、用自己的權限、自己看結果，拿來探索、看一次就好。怎麼做：通用 Harness 加上自己寫的 Skill。單看一次答案，使用者是領域專家，判斷得比我們好。
-右邊，需要我們——兩個條件任一成立：
-一是線上沒有人：代表單位或流程，例如排程、系統事件、寫進共用系統（職能型 Agent）。OpenCode 是例子：TUI 只是連到 server 的用戶端，opencode serve 只啟動 server；引擎一樣，差在線上有沒有人，而 server 沒有多使用者的設計，身分、權限、紀錄要另外補。
-二是要每次都對：重複使用、拿去做決策。一次對不代表每次對——同一題跑十次可能錯一次，模型升級後原本對的可能變錯，邊界情況平常遇不到（pass^k：k 次要全對）。
+跨前中後段怎麼找 root cause，在附錄（右下角「細節」連結）。
+第二段到這裡。第三段是推論：這些對我們的工作代表什麼。
+重點句：放手的依據是一筆一筆的核准紀錄；守要求的那幾類，不在放手的範圍。`,
+  `（第三段：我們的工作變成什麼，推論）回到開場的命題：交一個通用 Harness 給使用者就好嗎？從三角形推：個人型那一角，是——使用者自己做，用通用 Harness 加自己寫的 Skill，結果自己看，他是領域專家，判斷得比我們好。系統型和職能型，需要我們：系統型要把規則寫成強制、守住資料，和懂系統的人一起維護知識；職能型要跨系統的身分與權限，而且要每次都對。
+為什麼職能型特別需要我們：OpenCode 是例子——TUI 只是連到 server 的用戶端，opencode serve 只啟動 server；引擎一樣，差在線上有沒有人，而 server 沒有多使用者的設計，身分、權限、紀錄要另外補。
+要每次都對：一次對不代表每次對——同一題跑十次可能錯一次，模型升級後原本對的可能變錯，邊界情況平常遇不到（pass^k：k 次要全對）。
 我們提供：身分與權限、事前的強制（例如 LPQM Agent 的欄位值檢查）、測試題與 eval。分工：需求單位知道什麼是對的，提供題目和標準答案；我們知道怎麼大量、重複地檢查——跑多次、換模型重跑、處理輸出不固定的比對——這是 eval，ML 工程師的專業。Anthropic 的建議也是這樣分：domain expert 出題，eval 團隊負責基礎設施；起步只要 20 到 50 題，從真實的失敗挑。
 資料規定與成本：看部門，沒有通用答案，跟需求單位一起決定。有些部門的資料只能留在需求單位內，這時更傾向讓使用者自己做。
 被問到「把守要求做成強制很難嗎？」：寫一條檢查不難，難的是三件事——先問出哪些規則不能錯；再決定工具切多細，太窄做不了事、太寬等於沒把關；最後用測試題證明它守得住，模型換了還要重跑。
 所以，我們的工作會變成什麼？下一頁。
-重點句：大部分需求使用者自己做；使用者知道什麼是對的，我們負責讓它每次都對。`,
-  `上一頁說：大部分需求使用者自己做，要每次都對的才找我們。所以我們的工作變成什麼？把第二部分的方法用在我們自己身上：每一件工作，拆成「做出來」和「定義和證明」兩半。
+重點句：交一個通用 Harness 給使用者，只夠個人型那一角；系統型和職能型，需要我們。`,
+  `上一頁：系統型和職能型需要我們。所以我們的工作變成什麼？把第二部分的方法用在我們自己身上：每一件工作，拆成「做出來」和「定義和證明」兩半。
 第一列：把流程做成 graph、service——整件都是補能力，通用 Harness 接手，右邊是空的。LPQM Agent 那張 graph 就是這樣。
 第二列：整理術語、業務規則——寫成 Skill 這件事，使用者自己會做；留下來的是和使用者一起，把「什麼才算對」定成題目和標準答案。
 第三列：寫檢查程式——連守要求的實作，也會被平台或系統本身吸收；留下來的是判斷哪些不能錯。判斷方法還是那一題：換成人來做，也要遵守嗎？所以「守要求不會過期」要說清楚：要求本身不會過期，但怎麼保證、誰來寫，會變。
@@ -4544,9 +4676,17 @@ Subagent（Subagent 那頁講過，這裡回扣一句）：另一種省 context 
 證據要來自模型以外：測試通過、lint 沒有錯誤、回答附上出處、外部系統的狀態（例如 PR 真的建立了）。
 重點句：「完成了」不是證據；Harness 可以否決它。
 這也是知識問答的驗收：附上出處，才是證據。`,
-  `（附錄）個人型 Agent 怎麼找到 System Agent？靠裝進它 Harness 裡的 Plugin：使用者的業務知識寫成 Skill、我們做的工具和強制，打包成 Plugin 一起交出去；再加上一組測試題。
+  `（附錄）個人型 Agent 怎麼找到系統型 Agent？靠裝進它 Harness 裡的 Plugin：使用者的業務知識寫成 Skill、我們做的工具和強制，打包成 Plugin 一起交出去；再加上一組測試題。
 LPQM Agent 重構後留下來的每一項，這一頁都要找到位置。知識（術語表、判斷框架）放進 Skill，使用者也能寫。回覆時附上操作清單，以前是 Summarizer 這個節點在守要求；如果只寫成 Skill 裡的一句話，那只是引導，模型可能漏掉，所以用 Hook 在回覆前檢查——例如 Claude Code 的 Stop hook，沒附操作清單就擋下、不讓結束。
 欄位值檢查和只開放設計好的表格操作，都做在 MCP server 端，在 Plugin 外面：就算 Harness 被繞過，也擋得住，模型寫的程式碰不到 prod。Plugin 只帶 MCP 的連線設定。權限做在資料來源或前端，LPQM Agent 就是做在前端；測試題拿來驗證整包。
 重點句：Plugin 是包裝；真正不能錯的，要做在包裝外面。如果把規則寫成 Plugin 裡的 Skill，那只是引導。
 補充（被問到）：Plugin 是 Claude Code 與 claude.ai 的打包格式，其他 Harness 有各自的做法；能跨 Harness 帶著走的是 Skill 和 MCP。Plugin 可以由管理員用 managed settings 統一發布、強制啟用。`,
+  `（附錄）從一個系統放大到好幾個系統。目前還沒有這類需求。
+對照三角形：這是職能型找系統型那一條邊——這批貨的 Agent 就是一個職能型 Agent，它去找各段的系統型 Agent；權限照系統型那一頁，用它自己的最小權限，背後綁著一位指定的工程師。
+情境：一批貨在後段量測異常，要回頭找 root cause——可能在前段、中段、也可能在後段。難處是資料和專業知識分散在不同單位，人工追查要跨部門來回問。
+做法：這批貨的 Agent 被事件喚醒，用 lot ID 當線索，去問前、中、後段的系統型 Agent（每個系統一個，懂自己那段的資料和術語）。各段回假設和證據，再互相反駁，留下證據最強的——這就是附錄辯論那頁：單一調查者容易被第一個假設牽著走，互相反駁比較可靠。最後整理成建議，扣貨、改 recipe 這類影響產線的決定，由工程師核准。
+「一批貨綁一個 Agent」不是幾千個模型一直開著：這批貨的 Agent ＝ 這批貨的狀態紀錄 ＋ 事件來時才喚醒的 Harness。平常不跑模型，進站、量測超規、被後段退回時才醒來處理，處理完把結果寫回狀態。它不取代 MES：派工、hold、規格是寫死的守要求，Agent 不能覆蓋；它的價值在例外處理。
+為什麼要一個 Agent 統籌、而不是各段 Agent 自由溝通：Anthropic 在多 Agent 研究系統的文章裡寫，LLM Agent 目前還不擅長即時協調、互相委派工作。每多傳一手就多一次失真，也多一次「別人的訊息被當成指令」的風險。所以溝通用固定格式（lot ID、假設、證據、信心），由一個 Agent 當中心去問各段。
+口頭可以補（不上投影片）：部門 Agent 的想像——它不必「知道部門所有事情」，知道的應該是系統（工單、MES、文件），部門 Agent 是在上面做判斷的那一層；個人 Agent 回報結構化事件，不是自由摘要（模型寫的摘要會漏、會越傳越失真）。它的定位是幕僚長：彙整、建議、草擬分派，由主管核准；誰能問它什麼，照提問者本人的權限回答，否則它就變成全部門權限的聯集。
+重點句：一個 Agent 統籌、固定格式交換證據；影響產線的決定，留給人。`,
 ];
