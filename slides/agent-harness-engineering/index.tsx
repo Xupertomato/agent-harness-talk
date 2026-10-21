@@ -2852,7 +2852,7 @@ const TrianglePage: Page = () => {
   const cr = yr + TRI_BH / 2;
   return (
     <Frame
-      title={<>要建哪些 Agent？看它代表人、流程，還是系統</>}
+      title={<>要建哪些 Agent？看它代表一個人、一件事，還是一個系統</>}
       main={<>判斷題：<Hi>它替誰要東西？</Hi></>}
       anchor="top"
       links={[{ label: '系統型', to: SystemAgentIntro }]}
@@ -2872,21 +2872,21 @@ const TrianglePage: Page = () => {
           y={y1}
           name="個人型"
           eg="例：幫我請下週三半天"
-          rows={[['代表誰', '一個人'], ['為什麼留下', '人要自己的事被辦好'], ['背後的人', '那個人自己']]}
+          rows={[['代表誰', '一個人'], ['為什麼留下', '人要自己的事被辦好'], ['人在哪裡', '下指令的那個人']]}
         />
         <AgentBox
           x={0}
           y={y2}
           name="職能型"
-          eg="例：一批貨的異常處理"
-          rows={[['代表誰', '一個跨系統的流程'], ['為什麼留下', '流程跨系統，總要有人串起來'], ['背後的人', '一位指定的工程師']]}
+          eg="例：一批貨"
+          rows={[['代表誰', '一件要辦完的事'], ['為什麼留下', '事情跨系統，總要有人串起來'], ['人在哪裡', '被它找來調整的人']]}
         />
         <AgentBox
           x={xr}
           y={yr}
           name="系統型"
           eg="例：請假系統的 Agent"
-          rows={[['代表誰', '一個系統'], ['為什麼留下', '規定只能在系統這一端守住'], ['背後的人', '懂系統、維護規則的人']]}
+          rows={[['代表誰', '一個系統'], ['為什麼留下', '規定只能在系統這一端守住'], ['人在哪裡', '維護規則的人']]}
         />
       </div>
     </Frame>
@@ -2947,11 +2947,11 @@ const DeliverToPage: Page = () => {
           <path d={`M${bw / 2} ${y2 - 10} L${bw / 2} ${bh + 10}`} fill="none" stroke={c.dim} strokeWidth="2" markerEnd="url(#osd-ah-dl-head)" />
         </svg>
         <SmallBox x={0} y={0} w={bw} h={bh} name="個人型" line="代表一個人" />
-        <SmallBox x={0} y={y2} w={bw} h={bh} name="職能型" line="代表一個跨系統的流程" />
+        <SmallBox x={0} y={y2} w={bw} h={bh} name="職能型" line="代表一件要辦完的事" />
         <SmallBox x={xr} y={yr} w={bw} h={bh} name="系統型" line="代表一個系統" />
         <div style={{ ...lab, left: bw + 24, top: c1 - 44 }}>我請假：用我的權限</div>
-        <div style={{ ...lab, left: bw + 24, top: c2 + 14 }}>異常處理：用自己的最小權限，綁著一位指定的人</div>
-        <div style={{ ...lab, left: bw / 2 + 24, top: H / 2 - 16 }}>需要核准：送到工程師手上</div>
+        <div style={{ ...lab, left: bw + 24, top: c2 + 14 }}>查證據：用自己的最小權限</div>
+        <div style={{ ...lab, left: bw / 2 + 24, top: H / 2 - 16 }}>找到該調整的人：通知那一段的工程師</div>
       </div>
       <div style={{ marginTop: 28 }}>
         <SysPath ok={false}>系統型用自己的高權限 → <b>權限破口</b>：誰都能借它的權限做事</SysPath>
@@ -4051,38 +4051,39 @@ const FnBox = ({ children, navy = false, w }: { children: ReactNode; navy?: bool
 );
 
 const FunctionalIntro: Page = () => {
-  const ys = [30, 104, 178];
+  const ys = [38, 130, 222];
   const names = ['前段系統', '中段系統', '後段系統'];
   const rowStyle: CSSProperties = {
     display: 'grid',
     gridTemplateColumns: 'minmax(0, 1.2fr) minmax(0, 1fr)',
     columnGap: 32,
     alignItems: 'baseline',
-    padding: '10px 0',
+    padding: '7px 0',
   };
   return (
-    <Frame title="職能型：代表一個跨系統的流程，不代表任何一個人" main={<>職能型存在的理由是<Hi>跨系統</Hi>；一個 Agent 統籌，各段只回證據。</>}>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', marginTop: 34 }}>
+    <Frame title="職能型：代表一批貨，讓它不卡在段與段之間" main={<>職能型替<Hi>這批貨</Hi>著想：查出卡在哪，找到該調整的人。</>}>
+      <div style={{ position: 'relative', width: 1360, margin: '20px auto 0', height: 362 }}>
+      <div style={{ position: 'absolute', left: 0, top: 0, width: 1360, height: 260, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         <FnBox w={300}>
           <div style={{ fontSize: 34, fontWeight: 800, lineHeight: 1.3 }}>事件</div>
-          <div style={{ fontSize: 23, lineHeight: 1.45, color: c.muted, marginTop: 4 }}>後段量測異常</div>
+          <div style={{ fontSize: 25, lineHeight: 1.45, color: c.muted, marginTop: 4 }}>後段量測異常</div>
         </FnBox>
         <RtH w={110} id="osd-ah-fn-h1" />
         <FnBox w={400} navy>
           <div style={{ fontSize: 34, fontWeight: 800, lineHeight: 1.3 }}>職能型 Agent</div>
-          <div style={{ fontSize: 23, lineHeight: 1.45, color: c.muted, marginTop: 4 }}>這批貨的異常處理</div>
+          <div style={{ fontSize: 25, lineHeight: 1.45, color: c.muted, marginTop: 4 }}>這批貨</div>
         </FnBox>
-        <svg width={190} height={208} viewBox="0 0 190 208" style={{ display: 'block', flexShrink: 0 }} aria-hidden="true">
+        <svg width={190} height={260} viewBox="0 0 190 260" style={{ display: 'block', flexShrink: 0 }} aria-hidden="true">
           <defs>
             <RtMarker id="osd-ah-fn-fan" />
           </defs>
           {ys.map((y) => (
-            <path key={y} d={`M4 104 C80 104, 80 ${y}, 184 ${y}`} fill="none" stroke={c.dim} strokeWidth="2" markerEnd="url(#osd-ah-fn-fan)" />
+            <path key={y} d={`M4 130 C80 130, 80 ${y}, 184 ${y}`} fill="none" stroke={c.dim} strokeWidth="2" markerEnd="url(#osd-ah-fn-fan)" />
           ))}
-          <text x="168" y="203" textAnchor="end" fontSize="21" fill={c.muted}>各段回證據</text>
+          <text x="95" y="256" textAnchor="middle" fontSize="24" fill={c.muted}>各段回證據</text>
         </svg>
-        <div style={{ width: 360, flexShrink: 0, position: 'relative', height: 208 }}>
-          <div style={{ position: 'absolute', left: 0, right: 0, top: -36, fontSize: 22, color: c.muted, textAlign: 'center', lineHeight: '30px' }}>系統型 Agent</div>
+        <div style={{ width: 360, flexShrink: 0, position: 'relative', height: 260 }}>
+          <div style={{ position: 'absolute', left: 0, right: 0, top: -40, fontSize: 24, color: c.muted, textAlign: 'center', lineHeight: '30px' }}>系統型 Agent</div>
           {names.map((n, i) => (
             <div
               key={n}
@@ -4090,15 +4091,15 @@ const FunctionalIntro: Page = () => {
                 position: 'absolute',
                 left: 0,
                 right: 0,
-                top: ys[i] - 30,
-                height: 60,
+                top: ys[i] - 38,
+                height: 76,
                 boxSizing: 'border-box',
                 border: `1.5px solid ${c.line}`,
                 background: c.panel,
                 borderRadius: 'var(--osd-radius)',
                 textAlign: 'center',
-                fontSize: 28,
-                lineHeight: '57px',
+                fontSize: 32,
+                lineHeight: '73px',
               }}
             >
               <b>{n}</b>
@@ -4107,33 +4108,46 @@ const FunctionalIntro: Page = () => {
           ))}
         </div>
       </div>
+      <div style={{ position: 'absolute', left: 410, top: 198, width: 400, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <svg width={24} height={44} viewBox="0 0 24 44" style={{ display: 'block', flexShrink: 0 }} aria-hidden="true">
+            <defs>
+              <RtMarker id="osd-ah-fn-find" />
+            </defs>
+            <path d="M12 3 L12 41" fill="none" stroke={c.dim} strokeWidth="2" markerEnd="url(#osd-ah-fn-find)" />
+          </svg>
+          <div style={{ fontSize: 26, lineHeight: 1.35, color: c.muted, whiteSpace: 'nowrap' }}>找人</div>
+        </div>
+        <FnBox w={400}>
+          <div style={{ fontSize: 34, fontWeight: 800, lineHeight: 1.3 }}>該調整的那一段工程師</div>
+          <div style={{ fontSize: 25, lineHeight: 1.45, color: c.muted, marginTop: 4 }}>找到人、附上證據</div>
+        </FnBox>
+      </div>
+      </div>
       <div
         style={{
           boxSizing: 'border-box',
-          marginTop: 28,
+          marginTop: 22,
           border: `1.5px solid ${c.line}`,
           background: c.panel,
           borderRadius: 'var(--osd-radius)',
-          padding: '22px 32px 14px',
+          padding: '14px 32px 6px',
         }}
       >
-        <div style={{ fontSize: 32, fontWeight: 800, lineHeight: 1.35, marginBottom: 6 }}>為什麼要一個 Agent 統籌，不讓各段的 Agent 互相傳話？</div>
+        <div style={{ fontSize: 34, fontWeight: 800, lineHeight: 1.35, marginBottom: 2 }}>為什麼要一個 Agent 統籌，不讓各段的 Agent 互相傳話？</div>
         <div style={{ ...rowStyle, borderBottom: `1px solid ${c.hair}` }}>
           <div style={{ fontSize: 28, fontWeight: 700, lineHeight: 1.4 }}>每多傳一手，就多一次失真</div>
-          <div style={{ fontSize: 24, lineHeight: 1.4, color: c.muted }}>換成人來傳話也一樣</div>
+          <div style={{ fontSize: 26, lineHeight: 1.4, color: c.muted }}>換成人來傳話也一樣</div>
         </div>
         <div style={{ ...rowStyle, borderBottom: `1px dashed ${c.line}` }}>
-          <div style={{ fontSize: 28, fontWeight: 700, lineHeight: 1.4 }}>意圖和權限只有一個出口</div>
-          <div style={{ fontSize: 24, lineHeight: 1.4, color: c.muted }}>背後綁著一位指定的工程師</div>
+          <div style={{ fontSize: 28, fontWeight: 700, lineHeight: 1.4 }}>各段的 Agent 只代表自己的系統</div>
+          <div style={{ fontSize: 26, lineHeight: 1.4, color: c.muted }}>沒有誰替這批貨著想，貨就卡在段與段之間</div>
         </div>
         <div style={rowStyle}>
-          <div style={{ fontSize: 26, fontWeight: 400, lineHeight: 1.4, color: c.muted }}>現在的模型也還不擅長即時協調、互相委派</div>
-          <div style={{ fontSize: 22, lineHeight: 1.4, color: c.dim }}>Anthropic，多 Agent 研究系統</div>
+          <div style={{ fontSize: 28, fontWeight: 400, lineHeight: 1.4, color: c.muted }}>現在的模型也還不擅長即時協調、互相委派</div>
+          <div style={{ fontSize: 24, lineHeight: 1.4, color: c.dim }}>Anthropic，多 Agent 研究系統</div>
         </div>
       </div>
-      <p style={{ fontSize: 24, lineHeight: 1.5, color: c.muted, margin: '22px 0 0' }}>
-        只碰一個系統的流程，不算職能型：例如每月提醒主管核准假單，是請假系統的 Agent 自己的排程。
-      </p>
     </Frame>
   );
 };
@@ -4147,7 +4161,7 @@ const AgentLadderPage: Page = () => (
         from="量測異常"
         mid="職能型 Agent"
         to="前段系統"
-        verdict={<>用它<b>自己的最小權限</b>，綁著一位指定的人</>}
+        verdict={<>用它<b>自己的最小權限</b>：只能查、只能通知</>}
       />
       <div id="osd-ah-sysagent-paths" style={{ marginTop: 26 }}>
         <SysPath ok={false}>系統型用自己的高權限 → <b>權限破口</b>：誰都能借它的權限做事</SysPath>
@@ -4357,27 +4371,27 @@ OpenAI 的具體做法：AGENTS.md 當目錄不當百科；架構規則用 linte
 這一段叫短中期，但不給具體年數——沒有人知道多長，我們只知道現在還在這一列。
 那要建哪些 Agent？下一頁。
 重點句：短中期，人的工作在安排怎麼做：建 Agent。`,
-  `（短中期）上一頁說短中期我們在建 Agent。要建哪些？先問它代表誰。從第一性原則出發：每個 Agent 都代表某個對象，這個對象決定它想要什麼、用誰的權限。組織裡能被代表的對象，我們看到三種：一個人、一個流程、一個系統——所以有三種 Agent。
-這頁分兩側。左邊是要東西的（呼叫端）：個人型代表一個人，例如手上的 Claude Code，前兩部分講的都是它；職能型代表一個跨系統的流程，例如一批貨的異常處理。右邊是守東西的（資源端）：系統型代表一個系統，例如請假系統的 Agent。兩個箭頭，就是左邊的 Agent 去找右邊的系統型辦事。
-三列各有用途：代表誰是分類的方法；為什麼留下說明這三種形態都不是因為能力不足而存在，模型再強也還在；背後的人會在權限那頁用到，最後三家模型供應商的共識也會回到這裡。系統型的三個理由——守要求、資料不出系統、知識在這裡維護——細節在附錄。
+  `（短中期）上一頁說短中期我們在建 Agent。要建哪些？先問它代表誰。從第一性原則出發：每個 Agent 都代表某個對象，這個對象決定它想要什麼、用誰的權限。組織裡能被代表的對象，我們看到三種：一個人、一件要辦完的事、一個系統——所以有三種 Agent。
+這頁分兩側。左邊是要東西的（呼叫端）：個人型代表一個人，例如手上的 Claude Code，前兩部分講的都是它；職能型代表一件要辦完的事，例如一批貨。右邊是守東西的（資源端）：系統型代表一個系統，例如請假系統的 Agent。兩個箭頭，就是左邊的 Agent 去找右邊的系統型辦事。
+三列各有用途：代表誰是分類的方法；為什麼留下說明這三種形態都不是因為能力不足而存在，模型再強也還在；人在哪裡：個人型是下指令的人；職能型不代表任何人，人是被它找來調整的；系統型背後是維護規則的人。這一列會在權限那頁用到，最後三家模型供應商的共識也會回到這裡。系統型的三個理由——守要求、資料不出系統、知識在這裡維護——細節在附錄。
 為什麼不用「人在不在線上」來分：那是實作細節。個人型也能在背景跑，例如排程替我整理資訊，代表的還是那個人，所以還是個人型；職能型和系統型也都沒人在線上——用它來分，三種會糊在一起。真正分得開的，是它代表誰。
-判斷題：它替誰要東西？替一個人要，是個人型；替一個流程要，是職能型；它不要東西，只守住一個系統，是系統型。
+判斷題：它替誰要東西？替一個人要，是個人型；替一件要辦完的事要，是職能型；它不要東西，只守住一個系統，是系統型。
 被問到「代表一個部門的 Agent 算哪一種」：公司內目前還沒有這種案例。真的出現時，用「用誰的權限」拆：替每位成員回答、用提問者的權限，是多人共用的個人型；用自己的身分去完成部門的目標，是職能型。
-重點句：先問它代表誰——一個人、一個流程，或一個系統。`,
-  `（短中期）職能型：代表一個流程，不代表任何一個人。例子是一批貨在後段量測異常：這個事件叫醒這批貨的 Agent，它分別去問前段、中段、後段系統的 Agent，各段回證據，整理出處置建議，送到工程師手上。這是想像的例子，目前還沒有這類需求。它的意圖來自流程——這批貨的異常要被處理，沒有哪一個人在對它下指令。
-如果台下不是產線的人，通用的例子是新人到職：HR 建立到職資料，到職流程的 Agent 去找 HR、帳號、門禁、請假系統的 Agent。
-邊界規則：只碰一個系統的流程，不算職能型。例如每月底檢查還沒核准的假單、提醒主管——那只碰請假系統，是請假系統的 Agent 自己跑的排程。職能型存在的理由就是跨系統；不跨系統，它就沒有理由存在。
-實作上，職能型和個人型都是把 Harness 用 SDK 嵌進服務（SDK 的細節在後面「怎麼合作、各用誰的權限」那一頁）。業界例子：Azure SRE Agent 處理告警、AWS DevOps Agent 調查工單——都是代表一個流程、橫跨多個資源。
-為什麼要一個 Agent 統籌、而不讓各段 Agent 自由溝通？先看不會過期的理由：每多傳一手就多一次失真，換成人傳話也一樣——這過得了「換成人來做也要遵守」那一題；而且一個流程的意圖和權限要有單一出口，背後綁著一位指定的工程師。再看現在的理由：Anthropic 在多 Agent 研究系統的文章裡寫，LLM Agent 目前還不擅長即時協調、互相委派工作——這是能力問題，以後可能會鬆。溝通用固定格式（lot ID、假設、證據、信心），也少一次「別人的訊息被當成指令」的風險。
+重點句：先問它代表誰——一個人、一件要辦完的事，或一個系統。`,
+  `（短中期）職能型：代表一件要辦完的事，不代表任何一個人。例子是一批貨在後段量測異常：這個事件叫醒這批貨的 Agent。它代表這批貨，目標是讓這批貨不要卡住；貨有問題時，它主動去問前段、中段、後段系統的 Agent，各段回證據，查出卡在哪，再找到該調整的那一段工程師，附上證據通知他。調整本身由人做。這是想像的例子，目前還沒有這類需求。它的意圖來自這批貨要走完，沒有哪一個人在對它下指令，它也不站在任何人背後。
+如果台下不是產線的人，通用的例子是一張新人到職單——到職流程的 Agent 替這張單著想，去找 HR、帳號、門禁、請假系統的 Agent。
+（被問到再講）邊界規則：只碰一個系統的流程，不算職能型。例如每月底檢查還沒核准的假單、提醒主管——那只碰請假系統，是請假系統的 Agent 自己跑的排程。職能型存在的理由就是跨系統；不跨系統，它就沒有理由存在。
+實作上，職能型和個人型都是把 Harness 用 SDK 嵌進服務（SDK 的細節在後面「怎麼合作、各用誰的權限」那一頁）。業界例子：Azure SRE Agent 處理告警、AWS DevOps Agent 調查工單——都是代表一件要辦完的事、橫跨多個資源。
+為什麼要一個 Agent 統籌、而不讓各段 Agent 自由溝通？先看不會過期的理由：每多傳一手就多一次失真，換成人傳話也一樣——這過得了「換成人來做也要遵守」那一題；而且各段的系統型 Agent 只代表自己的系統，守自己那段的規則；沒有誰替這批貨著想，貨就卡在段與段之間——人的組織也一樣，這不是能力問題。再看現在的理由：Anthropic 在多 Agent 研究系統的文章裡寫，LLM Agent 目前還不擅長即時協調、互相委派工作——這是能力問題，以後可能會鬆。溝通用固定格式（lot ID、假設、證據、信心），也少一次「別人的訊息被當成指令」的風險。
 被問到「一批貨綁一個 Agent 是不是幾千個模型一直開著」：不是——這批貨的 Agent＝這批貨的狀態紀錄＋事件來時才喚醒的 Harness，平常不跑模型；它也不取代 MES，派工、hold、規格是寫死的守要求，Agent 不能覆蓋。
 下一頁：個人型和職能型怎麼找系統型辦事、各用誰的權限。
-重點句：職能型存在的理由是跨系統；一個 Agent 統籌，各段只回證據。`,
+重點句：職能型替這批貨著想：查出卡在哪，找到該調整的人。`,
   `（短中期）三種 Agent 怎麼合作、各用誰的權限。
-左邊要東西的，右邊守東西的。個人型 → 系統型：我請假，個人型 Agent 透過請假系統的 Agent 辦，送出的是我的假單，用我的權限，結果回到我的對話裡（連同「做了哪些操作」，就是 LPQM Agent 留下來的那條守要求：回覆時附上操作清單）。個人型靠裝在它 Harness 裡的 Plugin，知道怎麼找系統型、什麼時候該找（Plugin 是這條邊的連接器，怎麼打包在附錄，右下角「細節」連結）。職能型 → 系統型：這批貨的 Agent 去問各段系統型，用它自己的最小權限，背後綁著一位指定的工程師。職能型 → 個人型：流程需要核准時，送到工程師手上；結果也要回到人手上，例如發通知或開工單。
+左邊要東西的，右邊守東西的。個人型 → 系統型：我請假，個人型 Agent 透過請假系統的 Agent 辦，送出的是我的假單，用我的權限，結果回到我的對話裡（連同「做了哪些操作」，就是 LPQM Agent 留下來的那條守要求：回覆時附上操作清單）。個人型靠裝在它 Harness 裡的 Plugin，知道怎麼找系統型、什麼時候該找（Plugin 是這條邊的連接器，怎麼打包在附錄，右下角「細節」連結）。職能型 → 系統型：這批貨的 Agent 去問各段系統型查證據，用它自己的最小權限。職能型 → 個人型：找到該調整的人，通知那一段的工程師，附上證據；例如發通知或開工單。
 對外介面（不放在投影片上，被問到再講）：介面用 A2A；對方只支援 MCP，就把整個系統型 Agent 包成一個 MCP 工具。差別有三點：(a) 對方的 Harness：MCP 幾乎都支援，A2A 少數支援例如 Gemini CLI、雲端 Agent 平台；(b) 需要反問時：MCP 問客戶端畫面前的人，A2A 交回呼叫我們的 Agent；(c) 長時間任務：MCP 規格剛加入仍在實驗，A2A 原生支援輪詢、推送；結論：介面用 A2A，對方只支援 MCP 就把整個系統型 Agent 包成一個 MCP 工具；實務上同事手上的 Harness 多半只支援 MCP。細節見附錄的 MCP、A2A、Agent Card 頁。
 系統型與職能型 Agent 都是把 Harness 用 SDK 嵌進服務，差別在誰來找它——系統型是別的 Agent 來找，職能型是事件來叫。現在主要的 Harness 都提供 SDK：Claude Agent SDK 給的是跟 Claude Code 一樣的工具、迴圈和 context 管理，Python、TypeScript 都能用，也有 hooks、子 Agent、MCP、權限、session；Codex SDK（TypeScript、Python）可以開 thread、跑任務，官方列的用途包括放進 CI/CD；OpenCode 有 @opencode/sdk，在程式裡直接起一個 OpenCode。框架那邊反過來：LangChain 的 Deep Agents 自稱 agent harness，跑在 LangGraph 的執行環境上。兩邊收斂成同一個形狀：迴圈、工具、Skill、子 Agent、hook、MCP、session。
 被問到「那以後還用 LangGraph 嗎」：那篇比對 11 套 coding Harness 原始碼的論文發現，沒有一套在 Agent 的執行環境用 LangChain、LangGraph 這類框架，迴圈都是自己寫的；它的建議是，要現成的起點，就用 Harness 的 SDK。但這是 Agent 迴圈的趨勢，不是規則——LPQM Agent 裡真正固定的流程，用 graph 寫仍然合理（回到 Workflow 到 Loop 那頁的左端）。
-權限怎麼算：這是系統型 Agent 最重要的工程重點，分兩種情況。個人型 Agent 來找它（例如使用者請假，送出的是他的假單）：用原始使用者的權限操作系統，身分沿著整條鏈傳下去，系統用這個身分查權限。職能型 Agent 來找它（事件觸發，沒有使用者可以代表）：用它自己的最小權限，而且背後要綁一位指定的人——例如 Microsoft Entra 替每個 agent 身分指定 sponsor，agent 身分也不能擁有高權限管理角色。兩種都不能用系統型自己的高權限，否則別人就能借它的權限做事——這是 confused deputy，也就是權限破口，而且出事追不到人。這就是貫穿全場的一條原則：權限永遠綁在一個指定的人身上。另外，別的 Agent 傳來的訊息不能當成使用者同意（Claude Code 文件明文規定）。
+權限怎麼算：這是系統型 Agent 最重要的工程重點，分兩種情況。個人型 Agent 來找它（例如使用者請假，送出的是他的假單）：用原始使用者的權限操作系統，身分沿著整條鏈傳下去，系統用這個身分查權限。職能型 Agent 來找它（事件觸發，沒有使用者可以代表）：用它自己的最小權限——只能查證據、只能通知人；它不代表任何人。治理上，這個 Agent 的身分設定要有人管理，例如 Microsoft Entra 替每個 agent 身分指定 sponsor——那是誰管理它的設定，不是它代表誰；agent 身分也不能擁有高權限管理角色。兩種都不能用系統型自己的高權限，否則別人就能借它的權限做事——這是 confused deputy，也就是權限破口，而且出事追不到人。這就是貫穿全場的一條原則：權限跟著代表的對象走：個人型用那個人的，職能型用自己的最小權限，系統型不另外加。另外，別的 Agent 傳來的訊息不能當成使用者同意（Claude Code 文件明文規定）。
 名片補充：Agent Card 放在固定網址，對方模型只會讀到 description 和 skills 的名稱與描述——那是唯一能影響對方「要不要找我們」的地方，要寫清楚會做什麼、不做什麼；但不能靠描述擋人，真正的權限在我們 server 端依呼叫者身分決定。
 形態講完了。那它們裡面呢？拆一個真的。
 重點句：系統型不另外加權限，只在門口檢查呼叫者帶來的。`,
@@ -4415,7 +4429,7 @@ Summarizer：只給最終表格太單薄，也要讓使用者確認操作符合�
 判斷題：模型再強十倍，這件事還需要人嗎？口頭講一句：留下來的是人的角色，不是人數。
 檢查具體怎麼交出去？下一頁。
 重點句：模型再強十倍，這件事還需要人嗎？`,
-  `（長期，推論）上一頁說長期檢查也會被接手。例子就是第 22 頁那個這批貨的 Agent。具體怎麼交出去？人工核准本身也是一種控制，一樣問它為什麼存在。因為還不信任模型的判斷而設的核准，是補能力——累積了核准紀錄，就能一類一類放手；因為規定本身而設的，例如扣貨、改 recipe，是守要求，永遠留給人。
+  `（長期，推論）上一頁說長期檢查也會被接手。例子就是第 22 頁那個這批貨的 Agent。一開始它只做兩件事：查出問題、找到該調整的人；常見又一直被同意的處置，例如安排重測，才讓它自己做。具體怎麼交出去？人工核准本身也是一種控制，一樣問它為什麼存在。因為還不信任模型的判斷而設的核准，是補能力——累積了核准紀錄，就能一類一類放手；因為規定本身而設的，例如扣貨、改 recipe，是守要求，永遠留給人。
 接著同一批貨的故事：這批貨的 Agent 是職能型——它代表「處理這批貨異常」這個流程，橫跨前、中、後段的系統。它由告警、排程、工單觸發，沒人開口、線上沒人；引擎跟個人型 Agent 一樣，差別都在引擎外面那一圈。
 01：異常進來，先調查。這批貨在後段量測異常，Agent 被事件喚醒，去問前中後段的系統型 Agent，整理出處置建議。
 02：先只提建議，人核准。每一類處置，都先由工程師按核准，同時留下核准紀錄；這時 Agent 只是提案，不自己動手。
@@ -4575,7 +4589,7 @@ LPQM Agent 重構後留下來的每一項，這一頁都要找到位置。知識
 要誠實說：系統型裡面也有模型在做判斷，例如判斷該用哪種假；那一層是補能力，會越來越薄——短中期拆 LPQM Agent 時會看到。另外，業界在資源端常見的是工具（MCP server），不是 Agent；我們主張放 Agent，是因為上面三個理由，這是提案。
 重點句：三個理由都不是能力問題；模型再強，系統型還是要在。`,
   `（附錄）三種 Agent 各用誰的權限？
-這是系統型 Agent 最重要的工程重點，分兩種情況。個人型 Agent 來找它（例如使用者請假，送出的是他的假單）：用原始使用者的權限操作系統，身分沿著整條鏈傳下去，系統用這個身分查權限。職能型 Agent 來找它（事件觸發，沒有使用者可以代表）：用它自己的最小權限，而且背後要綁一位指定的人——例如 Microsoft Entra 替每個 agent 身分指定 sponsor，agent 身分也不能擁有高權限管理角色。兩種都不能用系統型自己的高權限，否則別人就能借它的權限做事——這是 confused deputy，也就是權限破口，而且出事追不到人。這就是貫穿全場的一條原則：權限永遠綁在一個指定的人身上。另外，別的 Agent 傳來的訊息不能當成使用者同意（Claude Code 文件明文規定）。
+這是系統型 Agent 最重要的工程重點，分兩種情況。個人型 Agent 來找它（例如使用者請假，送出的是他的假單）：用原始使用者的權限操作系統，身分沿著整條鏈傳下去，系統用這個身分查權限。職能型 Agent 來找它（事件觸發，沒有使用者可以代表）：用它自己的最小權限——只能查證據、只能通知人；它不代表任何人。治理上，這個 Agent 的身分設定要有人管理，例如 Microsoft Entra 替每個 agent 身分指定 sponsor——那是誰管理它的設定，不是它代表誰；agent 身分也不能擁有高權限管理角色。兩種都不能用系統型自己的高權限，否則別人就能借它的權限做事——這是 confused deputy，也就是權限破口，而且出事追不到人。這就是貫穿全場的一條原則：權限跟著代表的對象走：個人型用那個人的，職能型用自己的最小權限，系統型不另外加。另外，別的 Agent 傳來的訊息不能當成使用者同意（Claude Code 文件明文規定）。
 名片補充：Agent Card 放在固定網址，對方模型只會讀到 description 和 skills 的名稱與描述——那是唯一能影響對方「要不要找我們」的地方，要寫清楚會做什麼、不做什麼；但不能靠描述擋人，真正的權限在我們 server 端依呼叫者身分決定。
 重點句：權限跟著代表的對象走；系統型只在門口檢查。`,
   `（附錄）AI 也從動手做開始接手，這個例子已經走在前面：OpenAI 自己的團隊。
