@@ -34,6 +34,9 @@ const c = {
   gridMajor: 'rgba(10, 26, 51, 0.08)',
 };
 
+/** 在 zoom 放大後，n 欄等寬、欄距 gap 時每欄的邏輯寬度 */
+const fitW = (z: number, n: number, gap: number) => (1640 / z - gap * (n - 1)) / n;
+
 const mono = '"SF Mono", "JetBrains Mono", Menlo, Consolas, monospace';
 
 type Tone = 'cyan' | 'amber' | 'muted';
@@ -52,6 +55,7 @@ const canvas: CSSProperties = {
   color: 'var(--osd-text)',
   backgroundColor: 'var(--osd-bg)',
   backgroundPosition: '-1px -1px',
+  ...({ textWrap: 'pretty' } as CSSProperties),
 };
 
 const p0: CSSProperties = { margin: 0 };
@@ -159,15 +163,16 @@ const BackLink = ({ to, label }: { to: Page; label: string }) => (
 const DetailLinks = ({ items }: { items: { label: string; to: Page }[] }) => (
   <div
     style={{
-      marginTop: 14,
+      marginLeft: 'auto',
       textAlign: 'right',
-      fontSize: 20,
+      fontSize: 22,
       lineHeight: 1.4,
       color: c.muted,
       display: 'flex',
       justifyContent: 'flex-end',
       flexWrap: 'wrap',
       columnGap: 26,
+      flexShrink: 0,
     }}
   >
     <span>細節：</span>
@@ -184,6 +189,7 @@ const DetailLinks = ({ items }: { items: { label: string; to: Page }[] }) => (
   </div>
 );
 
+/* 三帶版面：標題帶（頂端）／身體帶（置中、依內容放大 zoom）／重點帶（底緣固定在 y≈930） */
 const Frame = ({
   scope,
   intro,
@@ -191,6 +197,9 @@ const Frame = ({
   children,
   back,
   next,
+  main,
+  links,
+  zoom = 1,
 }: {
   scope?: ReactNode;
   intro?: ReactNode;
@@ -198,8 +207,11 @@ const Frame = ({
   children: ReactNode;
   back?: { to: Page; label: string };
   next?: { to: Page; label: string };
+  main?: ReactNode;
+  links?: { label: string; to: Page }[];
+  zoom?: number;
 }) => (
-  <div style={{ ...canvas, padding: '84px 140px 100px', display: 'flex', flexDirection: 'column' }}>
+  <div style={{ ...canvas, padding: '84px 140px 150px', display: 'flex', flexDirection: 'column' }}>
     <h2
       style={{
         fontFamily: 'var(--osd-font-display)',
@@ -215,8 +227,24 @@ const Frame = ({
       <div style={{ fontSize: 24, lineHeight: 1.3, fontWeight: 400, color: c.muted, marginTop: 8 }}>{scope}</div>
     ) : null}
     {intro ? <div style={{ fontSize: 26, lineHeight: 1.3, fontWeight: 400, color: c.muted, marginTop: 10 }}>{intro}</div> : null}
-    <div style={{ marginTop: scope || intro ? 32 : 56, flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', paddingBottom: 24 }}>
-      {children}
+    <div
+      data-band="body"
+      style={{ margin: '48px 0 40px', flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}
+    >
+      <div data-body style={{ zoom }}>
+        {children}
+      </div>
+    </div>
+    <div
+      data-band="take"
+      style={{ minHeight: 51, display: 'flex', flexWrap: 'wrap', alignItems: 'baseline', columnGap: 40, flexShrink: 0 }}
+    >
+      {main ? (
+        <p data-main style={{ fontSize: 34, fontWeight: 800, lineHeight: 1.5, margin: 0, textWrap: 'balance' } as CSSProperties}>
+          {main}
+        </p>
+      ) : null}
+      {links ? <DetailLinks items={links} /> : null}
     </div>
     {back || next ? <NavRow back={back} next={next} /> : null}
     <Ticks />
@@ -239,35 +267,45 @@ const Close = ({
   children,
   bridge,
   next,
+  zoom = 1,
 }: {
   tag?: string;
   statement: ReactNode;
   children?: ReactNode;
   bridge?: ReactNode;
   next: ReactNode;
+  zoom?: number;
 }) => (
-  <div style={{ ...canvas, padding: '0 160px', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+  <div style={{ ...canvas, padding: '84px 140px 150px', display: 'flex', flexDirection: 'column' }}>
     <h2
       style={{
         fontFamily: 'var(--osd-font-display)',
-        fontSize: 72,
-        fontWeight: 900,
-        lineHeight: 1.25,
-        margin: '28px 0 0',
+        fontSize: 60,
+        fontWeight: 800,
+        lineHeight: 1.2,
+        margin: '18px 0 0',
       }}
     >
       {statement}
     </h2>
-    {children}
     <div
+      data-band="body"
+      style={{ margin: '48px 0 40px', flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}
+    >
+      <div data-body style={{ zoom }}>
+        {children}
+      </div>
+    </div>
+    <div
+      data-band="take"
       style={{
-        marginTop: 64,
-        paddingTop: 36,
+        paddingTop: 28,
         borderTop: `1.5px solid ${c.line}`,
         display: 'flex',
         justifyContent: 'space-between',
         alignItems: 'flex-end',
         gap: 64,
+        flexShrink: 0,
       }}
     >
       <div style={{ flex: 1 }}>{bridge}</div>
@@ -292,6 +330,9 @@ const Hi = ({ children }: { children: ReactNode }) => (
     {children}
   </span>
 );
+
+/** 不可斷行的詞，避免在詞中間換行 */
+const Nb = ({ children }: { children: ReactNode }) => <span style={{ whiteSpace: 'nowrap' }}>{children}</span>;
 
 const Warm = ({ children }: { children: ReactNode }) => <span style={{ color: c.amber }}>{children}</span>;
 
@@ -516,7 +557,7 @@ const ShiftEquation = () => {
 };
 
 const Theme: Page = () => (
-  <Frame title="In A Nutshell">
+  <Frame title="In A Nutshell" main={<>模型越來越強，Harness 越來越薄；<Hi>我們過去幫模型做的，正在過期</Hi>。</>} zoom={1.15}>
     <div style={{ display: 'flex' }}>
       <Leg no="01" name="看懂" q="手上的工具怎麼運作？" />
       <LegArrow />
@@ -525,9 +566,6 @@ const Theme: Page = () => (
       <Leg no="03" name="定位" q="模型變強後，還要做什麼？" />
     </div>
     <ShiftEquation />
-    <p style={{ fontSize: 36, fontWeight: 800, lineHeight: 1.5, margin: '44px 0 0' }}>
-      模型越來越強，Harness 越來越薄；<Hi>我們過去幫模型做的，正在過期</Hi>。
-    </p>
   </Frame>
 );
 
@@ -796,12 +834,9 @@ const TrackRow = ({ label, sub, children, muted = false }: { label: string; sub?
 );
 
 const BitterLesson: Page = () => (
-  <Frame title="The Bitter Lesson：模型變強，補能力的控制就該放寬">
+  <Frame title="The Bitter Lesson：模型變強，補能力的控制就該放寬" main={<>放到 Agent：<Hi>模型變強了，替它補的控制就該放寬；不放寬，就從幫手變成阻礙。</Hi></>} zoom={1.2}>
     <div style={{ fontSize: 24, letterSpacing: '0.04em', color: c.muted }}>原理 · RICH SUTTON · 2019（意譯）</div>
     <p style={{ fontSize: 32, lineHeight: 1.5, margin: '10px 0 0' }}>「算力越多就越強的方法，終究<b>勝過人寫進去的知識</b>。」</p>
-    <p style={{ fontSize: 32, lineHeight: 1.5, margin: '6px 0 0' }}>
-      放到 Agent：<Hi>模型變強了，替它補的控制就該放寬；不放寬，就從幫手變成阻礙。</Hi>
-    </p>
     <p style={{ fontSize: 24, letterSpacing: '0.04em', color: c.muted, margin: '56px 0 20px' }}>實例：Lance Martin 的 Open Deep Research</p>
     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', columnGap: 40, marginBottom: 10 }}>
       <div style={{ fontFamily: mono, fontSize: 24, color: c.muted }}>2024 年底</div>
@@ -1005,10 +1040,10 @@ const Reason = ({
   </div>
 );
 
-const ReasonCard = ({ name, meaning, eg, test, handle }: { name: string; meaning: ReactNode; eg: ReactNode; test: ReactNode; handle: ReactNode }) => (
+const ReasonCard = ({ w, name, meaning, eg, test, handle }: { w: number; name: string; meaning: ReactNode; eg: ReactNode; test: ReactNode; handle: ReactNode }) => (
   <div
     style={{
-      width: 804,
+      width: w,
       boxSizing: 'border-box',
       border: `1.5px solid ${c.line}`,
       background: c.panel,
@@ -1028,11 +1063,12 @@ const ReasonCard = ({ name, meaning, eg, test, handle }: { name: string; meaning
 );
 
 const ThreeReasons: Page = () => (
-  <Frame title="每一個控制，先問它為什麼存在">
+  <Frame zoom={1.2} title="每一個控制，先問它為什麼存在" main={<>補能力的控制過期了，就會變成<span style={{ color: c.amber, fontWeight: 800 }}>限制</span>；模型變強時，最先放寬的就是它。</>}>
     <div style={{ display: 'flex', gap: 32 }}>
       <Steps>
         <Step>
           <ReasonCard
+            w={fitW(1.2, 2, 32)}
             name="守要求"
             meaning="工作本身的規定"
             eg={<>deny 規則擋 rm -rf；<br />餘額不足的假單不能送出</>}
@@ -1046,6 +1082,7 @@ const ThreeReasons: Page = () => (
         </Step>
         <Step>
           <ReasonCard
+            w={fitW(1.2, 2, 32)}
             name="補能力"
             meaning="替模型做它還做不到的判斷"
             eg={<>每個動作都問人；模型會判斷<br />危險了，就換成 auto mode</>}
@@ -1059,9 +1096,6 @@ const ThreeReasons: Page = () => (
         </Step>
       </Steps>
     </div>
-    <p style={{ fontSize: 34, fontWeight: 800, lineHeight: 1.5, margin: '26px 0 0' }}>
-      補能力的控制過期了，就會變成<span style={{ color: c.amber, fontWeight: 800 }}>限制</span>；模型變強時，最先放寬的就是它。
-    </p>
   </Frame>
 );
 
@@ -1116,11 +1150,11 @@ const Researcher = ({
 );
 
 const Arrange = ({ from, to }: { from: string; to: ReactNode }) => (
-  <div style={{ display: 'flex', alignItems: 'center', gap: 28, fontSize: 38, lineHeight: 1.4 }}>
-    <span style={{ fontWeight: 800, width: 220 }}>{from}</span>
+  <Panel style={{ display: 'flex', alignItems: 'center', gap: 28, fontSize: 38, lineHeight: 1.4, padding: '40px 48px' }}>
+    <span style={{ fontWeight: 800, width: 220, flexShrink: 0 }}>{from}</span>
     <span style={{ fontFamily: mono, color: c.dim }}>→</span>
     <span>{to}</span>
-  </div>
+  </Panel>
 );
 
 const RecapCard = ({ k, v, children }: { k: string; v: string; children: ReactNode }) => (
@@ -1184,6 +1218,7 @@ const SplitRow = ({ k, model, harness, head = false }: { k: string; model: React
 
 const Part1Close: Page = () => (
   <Close
+    zoom={1.25}
     statement={<span style={{ fontSize: 60 }}>每一格都是判斷與控制的分界；<Hi>這條線，正在移動</Hi>。</span>}
     next="第二部分：判斷"
     bridge={
@@ -1193,7 +1228,7 @@ const Part1Close: Page = () => (
       </>
     }
   >
-    <div style={{ marginTop: 36 }}>
+    <div>
       <SplitRow head k="" model="模型判斷" harness="HARNESS 控制" />
       <SplitRow k="資訊" model="什麼時候展開、讀哪個檔" harness="什麼一直放著、什麼只放索引" />
       <SplitRow k="把關" model="送出什麼動作、危不危險" harness="擋、問、放行；做錯了能退到哪裡" />
@@ -1220,12 +1255,12 @@ const JudgeBand = ({ model, harness }: { model: ReactNode; harness: ReactNode })
     }}
   >
     <div style={{ flex: 1, padding: '16px 28px', background: c.mutedSoft }}>
-      <div style={{ fontFamily: mono, fontSize: 20, letterSpacing: '0.12em', color: c.muted }}>模型判斷</div>
-      <div style={{ fontSize: 27, lineHeight: 1.45, marginTop: 6 }}>{model}</div>
+      <div style={{ fontFamily: mono, fontSize: 22, letterSpacing: '0.12em', color: c.muted }}>模型判斷</div>
+      <div style={{ fontSize: 28, lineHeight: 1.45, marginTop: 6 }}>{model}</div>
     </div>
     <div style={{ flex: 1, padding: '16px 28px', borderLeft: '3px solid var(--osd-accent)' }}>
-      <div style={{ fontFamily: mono, fontSize: 20, letterSpacing: '0.12em', color: 'var(--osd-accent)' }}>HARNESS 控制</div>
-      <div style={{ fontSize: 27, lineHeight: 1.45, marginTop: 6 }}>{harness}</div>
+      <div style={{ fontFamily: mono, fontSize: 22, letterSpacing: '0.12em', color: 'var(--osd-accent)' }}>HARNESS 控制</div>
+      <div style={{ fontSize: 28, lineHeight: 1.45, marginTop: 6 }}>{harness}</div>
     </div>
   </div>
 );
@@ -1328,11 +1363,11 @@ const LOOP_NODES: { name: string; verb: string; v: string; deg: number; model?: 
 ];
 
 const HarnessMap: Page = () => {
-  const W = 1640, H = 660, cx = 820, cy = 330, rx = 610, ry = 255;
+  const W = 1640, H = 590, cx = 820, cy = 295, rx = 610, ry = 215;
   const pt = (d: number) => [cx + rx * Math.cos((d * Math.PI) / 180), cy + ry * Math.sin((d * Math.PI) / 180)];
   const mids = LOOP_NODES.map((n) => n.deg + 36);
   return (
-    <Frame title="模型只負責想；看、擋、做、記，都靠 Harness">
+    <Frame title="模型只負責想；看、擋、做、記，都靠 Harness" links={[{ label: '最小的 Harness', to: MinHarnessPage }]}>
       <div style={{ position: 'relative', width: W, height: H }}>
         <svg width={W} height={H} style={{ position: 'absolute', inset: 0 }} aria-hidden="true">
           <ellipse cx={cx} cy={cy} rx={rx} ry={ry} fill="none" stroke={c.line} strokeWidth={2} />
@@ -1350,10 +1385,10 @@ const HarnessMap: Page = () => {
               key={n.name}
               style={{
                 position: 'absolute',
-                left: x - 160,
-                top: y - 68,
-                width: 320,
-                height: 136,
+                left: x - 190,
+                top: y - 75,
+                width: 380,
+                height: 150,
                 boxSizing: 'border-box',
                 padding: '12px 24px',
                 borderRadius: 'var(--osd-radius)',
@@ -1362,14 +1397,13 @@ const HarnessMap: Page = () => {
                 textAlign: 'center',
               }}
             >
-              <div style={{ fontFamily: mono, fontSize: 18, letterSpacing: '0.14em', color: n.model ? c.muted : 'var(--osd-accent)' }}>{n.model ? '模型' : 'HARNESS'}</div>
-              <div style={{ fontSize: 34, fontWeight: 800, lineHeight: 1.25, color: n.model ? c.muted : undefined }}>{n.name}</div>
-              <div style={{ fontSize: 22, color: c.muted, marginTop: 2, whiteSpace: 'nowrap' }}><b style={{ color: n.model ? c.muted : 'var(--osd-accent)' }}>{n.verb}</b>：{n.v}</div>
+              <div style={{ fontFamily: mono, fontSize: 22, letterSpacing: '0.14em', color: n.model ? c.muted : 'var(--osd-accent)' }}>{n.model ? '模型' : 'HARNESS'}</div>
+              <div style={{ fontSize: 38, fontWeight: 800, lineHeight: 1.25, color: n.model ? c.muted : undefined }}>{n.name}</div>
+              <div style={{ fontSize: 24, color: c.muted, marginTop: 2, whiteSpace: 'nowrap' }}><b style={{ color: n.model ? c.muted : 'var(--osd-accent)' }}>{n.verb}</b>：{n.v}</div>
             </div>
           );
         })}
       </div>
-      <DetailLinks items={[{ label: '最小的 Harness', to: MinHarnessPage }]} />
     </Frame>
   );
 };
@@ -1389,7 +1423,7 @@ const RouteCard = ({ term, who, good, cost }: { term: string; who: ReactNode; go
 );
 
 const RouteSpectrum: Page = () => (
-  <Frame title="模型判斷：越往右，越多決定交給模型">
+  <Frame title="模型判斷：越往右，越多決定交給模型" main={<>越往右，越能應付沒想到的狀況；<Hi>代價是要靠把關與驗收</Hi>。</>}>
     <div style={{ display: 'flex', gap: 40 }}>
       <RouteCard term="Workflow" who="設計者事先排好路線" good="可預期、好測、出錯好查" cost="沒畫到的狀況，只能轉人工" />
       <RouteCard term="Loop" who="模型每一輪決定下一步" good="預想不到的狀況" cost="每次路徑不同，要靠把關與驗收" />
@@ -1409,9 +1443,6 @@ const RouteSpectrum: Page = () => (
       <SpecStop name="Loop ＋ 強制檢查點" who={<>模型決定路線，<br />設計者設關卡</>} eg={<>例：Claude Code 修測試，<br />改檔前要確認</>} />
       <SpecStop name="開放的 Loop" who={<>模型決定一切，<br />做到夠了為止</>} eg={<>例：Claude Code 開<br />bypassPermissions 模式：<br />權限全開、不再問人</>} />
     </div>
-    <p style={{ fontSize: 40, fontWeight: 800, lineHeight: 1.5, margin: '40px 0 0' }}>
-      越往右，越能應付沒想到的狀況；<Hi>代價是要靠把關與驗收</Hi>。
-    </p>
   </Frame>
 );
 
@@ -1425,9 +1456,9 @@ const INFO_ROWS: { label: string; sub?: string; idx: ReactNode; full: ReactNode 
 ];
 
 const InfoPage: Page = () => (
-  <Frame title="資訊：只放索引，用到才載入">
-    <div style={{ display: 'grid', gridTemplateColumns: '210px 1fr 120px 1fr', gridTemplateRows: '80px repeat(4, 94px)' }}>
-      <div style={{ gridColumn: 1, gridRow: 1, display: 'flex', alignItems: 'center', fontSize: 20, color: c.muted, whiteSpace: 'nowrap' }}>以 Claude Code 為例</div>
+  <Frame title="資訊：只放索引，用到才載入" links={[{ label: 'Context 組裝', to: ContextPage }]}>
+    <div style={{ display: 'grid', gridTemplateColumns: '240px 1fr 120px 1fr', gridTemplateRows: '76px repeat(4, 82px)' }}>
+      <div style={{ gridColumn: 1, gridRow: 1, display: 'flex', alignItems: 'center', fontSize: 22, color: c.muted, whiteSpace: 'nowrap' }}>以 Claude Code 為例</div>
       <div
         style={{
           gridColumn: 2,
@@ -1463,7 +1494,7 @@ const InfoPage: Page = () => (
           <Fragment key={r.label}>
             <div style={{ ...cell, gridColumn: 1, borderTop: `1px solid ${c.hair}` }}>
               <span style={{ fontSize: 28, fontWeight: 800 }}>{r.label}</span>
-              {r.sub ? <span style={{ fontSize: 20, color: c.muted, marginTop: 4, whiteSpace: 'nowrap' }}>{r.sub}</span> : null}
+              {r.sub ? <span style={{ fontSize: 22, color: c.muted, marginTop: 4, whiteSpace: 'nowrap' }}>{r.sub}</span> : null}
             </div>
             <div style={{ ...cell, gridColumn: 2, margin: '0 2px', padding: '0 32px', fontSize: 26, lineHeight: 1.45 }}><div>{r.idx}</div></div>
             <div style={{ ...cell, gridColumn: 3, alignItems: 'center', fontSize: 34, color: c.dim, borderTop: 'none' }}>→</div>
@@ -1478,7 +1509,6 @@ const InfoPage: Page = () => (
     <div style={{ marginTop: 24 }}>
       <JudgeBand model="什麼時候展開、讀哪個檔" harness={<>什麼一直放著、什麼<b>只放索引</b></>} />
     </div>
-    <DetailLinks items={[{ label: 'Context 組裝', to: ContextPage }]} />
   </Frame>
 );
 
@@ -1490,13 +1520,13 @@ const GateRowItem = ({ k, children }: { k: string; children: ReactNode }) => (
 );
 
 const GatePage: Page = () => (
-  <Frame title="把關：能退回的才放寬，退不回的才擋">
+  <Frame title="把關：能退回的才放寬，退不回的才擋" links={[{ label: '引導與強制', to: GateLayers }, { label: '復原', to: RecoveryPage }]} zoom={1.15}>
     <div style={{ borderTop: `1.5px solid ${c.line}` }}>
       <GateRowItem k="引導與強制">
-        規則寫進 context 是引導，照不照做由模型判斷；檢查在模型之外是強制，<b>越靠近執行越難繞過</b>：<K>Hook → 權限規則 → 沙箱。</K>
+        規則寫進 context 是引導，照不照做由模型判斷；檢查在模型之外是強制，<b><Nb>越靠近執行越難繞過</Nb></b>：<K>Hook → 權限規則 → 沙箱。</K>
       </GateRowItem>
       <GateRowItem k="能不能退回">
-        做錯了退得回來（例如編輯前自動存檔），就能放寬；<b>退不回的</b>，例如部署、寄信、資料送出去，才需要擋。
+        做錯了退得回來（例如編輯前自動存檔），就能放寬；<b>退不回的</b>，<Nb>例如部署、寄信、資料送出去，才需要擋。</Nb>
       </GateRowItem>
       <GateRowItem k="交給模型把關">
         由分類器判斷危不危險，例如 Claude Code 的 auto mode；但工作上明確的規定，<b>仍要寫成強制</b>。
@@ -1505,7 +1535,6 @@ const GatePage: Page = () => (
     <div style={{ marginTop: 32 }}>
       <JudgeBand model="這一步要不要做、危不危險" harness={<>哪些<b>一定擋</b>、哪些要問、做錯能退到哪</>} />
     </div>
-    <DetailLinks items={[{ label: '引導與強制', to: GateLayers }, { label: '復原', to: RecoveryPage }]} />
   </Frame>
 );
 
@@ -1540,7 +1569,13 @@ const ActHead = ({ children }: { children: ReactNode }) => (
 );
 
 const ActionPage: Page = () => (
-  <Frame title="行動：從工具到 Agent，判斷交出去越來越多">
+  <Frame title="行動：從工具到 Agent，判斷交出去越來越多" links={[
+        { label: 'Tool calling', to: ToolPage },
+        { label: 'Subagent', to: SubagentPage },
+        { label: 'MCP', to: McpPage },
+        { label: 'A2A', to: A2aPage },
+        { label: 'Agent Card', to: AgentCardPage },
+      ]}>
     <div style={{ display: 'grid', gridTemplateColumns: '120px 1fr 1fr', columnGap: 24, rowGap: 16, alignItems: 'center' }}>
       <div />
       <ActHead>Harness 自己的</ActHead>
@@ -1558,15 +1593,6 @@ const ActionPage: Page = () => (
     <div style={{ marginTop: 20 }}>
       <JudgeBand model="呼叫哪個工具、交給哪個 Agent" harness={<><b>有哪些</b>工具、能接哪些 Agent、在哪裡執行</>} />
     </div>
-    <DetailLinks
-      items={[
-        { label: 'Tool calling', to: ToolPage },
-        { label: 'Subagent', to: SubagentPage },
-        { label: 'MCP', to: McpPage },
-        { label: 'A2A', to: A2aPage },
-        { label: 'Agent Card', to: AgentCardPage },
-      ]}
-    />
   </Frame>
 );
 
@@ -1596,11 +1622,15 @@ const StateGroup = ({ k, v, flex, children }: { k: string; v: string; flex: numb
 );
 
 const StatePage: Page = () => (
-  <Frame title="狀態・驗收：結束的時候，留下什麼、算不算完成">
+  <Frame title="狀態・驗收：結束的時候，留下什麼、算不算完成" links={[
+        { label: 'Compaction', to: CompactPage },
+        { label: 'Memory', to: MemoryPage },
+        { label: '完成判定', to: VerifyPage },
+      ]}>
     <div style={{ display: 'flex', gap: 40, alignItems: 'stretch' }}>
       <StateGroup k="狀態" v="留下什麼" flex={2}>
         <StateCard when="context 滿了" name="壓縮">
-          舊的對話摘要掉。Harness 決定<K><b>哪些一定重新載入</b></K>；對話中交代的規則，<K>可能不見。</K>
+          舊的對話摘要掉。Harness 決定<K><b>哪些一定重新載入</b></K>；對話中交代的<Nb>規則</Nb>，<K>可能不見。</K>
         </StateCard>
         <StateCard when="session 結束" name="記憶">
           模型自己記下的筆記，下次開頭由 ① 資訊載入；<b>模型寫的</b>，<K>不能當規則。</K>
@@ -1615,13 +1645,6 @@ const StatePage: Page = () => (
     <div style={{ marginTop: 36 }}>
       <JudgeBand model="該記什麼、做完了沒" harness={<><b>哪些一定留下</b>、結束前檢查什麼</>} />
     </div>
-    <DetailLinks
-      items={[
-        { label: 'Compaction', to: CompactPage },
-        { label: 'Memory', to: MemoryPage },
-        { label: '完成判定', to: VerifyPage },
-      ]}
-    />
   </Frame>
 );
 
@@ -1678,7 +1701,7 @@ const MinHarnessPage: Page = () => (
 );
 
 const ContextPage: Page = () => (
-  <Frame scope="以 Claude Code 為例" back={{ to: InfoPage, label: '① 資訊' }} title="Context 組裝：模型看到什麼，由 Harness 決定">
+  <Frame scope="以 Claude Code 為例" back={{ to: InfoPage, label: '① 資訊' }} title="Context 組裝：模型看到什麼，由 Harness 決定" main={<>一直放著的越多，context 越擠：官方建議 CLAUDE.md 控制在 200 行以內，<Hi>越長越佔 context，遵守度也越低</Hi>。</>}>
     <div style={{ display: 'flex', gap: 36 }}>
       <ListPanel label="開工前就載入：一直放著" strong>
         <ListItem k="System prompt" />
@@ -1697,9 +1720,6 @@ const ContextPage: Page = () => (
     <div style={{ marginTop: 30 }}>
       <JudgeBand model="什麼時候展開、讀哪個檔、用哪個工具" harness={<>什麼一直放著、什麼<b>只放索引</b></>} />
     </div>
-    <p style={{ fontSize: 28, lineHeight: 1.5, margin: '26px 0 0' }}>
-      一直放著的越多，context 越擠：官方建議 CLAUDE.md 控制在 200 行以內，<Hi>越長越佔 context，遵守度也越低</Hi>。
-    </p>
   </Frame>
 );
 
@@ -1713,7 +1733,8 @@ const FlowCard = ({ no, children, strong = false }: { no: string; children: Reac
 const CallStep = ({ no, who, text, sub, model = false }: { no: string; who: string; text: ReactNode; sub: ReactNode; model?: boolean }) => (
   <div
     style={{
-      width: 370,
+      flex: 1,
+      minWidth: 0,
       boxSizing: 'border-box',
       border: `1.5px solid ${model ? c.hair : c.line}`,
       borderLeft: model ? `1.5px solid ${c.hair}` : '4px solid var(--osd-accent)',
@@ -1731,7 +1752,7 @@ const CallStep = ({ no, who, text, sub, model = false }: { no: string; who: stri
 );
 
 const ToolPage: Page = () => (
-  <Frame back={{ to: ActionPage, label: '④ 行動' }} title="Tool calling：工具描述就是 prompt">
+  <Frame zoom={1.1} back={{ to: ActionPage, label: '④ 行動' }} title="Tool calling：工具描述就是 prompt" main={<>模型只看描述決定要不要用；<Hi>描述寫不清楚，它就選不對工具</Hi>。</>}>
     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'stretch' }}>
       <CallStep no="1" who="HARNESS" text="把工具定義放進 context" sub={<>名稱、描述、參數 schema；<br />每一輪都佔 token</>} />
       <StageArrow />
@@ -1741,9 +1762,6 @@ const ToolPage: Page = () => (
       <StageArrow />
       <CallStep no="4" who="模型" text="讀結果，決定下一步" sub={<>再呼叫工具，<br />或直接回答</>} model />
     </div>
-    <p style={{ fontSize: 36, fontWeight: 800, lineHeight: 1.5, margin: '48px 0 0' }}>
-      模型只看描述決定要不要用；<Hi>描述寫不清楚，它就選不對工具</Hi>。
-    </p>
     <div style={{ marginTop: 48 }}>
       <JudgeBand model="用哪個工具、填什麼參數" harness={<>有哪些工具、<b>描述怎麼寫</b>、在哪裡執行、結果怎麼回來</>} />
     </div>
@@ -1893,7 +1911,7 @@ const A2aSide = ({ title, lines, ours }: { title: string; lines: ReactNode; ours
 );
 
 const A2aPage: Page = () => (
-  <Frame back={{ to: ActionPage, label: '④ 行動' }} title="A2A：判斷整段交給別人的 Agent">
+  <Frame back={{ to: ActionPage, label: '④ 行動' }} title="A2A：判斷整段交給別人的 Agent" main={<><Hi>交給誰、中途誰核准、回來怎麼驗收</Hi>，留在我們這邊。</>}>
     <p style={{ fontSize: 26, lineHeight: 1.5, color: c.muted, margin: '0 0 22px' }}>
       MCP 接進來的是工具和資料，判斷還在我們的模型；A2A 接進來的是另一個 Agent，中間的判斷在對方。
     </p>
@@ -1907,9 +1925,6 @@ const A2aPage: Page = () => (
       </div>
       <A2aSide ours={false} title="對方" lines={<>別人的模型<br />＋別人的 Harness<br />過程看不到</>} />
     </div>
-    <p style={{ fontSize: 30, fontWeight: 800, lineHeight: 1.5, margin: '24px 0 0' }}>
-      <Hi>交給誰、中途誰核准、回來怎麼驗收</Hi>，留在我們這邊。
-    </p>
     <div style={{ marginTop: 18 }}>
       <JudgeBand model="交給哪個 Agent、交代什麼；中間的判斷在對方" harness={<>能接哪些 Agent、<b>誰來核准</b>、回來的怎麼驗收</>} />
     </div>
@@ -1930,7 +1945,7 @@ const CARD_ROWS: { t: string; title?: string; who?: string; note?: string; model
 ];
 
 const AgentCardPage: Page = () => (
-  <Frame back={{ to: ActionPage, label: '④ 行動' }} title="Agent Card：交出去之前，先讀對方的名片">
+  <Frame back={{ to: ActionPage, label: '④ 行動' }} title="Agent Card：交出去之前，先讀對方的名片" main={<>判斷一交出去就收不回來，所以 Gemini CLI 把關兩次：<Hi>接誰由人寫進設定，每次交出去預設先問人</Hi>。</>}>
     <Label>放在固定網址 /.well-known/agent-card.json（虛構範例）</Label>
     <div style={{ position: 'relative' }}>
       <div
@@ -1991,9 +2006,6 @@ const AgentCardPage: Page = () => (
         ))}
       </div>
     </div>
-    <p style={{ fontSize: 30, fontWeight: 800, lineHeight: 1.5, margin: '24px 0 0' }}>
-      判斷一交出去就收不回來，所以 Gemini CLI 把關兩次：<Hi>接誰由人寫進設定，每次交出去預設先問人</Hi>。
-    </p>
     <div style={{ marginTop: 18 }}>
       <JudgeBand model="要不要交出去、交給哪個 Agent（看描述）" harness={<>接哪些 Agent、怎麼驗證身分、<b>交出去前先問人</b></>} />
     </div>
@@ -2138,7 +2150,7 @@ const AutoBox = ({ who, text, strong = false }: { who: string; text: ReactNode; 
 const DownArrow = () => <div style={{ fontFamily: mono, fontSize: 26, color: c.dim, textAlign: 'center', lineHeight: 1.3 }}>↓</div>;
 
 const RecoveryPage: Page = () => (
-  <Frame scope="比較 Claude Code、OpenCode、Codex" back={{ to: GatePage, label: '③ 把關' }} title="復原：做錯了能不能退，決定要擋多嚴">
+  <Frame scope="比較 Claude Code、OpenCode、Codex" back={{ to: GatePage, label: '③ 把關' }} title="復原：做錯了能不能退，決定要擋多嚴" main={<>能退回的，就能放寬；<Hi>退不回的，才需要擋</Hi>。</>}>
     <Cmp3Row head k="" a="Claude Code" b="OpenCode" c3="Codex" />
     <Cmp3Row k="何時記下" a="每次送出 prompt 前" b={<>每一步的前後，<br />替整個工作目錄拍快照</>} c3={<>不記<br />（舊版的檔案快照已移除）</>} />
     <Cmp3Row k="退得回什麼" a={<>Claude 用編輯工具改的檔；<br />對話可分開或一起退</>} b={<>整個工作目錄，含 bash 改的；<br />對話一起退</>} c3="只退對話，檔案不動" />
@@ -2146,9 +2158,6 @@ const RecoveryPage: Page = () => (
     <div style={{ marginTop: 22, border: `1.5px dashed ${c.line}`, borderRadius: 'var(--osd-radius)', padding: '12px 24px', fontSize: 25, lineHeight: 1.55 }}>
       <b>三家都退不回：</b>已經送到外面的，例如 production 部署、寄出的信、資料送出外部；auto mode 預設擋下的，也大多是這一類。
     </div>
-    <p style={{ fontSize: 32, fontWeight: 800, lineHeight: 1.5, margin: '22px 0 0' }}>
-      能退回的，就能放寬；<Hi>退不回的，才需要擋</Hi>。
-    </p>
     <div style={{ marginTop: 20 }}>
       <JudgeBand model="做什麼動作" harness={<>哪些記下來、退得到哪裡；<b>退不回的先擋</b></>} />
     </div>
@@ -2156,7 +2165,7 @@ const RecoveryPage: Page = () => (
 );
 
 const Cmp3Row = ({ k, a, b, c3, head = false }: { k: ReactNode; a: ReactNode; b: ReactNode; c3: ReactNode; head?: boolean }) => (
-  <TRow cols="190px 1fr 1fr 1fr" head={head} size={24} pad={14}>
+  <TRow cols="190px 1fr 1fr 1fr" head={head} size={24} pad={11}>
     <div style={head ? undefined : { color: c.muted, fontWeight: 700 }}>{k}</div>
     <div>{a}</div>
     <div>{b}</div>
@@ -2167,7 +2176,7 @@ const Cmp3Row = ({ k, a, b, c3, head = false }: { k: ReactNode; a: ReactNode; b:
 const Unstated = () => <span style={{ color: c.dim }}>官方未細列</span>;
 
 const CompactPage: Page = () => (
-  <Frame scope="比較 Claude Code、OpenCode、Codex" back={{ to: StatePage, label: '⑤ 狀態・驗收' }} title="Compaction：壓縮後，什麼一定留下">
+  <Frame zoom={0.95} scope="比較 Claude Code、OpenCode、Codex" back={{ to: StatePage, label: '⑤ 狀態・驗收' }} title="Compaction：壓縮後，什麼一定留下" main={<>三家都是模型寫摘要；<Hi>差別在「一定留下」的清單，Harness 寫得多明確</Hi>。</>}>
     <Cmp3Row head k="" a="Claude Code" b="OpenCode" c3="Codex" />
     <Cmp3Row
       k="何時觸發"
@@ -2193,9 +2202,6 @@ const CompactPage: Page = () => (
       b="仍然保存，只是不再送給模型"
       c3="存在本機，可以接續"
     />
-    <p style={{ fontSize: 30, fontWeight: 800, lineHeight: 1.5, margin: '28px 0 0' }}>
-      三家都是模型寫摘要；<Hi>差別在「一定留下」的清單，Harness 寫得多明確</Hi>。
-    </p>
     <div style={{ marginTop: 24 }}>
       <JudgeBand model="摘要寫什麼" harness={<>何時壓縮、保留多少、<b>哪些一定重新載入</b></>} />
     </div>
@@ -2205,7 +2211,7 @@ const CompactPage: Page = () => (
 
 
 const MemoryPage: Page = () => (
-  <Frame scope="比較 Claude Code、OpenCode、Codex" back={{ to: StatePage, label: '⑤ 狀態・驗收' }} title="Memory：誰來寫，新 session 帶進多少">
+  <Frame scope="比較 Claude Code、OpenCode、Codex" back={{ to: StatePage, label: '⑤ 狀態・驗收' }} title="Memory：誰來寫，新 session 帶進多少" main={<>Claude Code 和 Codex 都說：記憶只是 context；<Hi>一定要遵守的規則，寫在人寫的檔案裡</Hi>。</>}>
     <Cmp3Row head k="" a="Claude Code" b="OpenCode" c3="Codex" />
     <Cmp3Row
       k="人寫的指示檔"
@@ -2231,9 +2237,6 @@ const MemoryPage: Page = () => (
       b={<>只有 AGENTS.md；<br />過去的對話不會帶進來</>}
       c3={<>載入記憶摘要，上限 2,500 token；<br />細節用到才查</>}
     />
-    <p style={{ fontSize: 30, fontWeight: 800, lineHeight: 1.5, margin: '28px 0 0' }}>
-      Claude Code 和 Codex 都說：記憶只是 context；<Hi>一定要遵守的規則，寫在人寫的檔案裡</Hi>。
-    </p>
     <div style={{ marginTop: 24 }}>
       <JudgeBand model="記什麼" harness={<>誰能寫、存在哪裡、何時載入、<b>載入多少</b></>} />
     </div>
@@ -2241,7 +2244,7 @@ const MemoryPage: Page = () => (
 );
 
 const VerifyPage: Page = () => (
-  <Frame scope="以 Claude Code 為例" back={{ to: StatePage, label: '⑤ 狀態・驗收' }} title="完成判定：「完成了」是模型的判斷">
+  <Frame scope="以 Claude Code 為例" back={{ to: StatePage, label: '⑤ 狀態・驗收' }} title="完成判定：「完成了」是模型的判斷" main={<>「完成了」不是證據；<Hi>Harness 可以否決它</Hi>。</>}>
     <div style={{ display: 'flex', alignItems: 'stretch' }}>
       <div style={{ width: 420 }}>
         <AutoBox who="模型" text="「完成了」" />
@@ -2269,9 +2272,6 @@ const VerifyPage: Page = () => (
     <div style={{ marginTop: 32 }}>
       <JudgeBand model="什麼時候說完成" harness="什麼才算完成" />
     </div>
-    <p style={{ fontSize: 36, fontWeight: 800, lineHeight: 1.5, margin: '26px 0 0' }}>
-      「完成了」不是證據；<Hi>Harness 可以否決它</Hi>。
-    </p>
   </Frame>
 );
 
@@ -2592,7 +2592,7 @@ const FixCard = ({ word, when, children }: { word: string; when: string; childre
 );
 
 const HarnessEng: Page = () => (
-  <Frame title="Harness Engineering：該收緊的收緊，該放寬的放寬">
+  <Frame title="Harness Engineering：該收緊的收緊，該放寬的放寬" main={<>收緊時標記理由，放寬時才找得到；<Hi>兩件事一直做，就是 Harness Engineering</Hi>。</>} zoom={1.15}>
     <div style={{ display: 'flex', alignItems: 'baseline', gap: 28 }}>
       <span style={{ fontSize: 40, fontWeight: 900 }}>
         <Hi>Humans steer.</Hi> Agents execute.
@@ -2606,7 +2606,7 @@ const HarnessEng: Page = () => (
           <br />
           缺回饋？→ 補驗收
           <br />
-          都不缺，才收緊控制：只收最小、標記理由
+          都不缺，才收緊控制：只收<Nb>最小、標記理由</Nb>
         </FixRow>
         <FixRow k="例">規則在壓縮後被忘了 → 寫進 CLAUDE.md</FixRow>
       </FixCard>
@@ -2619,15 +2619,12 @@ const HarnessEng: Page = () => (
         <FixRow k="例">
           Open Deep Research 拆掉固定分工；
           <br />
-          Claude Code auto mode 逐版放寬 push：
+          Claude Code auto mode 逐版<Nb>放寬</Nb> push：
           <br />
           現在任何分支都放行，force push 仍擋
         </FixRow>
       </FixCard>
     </div>
-    <p style={{ fontSize: 34, fontWeight: 800, lineHeight: 1.5, margin: '34px 0 0' }}>
-      收緊時標記理由，放寬時才找得到；<Hi>兩件事一直做，就是 Harness Engineering</Hi>。
-    </p>
   </Frame>
 );
 
@@ -2670,6 +2667,7 @@ const Chip = ({ children }: { children: ReactNode }) => (
 
 const Part2Close: Page = () => (
   <Close
+    zoom={1.3}
     statement={<>補能力的會放寬，守要求的不會；<br /><Hi>放不放，用證據決定</Hi>。</>}
     next="第三部分：定位"
     bridge={
@@ -2679,7 +2677,7 @@ const Part2Close: Page = () => (
       </>
     }
   >
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 16, marginTop: 44 }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
       <Arrange from="守要求" to={<><b>做成強制</b><span style={{ fontWeight: 400, color: c.muted }}>；模型再強都不放寬</span></>} />
       <Arrange from="補能力" to={<><b>先收緊</b>、標記理由<span style={{ fontWeight: 400, color: c.muted }}>；模型升級就檢查能否放寬</span></>} />
     </div>
@@ -2688,7 +2686,7 @@ const Part2Close: Page = () => (
 
 const Act4: Page = () => <Divider no={3} name="定位" q="模型變強後，我們還要做什麼？" />;
 
-const PreviewCard = ({ label, q, line }: { label: string; q: string; line: string }) => (
+const PreviewCard = ({ label, q, line }: { label: string; q: ReactNode; line: ReactNode }) => (
   <div
     style={{
       flex: 1,
@@ -2697,12 +2695,15 @@ const PreviewCard = ({ label, q, line }: { label: string; q: string; line: strin
       border: `1.5px solid ${c.line}`,
       background: c.panel,
       borderRadius: 'var(--osd-radius)',
-      padding: '30px 34px 34px',
+      padding: '44px 44px 48px',
+      minHeight: 500,
+      display: 'flex',
+      flexDirection: 'column',
     }}
   >
-    <Label>{label}</Label>
-    <p style={{ fontSize: 36, fontWeight: 800, lineHeight: 1.35, margin: '16px 0 0' }}>{q}</p>
-    <p style={{ fontSize: 26, lineHeight: 1.5, color: c.muted, margin: '14px 0 0' }}>{line}</p>
+    <div style={{ fontFamily: mono, fontSize: 26, lineHeight: 1.3, letterSpacing: '0.12em', color: 'var(--osd-accent)' }}>{label}</div>
+    <p style={{ fontSize: 48, fontWeight: 800, lineHeight: 1.3, margin: '24px 0 0', textWrap: 'balance' } as CSSProperties}>{q}</p>
+    <p style={{ fontSize: 30, lineHeight: 1.5, color: c.muted, margin: 'auto 0 0', paddingTop: 28 }}>{line}</p>
   </div>
 );
 
@@ -2850,20 +2851,17 @@ const TriangleDiagram = ({ edges, showEg = true, id }: { edges?: TriEdge[]; show
 };
 
 const TrianglePage: Page = () => (
-  <Frame title={<>一個 Agent 先問它代表誰：<br />一個人、一個流程，或一個系統</>}>
+  <Frame title={<>一個 Agent 先問它代表誰：<br />一個人、一個流程，或一個系統</>} main={<>判斷題：<Hi>它替誰要東西？</Hi>一個人、一個流程，或它只守住一個系統。</>}>
     <TriangleDiagram id="osd-ah-tri-a" />
-    <p style={{ fontSize: 32, fontWeight: 800, lineHeight: 1.5, margin: '36px 0 0' }}>
-      判斷題：<Hi>它替誰要東西？</Hi>一個人、一個流程，或它只守住一個系統。
-    </p>
   </Frame>
 );
 
 const Part3Preview: Page = () => (
   <Frame title="交一個通用 Harness 給使用者就好嗎？分三段回答">
     <div style={{ display: 'flex', gap: 28 }}>
-      <PreviewCard label="提案" q="會有哪些 Agent？" line="代表人、流程、系統的三種 Agent" />
-      <PreviewCard label="證據" q="Agent 裡什麼會過期？" line="拆一個舊 Agent：LPQM Agent" />
-      <PreviewCard label="推論" q="我們的工作變成什麼？" line="從做出來，到掌舵" />
+      <PreviewCard label="提案" q="會有哪些 Agent？" line={<>代表人、流程、系統的<Nb>三種 Agent</Nb></>} />
+      <PreviewCard label="證據" q={<>Agent 裡<Nb>什麼會過期？</Nb></>} line="拆一個舊 Agent：LPQM Agent" />
+      <PreviewCard label="推論" q={<>我們的<Nb>工作變成什麼？</Nb></>} line="從做出來，到掌舵" />
     </div>
   </Frame>
 );
@@ -2896,9 +2894,9 @@ const WHY_STYLE: Record<WhyKind, { border: string; background: string; label: st
 const WhyReasonCard = ({ kind, children }: { kind: WhyKind; children: ReactNode }) => {
   const st = WHY_STYLE[kind];
   return (
-    <div style={{ border: st.border, background: st.background, borderRadius: 'var(--osd-radius)', padding: '14px 16px' }}>
-      <div style={{ fontSize: 27, lineHeight: 1.4 }}>{children}</div>
-      <div style={{ fontSize: 20, fontWeight: 800, color: st.label, marginTop: 6 }}>{kind}</div>
+    <div style={{ border: st.border, background: st.background, borderRadius: 'var(--osd-radius)', padding: '10px 16px' }}>
+      <div style={{ fontSize: 26, lineHeight: 1.35 }}>{children}</div>
+      <div style={{ fontSize: 22, fontWeight: 800, color: st.label, marginTop: 4 }}>{kind}</div>
     </div>
   );
 };
@@ -2923,7 +2921,7 @@ const NodeBox = ({ children }: { children: ReactNode }) => (
       fontSize: 28,
       fontWeight: 700,
       textAlign: 'center',
-      padding: '16px 8px',
+      padding: '12px 8px',
     }}
   >
     {children}
@@ -2937,12 +2935,12 @@ const TableArrow = () => (
 const Gap = () => <div />;
 
 const Reasons = ({ children }: { children: ReactNode }) => (
-  <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>{children}</div>
+  <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>{children}</div>
 );
 
 const RedrawBefore: Page = () => (
-  <Frame title={<>拆開一個系統型 Agent：<br />LPQM 的每個節點，都在補能力或守要求</>}>
-    <p style={{ fontSize: 28, color: c.muted, margin: '0 0 14px' }}>例：LPQM Agent，製程品質資料問答 · 2025.03 用 LangGraph 打造 · 給 RD 工程師用的 service</p>
+  <Frame zoom={0.93} title={<>拆開一個系統型 Agent：<br />LPQM 的每個節點，都在補能力或守要求</>}>
+    <p style={{ fontSize: 26, color: c.muted, margin: '0 0 10px' }}>例：LPQM Agent，製程品質資料問答 · 2025.03 用 LangGraph 打造 · 給 RD 工程師用的 service</p>
     <Steps>
       <div style={{ display: 'grid', gridTemplateColumns: TABLE_COLS, alignItems: 'center' }}>
         <div />
@@ -2959,8 +2957,8 @@ const RedrawBefore: Page = () => (
           display: 'grid',
           gridTemplateColumns: TABLE_COLS,
           alignItems: 'start',
-          marginTop: 18,
-          paddingTop: 16,
+          marginTop: 12,
+          paddingTop: 12,
           borderTop: `1px solid ${c.hair}`,
         }}
       >
@@ -2979,8 +2977,8 @@ const RedrawBefore: Page = () => (
             display: 'grid',
             gridTemplateColumns: TABLE_COLS,
             alignItems: 'start',
-            marginTop: 16,
-            paddingTop: 16,
+            marginTop: 12,
+            paddingTop: 12,
             borderTop: `1px solid ${c.hair}`,
           }}
         >
@@ -3005,7 +3003,7 @@ const RedrawBefore: Page = () => (
         </div>
       </Step>
       <Step>
-        <p style={{ fontSize: 38, fontWeight: 800, lineHeight: 1.5, margin: '32px 0 0' }}>
+        <p style={{ fontSize: 34, fontWeight: 800, lineHeight: 1.5, margin: '20px 0 0' }}>
           那麼，哪些會留下來？
         </p>
       </Step>
@@ -3041,7 +3039,7 @@ const KeptRow = ({ item, kind }: { item: string; kind: WhyKind | '業務知識' 
         style={{
           flexShrink: 0,
           whiteSpace: 'nowrap',
-          fontSize: 21,
+          fontSize: 22,
           fontWeight: 800,
           color,
           border,
@@ -3056,7 +3054,7 @@ const KeptRow = ({ item, kind }: { item: string; kind: WhyKind | '業務知識' 
 };
 
 const RedrawAfter: Page = () => (
-  <Frame title="重構 LPQM Agent：補能力的拆掉，系統型的位置留下">
+  <Frame title="重構 LPQM Agent：補能力的拆掉，系統型的位置留下" main={<><Hi>形態留下，內部變薄</Hi>：迴圈交給通用 Harness，強制、資料和知識留在系統端。</>}>
     <div style={{ display: 'flex', gap: 40, alignItems: 'stretch' }}>
       <Panel tone="muted" style={{ flex: 1, padding: '24px 32px 8px' }}>
         <p style={{ fontSize: 32, fontWeight: 800, color: c.muted, margin: '0 0 8px' }}>交給通用 Harness</p>
@@ -3074,9 +3072,6 @@ const RedrawAfter: Page = () => (
         <KeptRow item="回覆時附上操作清單" kind="守要求" />
       </Panel>
     </div>
-    <p style={{ fontSize: 40, fontWeight: 800, lineHeight: 1.5, margin: '36px 0 0' }}>
-      <Hi>形態留下，內部變薄</Hi>：迴圈交給通用 Harness，強制、資料和知識留在系統端。
-    </p>
   </Frame>
 );
 
@@ -3168,7 +3163,7 @@ const SteerRow = ({ head, sub, last = false }: { head: string; sub: string; last
 );
 
 const OurWork: Page = () => (
-  <Frame title={<>做出來變便宜，工程師的工作變成掌舵：<br />說清楚意圖、設計環境、建回饋迴路</>}>
+  <Frame title={<>做出來變便宜，工程師的工作變成掌舵：<br />說清楚意圖、設計環境、建回饋迴路</>} main={<>做出來交給 Agent；<Hi>意圖、環境、回饋迴路</Hi>，是我們的工作。</>}>
     <div style={{ display: 'flex', gap: 36, alignItems: 'stretch' }}>
       <Panel style={{ flex: 42, minWidth: 0, padding: '22px 26px' }}>
         <Label tone="muted">OpenAI 自己的團隊</Label>
@@ -3190,9 +3185,6 @@ const OurWork: Page = () => (
       </Panel>
     </div>
     <SourceLine>出處：OpenAI，Harness engineering: leveraging Codex in an agent-first world（2026.02）</SourceLine>
-    <p style={{ fontSize: 34, fontWeight: 800, lineHeight: 1.5, margin: '22px 0 0' }}>
-      做出來交給 Agent；<Hi>意圖、環境、回饋迴路</Hi>，是我們的工作。
-    </p>
   </Frame>
 );
 
@@ -3205,7 +3197,7 @@ const DurBlock = ({ tag, tagColor, head, sub, navy = false }: { tag: string; tag
       border: navy ? '2px solid var(--osd-accent)' : `1.5px solid ${c.line}`,
       background: c.panel,
       borderRadius: 'var(--osd-radius)',
-      padding: '14px 28px 16px',
+      padding: '10px 28px 12px',
     }}
   >
     <div style={{ fontSize: 24, fontWeight: 800, lineHeight: 1.3, color: tagColor }}>{tag}</div>
@@ -3215,18 +3207,27 @@ const DurBlock = ({ tag, tagColor, head, sub, navy = false }: { tag: string; tag
 );
 
 const DurabilityPage: Page = () => (
-  <Frame title={<>掌舵也在移動：<br />交得出去的是容易驗證的，驗證本身也會被接手</>}>
+  <Frame
+    zoom={0.93}
+    title={<>掌舵也在移動：<br />交得出去的是容易驗證的，驗證本身也會被接手</>}
+    main={
+      <>
+        判斷題：<Hi>模型再強十倍，這件事還需要人嗎？</Hi>
+        <span style={{ display: 'block', fontSize: 26, fontWeight: 400, lineHeight: 1.5, color: c.muted }}>留下來的是人的角色，不是人數。</span>
+      </>
+    }
+  >
     <div style={{ display: 'flex', gap: 36, alignItems: 'stretch' }}>
-      <Panel style={{ flex: 45, minWidth: 0, padding: '22px 30px' }}>
+      <Panel style={{ flex: 45, minWidth: 0, padding: '16px 30px' }}>
         <Label tone="muted">Anthropic 內部調查：132 位工程師與研究員</Label>
-        <div style={{ fontFamily: mono, fontSize: 84, fontWeight: 700, lineHeight: 1.1, color: 'var(--osd-accent)', marginTop: 14 }}>0–20%</div>
+        <div style={{ fontFamily: mono, fontSize: 72, fontWeight: 700, lineHeight: 1.1, color: 'var(--osd-accent)', marginTop: 10 }}>0–20%</div>
         <p style={{ fontSize: 26, lineHeight: 1.45, color: c.muted, margin: '8px 0 0' }}>
           超過一半的人說，能完全交出去的工作只有這麼多
         </p>
-        <p style={{ fontSize: 28, lineHeight: 1.45, margin: '18px 0 0', paddingTop: 16, borderTop: `1px solid ${c.hair}` }}>
+        <p style={{ fontSize: 28, lineHeight: 1.45, margin: '12px 0 0', paddingTop: 12, borderTop: `1px solid ${c.hair}` }}>
           交出去的：<b>容易驗證</b>、低風險、繁瑣的事
         </p>
-        <p style={{ fontSize: 26, lineHeight: 1.5, color: c.muted, margin: '16px 0 0', paddingLeft: 16, borderLeft: `3px solid ${c.line}` }}>
+        <p style={{ fontSize: 26, lineHeight: 1.5, color: c.muted, margin: '10px 0 0', paddingLeft: 16, borderLeft: `3px solid ${c.line}` }}>
           監督的悖論：用好 AI 需要監督；監督需要的技能，卻可能因為依賴 AI 而退化。
         </p>
       </Panel>
@@ -3238,10 +3239,6 @@ const DurabilityPage: Page = () => (
       </div>
     </div>
     <SourceLine tight>出處：Anthropic，How AI is transforming work at Anthropic（2025.12）</SourceLine>
-    <p style={{ fontSize: 34, fontWeight: 800, lineHeight: 1.5, margin: '12px 0 0' }}>
-      判斷題：<Hi>模型再強十倍，這件事還需要人嗎？</Hi>
-    </p>
-    <p style={{ fontSize: 26, lineHeight: 1.5, color: c.muted, margin: '4px 0 0' }}>留下來的是人的角色，不是人數。</p>
   </Frame>
 );
 
@@ -3255,7 +3252,7 @@ const ConsensusRow = ({ k, a, b, g }: { k: string; a: ReactNode; b: ReactNode; g
 );
 
 const ConsensusPage: Page = () => (
-  <Frame title={<>三家模型供應商的共識：<br />每個 Agent 都要有明確的人在控制，權力在模型之外限制</>}>
+  <Frame title={<>三家模型供應商的共識：<br />每個 Agent 都要有明確的人在控制，權力在模型之外限制</>} main={<>三家都沒說設計和驗證會永遠留給人；<Hi>控制者的位置</Hi>，三家都說要留。</>}>
     <TRow cols="280px 1fr 1fr 1fr" head>
       <div style={{ color: c.muted }}>共識</div>
       <div>OpenAI</div>
@@ -3268,9 +3265,6 @@ const ConsensusPage: Page = () => (
     <SourceLine>
       出處：OpenAI，Practices for Governing Agentic AI Systems（2023）、A practical guide to building agents；Anthropic，Our framework for developing safe and trustworthy agents（2025.08）；Google，Google's Approach for Secure AI Agents（2025）
     </SourceLine>
-    <p style={{ fontSize: 34, fontWeight: 800, lineHeight: 1.5, margin: '22px 0 0' }}>
-      三家都沒說設計和驗證會永遠留給人；<Hi>控制者的位置</Hi>，三家都說要留。
-    </p>
   </Frame>
 );
 
@@ -3378,7 +3372,7 @@ const VisionNote = ({ head, children, strong = false }: { head: string; children
 );
 
 const VisionPage: Page = () => (
-  <Frame title="跨段找 root cause：一個 Agent 統籌，各段回證據" back={{ to: OrgAgentPage, label: '人工核准' }}>
+  <Frame title="跨段找 root cause：一個 Agent 統籌，各段回證據" back={{ to: OrgAgentPage, label: '人工核准' }} main={<>一個 Agent 統籌、固定格式交換證據；<Hi>影響產線的決定，留給人</Hi>。</>}>
     <div style={{ display: 'flex', gap: 56, alignItems: 'flex-start' }}>
       <div style={{ width: 1080, flexShrink: 0 }}>
         <div style={{ display: 'flex', alignItems: 'center' }}>
@@ -3424,25 +3418,22 @@ const VisionPage: Page = () => (
         </VisionNote>
       </div>
     </div>
-    <p style={{ fontSize: 32, fontWeight: 800, lineHeight: 1.5, margin: '36px 0 0' }}>
-      一個 Agent 統籌、固定格式交換證據；<Hi>影響產線的決定，留給人</Hi>。
-    </p>
   </Frame>
 );
 
 const OrgAgentPage: Page = () => (
-  <Frame title={<>人工核准也一樣拆：<br />補能力的，有紀錄就放手；守要求的，永遠留給人</>}>
+  <Frame title={<>人工核准也一樣拆：<br />補能力的，有紀錄就放手；守要求的，永遠留給人</>} main={<>放手的依據是<Hi>一筆一筆的核准紀錄</Hi>；守要求的那幾類，不在放手的範圍。</>} links={[{ label: '跨段找 root cause', to: VisionPage }]} zoom={1.25}>
     <div style={{ display: 'flex', alignItems: 'stretch' }}>
       <LoopStep
         no="01"
         title="異常進來，先調查"
-        sub={<>例：這批貨在後段量測異常。<K>職能型 Agent</K> 醒來，問前中後段的<K>系統型 Agent</K>，整理出處置建議。</>}
+        sub={<>例：這批貨在後段量測異常。<K>職能型 Agent</K> 醒來，問<Nb>前中後段</Nb>的<K>系統型 Agent</K>，整理出<Nb>處置建議</Nb>。</>}
       />
       <StageArrow />
       <LoopStep
         no="02"
         title="先只提建議，人核准"
-        sub={<>每一類處置，都先由工程師按核准；<K>同時留下核准紀錄。</K></>}
+        sub={<>每一類處置，都先由工程師<Nb>按核准</Nb>；<K>同時留下核准紀錄。</K></>}
       />
       <StageArrow />
       <LoopStep
@@ -3465,10 +3456,6 @@ const OrgAgentPage: Page = () => (
     >
       <b>業界已經這樣做：</b>Azure SRE Agent 的執行模式依每個 response plan 分開設定；<br />官方建議先用 Review 跑 2–4 週，一直被核准的那類再切成 Autonomous。
     </div>
-    <p style={{ fontSize: 32, fontWeight: 800, lineHeight: 1.5, margin: '30px 0 0' }}>
-      放手的依據是<Hi>一筆一筆的核准紀錄</Hi>；守要求的那幾類，不在放手的範圍。
-    </p>
-    <DetailLinks items={[{ label: '跨段找 root cause', to: VisionPage }]} />
   </Frame>
 );
 
@@ -3488,7 +3475,7 @@ const WhoCol = ({ word, who, navy = false, children }: { word: string; who: stri
 );
 
 const WhoBuilds: Page = () => (
-  <Frame title={<>個人型交給使用者自己做；<br />系統型和職能型，才需要我們</>}>
+  <Frame title={<>個人型交給使用者自己做；<br />系統型和職能型，才需要我們</>} main={<>交一個通用 Harness 給使用者，<Hi>只夠個人型那一角</Hi>。</>} zoom={1.15}>
     <div style={{ display: 'flex', gap: 28, alignItems: 'stretch' }}>
       <WhoCol word="個人型" who="使用者自己做">
         <WhoRow k="怎麼做">
@@ -3529,9 +3516,6 @@ const WhoBuilds: Page = () => (
     </div>
     <p style={{ fontSize: 24, lineHeight: 1.5, color: c.muted, margin: '20px 0 0' }}>
       需求單位給題目和標準答案；我們大量、重複地檢查。資料規定與成本看部門，跟需求單位一起決定。
-    </p>
-    <p style={{ fontSize: 34, fontWeight: 800, lineHeight: 1.5, margin: '22px 0 0' }}>
-      交一個通用 Harness 給使用者，<Hi>只夠個人型那一角</Hi>。
     </p>
   </Frame>
 );
@@ -3612,27 +3596,27 @@ const Fate = ({ title, tone, why, items }: { title: string; tone: Tone; why: Rea
       border: `1.5px solid ${toneLine(tone)}`,
       background: tone === 'cyan' ? c.panel : toneSoft(tone),
       borderRadius: 'var(--osd-radius)',
-      padding: '28px 34px',
+      padding: '44px 40px 48px',
+      minHeight: 440,
+      display: 'flex',
+      flexDirection: 'column',
     }}
   >
-    <p style={{ fontSize: 40, fontWeight: 900, lineHeight: 1.3, margin: 0, color: toneColor(tone) }}>{title}</p>
-    <p style={{ fontSize: 28, lineHeight: 1.5, margin: '12px 0 0' }}>{why}</p>
-    <p style={{ fontSize: 28, lineHeight: 1.5, color: c.muted, margin: '8px 0 0' }}>{items}</p>
+    <p style={{ fontSize: 52, fontWeight: 900, lineHeight: 1.3, margin: 0, color: toneColor(tone) }}>{title}</p>
+    <p style={{ fontSize: 32, lineHeight: 1.5, margin: '20px 0 0' }}>{why}</p>
+    <p style={{ fontSize: 30, lineHeight: 1.5, color: c.muted, margin: 'auto 0 0', paddingTop: 24 }}>{items}</p>
   </div>
 );
 
 const BackToIlya: Page = () => (
-  <Frame title="哪些交給模型，哪些留給人？">
+  <Frame zoom={1.1} title="哪些交給模型，哪些留給人？" main={<>模型越強，可以放得越寬；
+      <br />
+      <Hi>決定要什麼、授權給誰</Hi>，留在人這邊。</>}>
     <div style={{ display: 'flex', gap: 28 }}>
       <Fate title="會被吸收" tone="cyan" why={<>因為<b>能力不足</b>而存在的</>} items="補能力的流程、寫出來的程式與檢查" />
       <Fate title="要有人決定" tone="cyan" why={<>因為<b>偏好在人身上</b>而存在的</>} items="要什麼、哪些不能錯、什麼才算對" />
       <Fate title="要有人授權" tone="cyan" why={<>因為<b>存取與授權</b>而存在的</>} items={<>誰能碰哪些資料、<br />哪些要核准、隨時能撤回</>} />
     </div>
-    <p style={{ fontSize: 48, fontWeight: 900, lineHeight: 1.45, margin: '64px 0 0' }}>
-      模型越強，可以放得越寬；
-      <br />
-      <Hi>決定要什麼、授權給誰</Hi>，留在人這邊。
-    </p>
   </Frame>
 );
 
@@ -3658,15 +3642,15 @@ const QA: Page = () => (
 );
 
 const Ref = ({ who, what }: { who: string; what: string }) => (
-  <div style={{ padding: '3px 0', borderBottom: `1px solid ${c.hair}`, lineHeight: 1.3 }}>
-    <span style={{ fontSize: 22, fontWeight: 700 }}>{who}</span>
-    <span style={{ fontSize: 19, color: c.muted, marginLeft: 12 }}>{what}</span>
+  <div style={{ padding: '1px 0', borderBottom: `1px solid ${c.hair}`, lineHeight: 1.25 }}>
+    <span style={{ fontSize: 21, fontWeight: 700 }}>{who}</span>
+    <span style={{ fontSize: 18, color: c.muted, marginLeft: 12 }}>{what}</span>
   </div>
 );
 
 const References: Page = () => (
   <Frame scope="產品資料查證於 2026 年 10 月" title="參考資料">
-    <div style={{ display: 'flex', gap: 60 }}>
+    <div style={{ display: 'flex', gap: 48 }}>
       <div style={{ flex: 1 }}>
         <Ref who="Rich Sutton" what="The Bitter Lesson, 2019" />
         <Ref who="Lance Martin" what="Learning the Bitter Lesson, 2025-07" />
@@ -3687,7 +3671,7 @@ const References: Page = () => (
         <Ref who="Anthropic" what="Trustworthy agents in practice, 2026-04" />
         <Ref who="Google" what="Google's Approach for Secure AI Agents, 2025" />
       </div>
-      <div style={{ flex: 1 }}>
+      <div style={{ flex: 1.25 }}>
         <Ref who="Claude Code 官方文件" what="context window、memory、permissions、permission modes、hooks、sandboxing、checkpointing、settings、subagents" />
         <Ref who="Claude API 官方文件" what="tool use" />
         <Ref who="Claude Agent SDK、Codex SDK、OpenCode SDK" what="官方文件" />
@@ -3765,7 +3749,7 @@ const SubMini = ({ title, sub, children, w = 300 }: { title: string; sub?: React
 );
 
 const SubWhenItem = ({ no, k, children, link }: { no: number; k: string; children: ReactNode; link?: ReactNode }) => (
-  <div style={{ display: 'grid', gridTemplateColumns: '40px 1fr', columnGap: 10, alignItems: 'baseline', padding: '6px 0', borderTop: no > 1 ? `1px solid ${c.hair}` : 'none' }}>
+  <div style={{ display: 'grid', gridTemplateColumns: '40px 1fr', columnGap: 10, alignItems: 'baseline', padding: '4px 0', borderTop: no > 1 ? `1px solid ${c.hair}` : 'none' }}>
     <div style={{ fontFamily: mono, fontSize: 22, fontWeight: 700, color: 'var(--osd-accent)' }}>{no}</div>
     <div style={{ fontSize: 22, lineHeight: 1.45 }}>
       <span style={{ fontSize: 25, fontWeight: 800 }}>{k}</span>
@@ -3777,7 +3761,7 @@ const SubWhenItem = ({ no, k, children, link }: { no: number; k: string; childre
 );
 
 const SubagentPage: Page = () => (
-  <Frame scope="以 Claude Code 為例" back={{ to: ActionPage, label: '④ 行動' }} next={{ to: DebatePage, label: '互相辯論' }} title="Subagent：過程不必留下、或需要另一雙眼睛時，才開">
+  <Frame zoom={0.88} scope="以 Claude Code 為例" back={{ to: ActionPage, label: '④ 行動' }} next={{ to: DebatePage, label: '互相辯論' }} title="Subagent：過程不必留下、或需要另一雙眼睛時，才開" main={<>判斷只有一個：<Hi>主 Agent 之後，還要不要看這段過程</Hi>。</>}>
     <div style={{ display: 'flex', alignItems: 'center', width: 900 }}>
       <SubMini title="主 Agent" sub="對話、讀過的檔案" />
       <div style={{ width: 160, display: 'flex', flexDirection: 'column', justifyContent: 'space-evenly' }}>
@@ -3788,7 +3772,7 @@ const SubagentPage: Page = () => (
         <div style={{ fontSize: 22, fontWeight: 700, lineHeight: 1.4 }}>全新的 context</div>
       </SubMini>
     </div>
-    <div style={{ display: 'flex', gap: 28, marginTop: 14, alignItems: 'stretch' }}>
+    <div style={{ display: 'flex', gap: 28, marginTop: 10, alignItems: 'stretch' }}>
       <div
         style={{
           flex: 1.3,
@@ -3796,7 +3780,7 @@ const SubagentPage: Page = () => (
           border: '2px solid var(--osd-accent)',
           background: c.panel,
           borderRadius: 'var(--osd-radius)',
-          padding: '14px 28px 8px',
+          padding: '10px 24px 6px',
         }}
       >
         <div style={{ fontSize: 30, fontWeight: 800, color: 'var(--osd-accent)', marginBottom: 4 }}>什麼時候開</div>
@@ -3817,7 +3801,7 @@ const SubagentPage: Page = () => (
           border: `1.5px solid ${c.hair}`,
           background: c.mutedSoft,
           borderRadius: 'var(--osd-radius)',
-          padding: '14px 28px',
+          padding: '10px 24px',
           display: 'flex',
           flexDirection: 'column',
         }}
@@ -3835,10 +3819,7 @@ const SubagentPage: Page = () => (
         </div>
       </div>
     </div>
-    <p style={{ fontSize: 32, fontWeight: 800, lineHeight: 1.5, margin: '12px 0 0' }}>
-      判斷只有一個：<Hi>主 Agent 之後，還要不要看這段過程</Hi>。
-    </p>
-    <div style={{ marginTop: 12 }}>
+    <div style={{ marginTop: 10 }}>
       <JudgeBand model="要不要開子 Agent、交代什麼" harness={<>子 Agent <b>看得到什麼</b>、有哪些工具、能開幾層</>} />
     </div>
   </Frame>
@@ -3864,7 +3845,7 @@ const DebateCard = ({ rec, diagram, title, lines }: { rec?: boolean; diagram: Re
       flexDirection: 'column',
     }}
   >
-    <div style={{ height: 122, display: 'flex', justifyContent: 'center' }}>{diagram}</div>
+    <div style={{ height: 108, display: 'flex', justifyContent: 'center' }}>{diagram}</div>
     <div style={{ fontSize: 29, fontWeight: 800, marginTop: 10, color: rec ? 'var(--osd-accent)' : undefined }}>{title}</div>
     <div style={{ fontSize: 22, lineHeight: 1.5, marginTop: 8, display: 'flex', flexDirection: 'column', gap: 8 }}>{lines}</div>
   </div>
@@ -3881,19 +3862,19 @@ const DebatePage: Page = () => {
     </defs>
   );
   return (
-    <Frame scope="以 Claude Code 為例" back={{ to: SubagentPage, label: 'Subagent' }} title={<>子 Agent 要互相辯論：<br />主 Agent 轉述，或改用 Agent teams</>}>
-      <div style={{ borderLeft: '3px solid var(--osd-accent)', background: c.mutedSoft, padding: '8px 24px', fontSize: 24, lineHeight: 1.4 }}>
+    <Frame zoom={0.9} scope="以 Claude Code 為例" back={{ to: SubagentPage, label: 'Subagent' }} title={<>子 Agent 要互相辯論：<br />主 Agent 轉述，或改用 Agent teams</>} main={<>要辯論，<Hi>預設由主 Agent 轉述</Hi>；Agent teams 還在實驗，SDK 裡也不會開。</>}>
+      <div style={{ borderLeft: '3px solid var(--osd-accent)', background: c.mutedSoft, padding: '6px 24px', fontSize: 24, lineHeight: 1.4 }}>
         開兩個子 Agent，一個當正方、一個當反方，辯論這個問題
       </div>
-      <p style={{ fontSize: 23, lineHeight: 1.4, color: c.muted, margin: '8px 0 0' }}>
+      <p style={{ fontSize: 23, lineHeight: 1.4, color: c.muted, margin: '6px 0 0' }}>
         為什麼要辯：單一 Agent 找到一個說得通的解釋就容易停下；<b>互相反駁</b>，留下來的結論比較可靠。
       </p>
-      <div style={{ display: 'flex', gap: 24, marginTop: 14, alignItems: 'stretch' }}>
+      <div style={{ display: 'flex', gap: 24, marginTop: 10, alignItems: 'stretch' }}>
         <DebateCard
           rec
           title="主 Agent 當主持人"
           diagram={
-            <svg width={262} height={122} viewBox="0 0 300 140" aria-hidden="true">
+            <svg width={232} height={108} viewBox="0 0 300 140" aria-hidden="true">
               <Arr id="osd-ah-debate-a1" col={navy} />
               <line x1={138} y1={52} x2={74} y2={92} style={{ stroke: navy, strokeWidth: 2.5 }} markerStart="url(#osd-ah-debate-a1)" markerEnd="url(#osd-ah-debate-a1)" />
               <line x1={162} y1={52} x2={226} y2={92} style={{ stroke: navy, strokeWidth: 2.5 }} markerStart="url(#osd-ah-debate-a1)" markerEnd="url(#osd-ah-debate-a1)" />
@@ -3913,7 +3894,7 @@ const DebatePage: Page = () => {
         <DebateCard
           title="子 Agent 直接互傳"
           diagram={
-            <svg width={262} height={122} viewBox="0 0 300 140" aria-hidden="true">
+            <svg width={232} height={108} viewBox="0 0 300 140" aria-hidden="true">
               <Arr id="osd-ah-debate-b1" col={grey} />
               <line x1={140} y1={50} x2={70} y2={88} style={{ stroke: c.dim, strokeWidth: 1.5 }} />
               <line x1={160} y1={50} x2={230} y2={88} style={{ stroke: c.dim, strokeWidth: 1.5 }} />
@@ -3925,7 +3906,7 @@ const DebatePage: Page = () => {
           }
           lines={
             <>
-              <div>開的時候給名字、帶 SendMessage 工具，就能傳給其他有名字的 Agent</div>
+              <div>開的時候給名字、帶 SendMessage 工具，就能傳給<Nb>其他</Nb>有名字的 Agent</div>
               <div style={{ color: c.muted }}>名單是啟動當下的快照，比它晚開的不在上面</div>
             </>
           }
@@ -3933,7 +3914,7 @@ const DebatePage: Page = () => {
         <DebateCard
           title="Agent teams"
           diagram={
-            <svg width={262} height={122} viewBox="0 0 300 140" aria-hidden="true">
+            <svg width={232} height={108} viewBox="0 0 300 140" aria-hidden="true">
               <rect x={184} y={4} width={114} height={28} rx={6} style={{ fill: '#ffffff', stroke: c.dim, strokeWidth: 1.5 }} />
               <text x={241} y={24} textAnchor="middle" style={{ fontSize: 16, fontWeight: 700, fill: grey }}>共用任務清單</text>
               <line x1={133} y1={50} x2={62} y2={90} style={{ stroke: c.dim, strokeWidth: 1.5 }} />
@@ -3956,10 +3937,7 @@ const DebatePage: Page = () => {
           }
         />
       </div>
-      <p style={{ fontSize: 32, fontWeight: 800, lineHeight: 1.5, margin: '16px 0 0' }}>
-        要辯論，<Hi>預設由主 Agent 轉述</Hi>；Agent teams 還在實驗，SDK 裡也不會開。
-      </p>
-      <div style={{ marginTop: 12 }}>
+      <div style={{ marginTop: 8 }}>
         <JudgeBand model="論點怎麼回、誰被說服" harness={<><b>誰能傳給誰</b>、別的 Agent 的訊息不能當成使用者同意</>} />
       </div>
     </Frame>
@@ -3984,7 +3962,7 @@ const LoopStep = ({ no, title, sub }: { no: string; title: string; sub: ReactNod
 );
 
 const EvidencePage: Page = () => (
-  <Frame title="控制要加還是要拆：先留紀錄，再用測試題決定">
+  <Frame title="控制要加還是要拆：先留紀錄，再用測試題決定" main={<>鬆緊不靠感覺：<Hi>紀錄指出哪裡錯，測試題決定能不能放</Hi>。</>}>
     <div style={{ display: 'flex', alignItems: 'stretch' }}>
       <LoopStep no="01" title="留下執行紀錄" sub={<>每一步看了什麼、<br />呼叫什麼工具、結果如何</>} />
       <StageArrow />
@@ -4017,9 +3995,6 @@ const EvidencePage: Page = () => (
         </div>
       </div>
     </div>
-    <p style={{ fontSize: 32, fontWeight: 800, lineHeight: 1.5, margin: '34px 0 0' }}>
-      鬆緊不靠感覺：<Hi>紀錄指出哪裡錯，測試題決定能不能放</Hi>。
-    </p>
   </Frame>
 );
 
@@ -4049,12 +4024,12 @@ const RtV = ({ id, up, label, w }: { id: string; up?: boolean; label: string; w:
       </defs>
       <path d={up ? 'M12 81 L12 3' : 'M12 3 L12 81'} fill="none" stroke={c.dim} strokeWidth="2" markerEnd={`url(#${id})`} />
     </svg>
-    <div style={{ fontSize: 21, lineHeight: 1.35, color: c.muted, whiteSpace: 'nowrap' }}>{label}</div>
+    <div style={{ fontSize: 22, lineHeight: 1.35, color: c.muted, whiteSpace: 'nowrap' }}>{label}</div>
   </div>
 );
 
 const DeliverToPage: Page = () => (
-  <Frame title={<>三角形的邊：<br />要東西的找系統型辦事，結果回到人手上</>}>
+  <Frame title={<>三角形的邊：<br />要東西的找系統型辦事，結果回到人手上</>} main={<>意圖從<Hi>人或流程</Hi>來；系統型照規則把事辦完。</>} links={[{ label: 'Plugin', to: PluginDelivery }]}>
     <TriangleDiagram
       id="osd-ah-tri-b"
       showEg={false}
@@ -4067,10 +4042,6 @@ const DeliverToPage: Page = () => (
     <div style={{ marginTop: 22, fontSize: 23, lineHeight: 1.5, color: c.muted }}>
       <b>對外介面：</b>A2A；對方的 Harness 只支援 MCP 時，包成一個 MCP 工具
     </div>
-    <DetailLinks items={[{ label: 'Plugin', to: PluginDelivery }]} />
-    <p style={{ fontSize: 32, fontWeight: 800, lineHeight: 1.5, margin: '14px 0 0' }}>
-      意圖從<Hi>人或流程</Hi>來；系統型照規則把事辦完。
-    </p>
   </Frame>
 );
 
@@ -4085,8 +4056,8 @@ const CompRow = ({ k, a, b, head = false }: { k: string; a: string; b: string; h
 const SysBox = ({ children, subject = false }: { children: ReactNode; subject?: boolean }) => (
   <div
     style={{
-      width: 220,
-      flexShrink: 0,
+      flex: 1,
+      minWidth: 0,
       boxSizing: 'border-box',
       textAlign: 'center',
       border: subject ? '2px solid var(--osd-accent)' : `1.5px solid ${c.line}`,
@@ -4110,15 +4081,17 @@ const SysPath = ({ ok, children }: { ok: boolean; children: ReactNode }) => (
 );
 
 const SysChain = ({ id, from, mid, to, verdict, first = false }: { id: string; from: string; mid: string; to: string; verdict: ReactNode; first?: boolean }) => (
-  <div id={id} style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: first ? 0 : 36 }}>
-    <SysBox>{from}</SysBox>
-    <span style={{ fontSize: 28, color: c.dim }}>→</span>
-    <SysBox>{mid}</SysBox>
-    <span style={{ fontSize: 28, color: c.dim }}>→</span>
-    <SysBox subject>系統型 Agent</SysBox>
-    <span style={{ fontSize: 28, color: c.dim }}>→</span>
-    <SysBox>{to}</SysBox>
-    <div style={{ marginLeft: 16, fontSize: 26, lineHeight: 1.45, color: 'var(--osd-accent)', display: 'flex', gap: 10 }}>
+  <div id={id} style={{ marginTop: first ? 0 : 40 }}>
+    <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+      <SysBox>{from}</SysBox>
+      <span style={{ fontSize: 28, color: c.dim }}>→</span>
+      <SysBox>{mid}</SysBox>
+      <span style={{ fontSize: 28, color: c.dim }}>→</span>
+      <SysBox subject>系統型 Agent</SysBox>
+      <span style={{ fontSize: 28, color: c.dim }}>→</span>
+      <SysBox>{to}</SysBox>
+    </div>
+    <div style={{ marginTop: 14, fontSize: 26, lineHeight: 1.45, color: 'var(--osd-accent)', display: 'flex', gap: 10 }}>
       <span style={{ fontWeight: 800 }}>✓</span>
       <span>{verdict}</span>
     </div>
@@ -4133,7 +4106,7 @@ const IntroCard = ({ k, children }: { k: string; children: ReactNode }) => (
 );
 
 const SystemAgentIntro: Page = () => (
-  <Frame title="系統型：代表一個系統，守住它的規則和資料">
+  <Frame title="系統型：代表一個系統，守住它的規則和資料" main={<>三個理由都<Hi>不是能力問題</Hi>；模型再強，系統型還是要在。</>} zoom={1.1}>
     <div style={{ display: 'flex', gap: 56, alignItems: 'center' }}>
       <div style={{ width: 640, flexShrink: 0, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
         <div style={{ width: 460, boxSizing: 'border-box', border: '2px solid var(--osd-accent)', background: c.panel, borderRadius: 'var(--osd-radius)', padding: '20px 24px', textAlign: 'center' }}>
@@ -4152,9 +4125,6 @@ const SystemAgentIntro: Page = () => (
         <IntroCard k="知識在這裡維護">懂請假系統的人，在同一個地方改規則和知識</IntroCard>
       </div>
     </div>
-    <p style={{ fontSize: 32, fontWeight: 800, lineHeight: 1.5, margin: '36px 0 0' }}>
-      三個理由都<Hi>不是能力問題</Hi>；模型再強，系統型還是要在。
-    </p>
   </Frame>
 );
 
@@ -4187,7 +4157,7 @@ const FunctionalIntro: Page = () => {
   const ys = [70, 154, 238, 322];
   const names = ['HR 系統', '帳號系統', '門禁系統', '請假系統'];
   return (
-    <Frame title="職能型：代表一個跨系統的流程，不代表任何一個人">
+    <Frame title="職能型：代表一個跨系統的流程，不代表任何一個人" main={<>職能型存在的理由是<Hi>跨系統</Hi>；不跨系統，就交給那個系統的 Agent。</>} zoom={1.2}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         <FnBox w={300}>
           <div style={{ fontSize: 34, fontWeight: 800, lineHeight: 1.3 }}>事件</div>
@@ -4237,15 +4207,12 @@ const FunctionalIntro: Page = () => {
       <p style={{ fontSize: 24, lineHeight: 1.5, color: c.muted, margin: '36px 0 0' }}>
         只碰一個系統的流程，不算職能型：例如每月提醒主管核准假單，是請假系統的 Agent 自己的排程。
       </p>
-      <p style={{ fontSize: 32, fontWeight: 800, lineHeight: 1.5, margin: '24px 0 0' }}>
-        職能型存在的理由是<Hi>跨系統</Hi>；不跨系統，就交給那個系統的 Agent。
-      </p>
     </Frame>
   );
 };
 
 const AgentLadderPage: Page = () => (
-  <Frame title="系統型不另外加權限，只檢查呼叫者帶來的權限">
+  <Frame zoom={1.3} title="系統型不另外加權限，只檢查呼叫者帶來的權限" main={<><Hi>權限跟著代表的對象走</Hi>；系統型只在門口檢查。</>}>
     <div id="osd-ah-sysagent-chains">
       <SysChain first id="osd-ah-sysagent-chain-a" from="使用者" mid="個人型 Agent" to="請假系統" verdict={<>用這位<b>使用者</b>的權限：送出的是他的假單</>} />
       <SysChain
@@ -4260,9 +4227,6 @@ const AgentLadderPage: Page = () => (
       </div>
     </div>
     <div style={{ marginTop: 22, fontSize: 24, lineHeight: 1.5, color: c.muted }}>別的 Agent 傳來的訊息，不能當成使用者的同意。</div>
-    <p style={{ fontSize: 32, fontWeight: 800, lineHeight: 1.5, margin: '28px 0 0' }}>
-      <Hi>權限跟著代表的對象走</Hi>；系統型只在門口檢查。
-    </p>
   </Frame>
 );
 
