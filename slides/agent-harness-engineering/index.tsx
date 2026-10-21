@@ -2692,7 +2692,12 @@ const Act4: Page = () => <Divider no={3} name="定位" q="模型變強後，我�
 type StageKind = 'human' | 'taken' | 'ours' | 'moving';
 type StageCell = [StageKind, ReactNode];
 const STAGE_COLS = '190px repeat(4, 1fr)';
-const STAGE_HEAD = ['決定要什麼', '安排怎麼做', '動手做', '檢查做得對不對'];
+const STAGE_HEAD: [string, string][] = [
+  ['決定要什麼', '目標：要做出什麼'],
+  ['安排怎麼做', '替做事的準備工具、規則、步驟'],
+  ['動手做', '產出本身'],
+  ['檢查做得對不對', '驗收'],
+];
 
 const StageCellView = ({ cell }: { cell: StageCell }) => {
   const [kind, text] = cell;
@@ -2725,8 +2730,11 @@ const WorkStageTable = ({ label, rows }: { label: string; rows: { k: string; cel
       }}
     >
       <div />
-      {STAGE_HEAD.map((h) => (
-        <div key={h}>{h}</div>
+      {STAGE_HEAD.map(([h, d]) => (
+        <div key={h}>
+          {h}
+          <div style={{ fontSize: 20, fontWeight: 400, letterSpacing: 0, lineHeight: 1.35, color: c.muted, marginTop: 4 }}>{d}</div>
+        </div>
       ))}
     </div>
     {rows.map((r) => (
@@ -2737,7 +2745,7 @@ const WorkStageTable = ({ label, rows }: { label: string; rows: { k: string; cel
           gridTemplateColumns: STAGE_COLS,
           columnGap: 28,
           alignItems: 'start',
-          padding: '38px 0',
+          padding: '25px 0',
           borderBottom: `1px solid ${c.hair}`,
         }}
       >
@@ -2751,8 +2759,8 @@ const WorkStageTable = ({ label, rows }: { label: string; rows: { k: string; cel
 );
 
 const AI_ROWS: { k: string; cells: [StageCell, StageCell, StageCell, StageCell] }[] = [
-  { k: '之前', cells: [['human', '人'], ['human', '人'], ['human', '人：手寫程式、畫 graph'], ['human', '人']] },
-  { k: '短中期', cells: [['human', '人'], ['ours', '建 Agent、設計環境'], ['taken', '模型'], ['human', '人：測試題、核准']] },
+  { k: '之前', cells: [['human', '人'], ['human', '人'], ['human', <>人：寫程式、<br />查資料、整理報表</>], ['human', '人']] },
+  { k: '短中期', cells: [['human', '人'], ['ours', <>人：建 Agent——<br />給模型工具、規則、資料</>], ['taken', '模型'], ['human', '人：測試題、核准']] },
 ];
 
 const IRPage: Page = () => (
@@ -4431,7 +4439,8 @@ OpenAI 的具體做法：AGENTS.md 當目錄不當百科；架構規則用 linte
 但要誠實：（被問到再講）轉換期很痛，手搖紡織工這個職業幾十年內幾乎消失。同一份研究也發現，過去四十年，自動化壓低勞動需求的效果變強了，增強型創新提高需求的效果卻沒有。
 這次會一樣嗎？下一頁。
 重點句：機器先接手動手做；人留在決定、安排和檢查。`,
-  `（知來，短中期開頭）AI 也是從動手做開始接手。之前，人手寫程式、畫 graph；現在模型寫，人做的是安排——建 Agent、設計它的環境——和檢查：測試題、核准。
+  `（知來，短中期開頭）AI 也是從動手做開始接手。之前，人寫程式、查資料、整理報表；現在模型做，人做的是安排——建 Agent、設計它的環境——和檢查：測試題、核准。
+四段怎麼分：動手做是產出本身——程式、報表、查到的資料；安排是替做事的那一方準備工具、規則和步驟——織布時是架機器、穿線，現在是建 Agent：給模型工具、規則、資料。建 Agent 本身也要寫程式，但它寫的是讓模型去做事的環境，不是產出本身。這兩段都是人在做。
 這不是預測，已經在發生：OpenAI 2026 年 2 月的〈Harness engineering〉，三位工程師驅動 Codex，五個月做出約一百萬行程式碼，手寫的是零行（細節在附錄）。他們的說法是 Humans steer. Agents execute.——第二部分提過這句。
 這一段叫短中期，但不給具體年數——沒有人知道多長，我們只知道現在還在這一列。
 那要建哪些 Agent？下一頁。
