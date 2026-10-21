@@ -3435,7 +3435,7 @@ const VisionNote = ({ head, children, strong = false }: { head: string; children
 );
 
 const VisionPage: Page = () => (
-  <Frame title="跨段找 root cause：一個 Agent 統籌，各段回證據" back={{ to: OrgAgentPage, label: '人工核准' }} main={<>一個 Agent 統籌、固定格式交換證據；<Hi>影響產線的決定，留給人</Hi>。</>}>
+  <Frame title="跨段找 root cause：一個 Agent 統籌，各段回證據" back={{ to: FunctionalIntro, label: '職能型' }} main={<>一個 Agent 統籌、固定格式交換證據；<Hi>影響產線的決定，留給人</Hi>。</>}>
     <div style={{ display: 'flex', gap: 56, alignItems: 'flex-start' }}>
       <div style={{ width: 1080, flexShrink: 0 }}>
         <div style={{ display: 'flex', alignItems: 'center' }}>
@@ -3485,7 +3485,7 @@ const VisionPage: Page = () => (
 );
 
 const OrgAgentPage: Page = () => (
-  <Frame title={<>檢查怎麼交出去：<br />一類一類，有紀錄就放手；守要求的，永遠留給人</>} main={<>放手的依據是<Hi>一筆一筆的核准紀錄</Hi>；守要求的那幾類，不在放手的範圍。</>} links={[{ label: '跨段找 root cause', to: VisionPage }]} zoom={1.25}>
+  <Frame title={<>檢查怎麼交出去：<br />一類一類，有紀錄就放手；守要求的，永遠留給人</>} main={<>放手的依據是<Hi>一筆一筆的核准紀錄</Hi>；守要求的那幾類，不在放手的範圍。</>} zoom={1.25}>
     <div style={{ display: 'flex', alignItems: 'stretch' }}>
       <LoopStep
         no="01"
@@ -4172,7 +4172,7 @@ const FunctionalIntro: Page = () => {
   const ys = [70, 154, 238, 322];
   const names = ['HR 系統', '帳號系統', '門禁系統', '請假系統'];
   return (
-    <Frame title="職能型：代表一個跨系統的流程，不代表任何一個人" main={<>職能型存在的理由是<Hi>跨系統</Hi>；不跨系統，就交給那個系統的 Agent。</>} zoom={1.2}>
+    <Frame title="職能型：代表一個跨系統的流程，不代表任何一個人" main={<>職能型存在的理由是<Hi>跨系統</Hi>；不跨系統，就交給那個系統的 Agent。</>} links={[{ label: '跨段找 root cause', to: VisionPage }]} zoom={1.2}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         <FnBox w={300}>
           <div style={{ fontSize: 34, fontWeight: 800, lineHeight: 1.3 }}>事件</div>
@@ -4302,7 +4302,7 @@ const appendix: [Page, Page][] = [
   [MemoryPage, StatePage],
   [VerifyPage, StatePage],
   [PluginDelivery, DeliverToPage],
-  [VisionPage, OrgAgentPage],
+  [VisionPage, FunctionalIntro],
   [SystemAgentIntro, TrianglePage],
   [AgentLadderPage, DeliverToPage],
   [OurWork, AITablePage],
@@ -4457,7 +4457,8 @@ OpenAI 的具體做法：AGENTS.md 當目錄不當百科；架構規則用 linte
 它的意圖來自流程：流程要完成什麼，它就去要什麼。沒有哪一個人在對它下指令。
 邊界規則：只碰一個系統的流程，不算職能型。例如每月底檢查還沒核准的假單、提醒主管——那只碰請假系統，是請假系統的 Agent 自己跑的排程。職能型存在的理由就是跨系統；不跨系統，它就沒有理由存在。
 實作上，職能型和個人型都是把 Harness 用 SDK 嵌進服務（SDK 的細節在後面「怎麼合作、各用誰的權限」那一頁）。業界例子：Azure SRE Agent 處理告警、AWS DevOps Agent 調查工單——都是代表一個流程、橫跨多個資源。
-下一頁：系統型。
+下一頁：個人型和職能型怎麼找系統型辦事、各用誰的權限。
+半導體的例子在附錄（右下角「跨段找 root cause」）：一批貨在後段量測異常，這批貨的 Agent 就是職能型，去問前中後段的系統型 Agent。
 重點句：職能型存在的理由是跨系統；不跨系統，就交給那個系統的 Agent。`,
   `（短中期）三種 Agent 怎麼合作、各用誰的權限。
 左邊要東西的，右邊守東西的。個人型 → 系統型：我請假，個人型 Agent 透過請假系統的 Agent 辦，送出的是我的假單，用我的權限，結果回到我的對話裡（連同「做了哪些操作」，就是 LPQM Agent 留下來的那條守要求：回覆時附上操作清單）。個人型靠裝在它 Harness 裡的 Plugin，知道怎麼找系統型、什麼時候該找（Plugin 是這條邊的連接器，怎麼打包在附錄，右下角「細節」連結）。職能型 → 系統型：到職流程分別找各系統的 Agent，用自己的最小權限，綁著一位指定的人。職能型 → 個人型：流程需要核准時，送到主管手上；結果也要回到人手上，例如發通知或開工單。
@@ -4511,7 +4512,6 @@ Summarizer：只給最終表格太單薄，也要讓使用者確認操作符合�
 回扣第二部分：這就是「放不放，用證據決定」——證據是核准紀錄，放寬的單位是一類觸發。回扣主線：補能力的會變薄，守要求的不會；越自主，守要求越重要。
 工程上還要改的（被問到再講）：context 從事件本身組，記憶跟著職位、不跟著某個人；入口用 Workflow 依觸發類型分流，裡面再用 Loop；不能當場問人，把關事前寫成規則；用自己的身分、權限最小化、背後有指定的人（例如 Microsoft Entra 的 agent 身分不能擁有高權限管理角色；Azure SRE Agent 沒有權限時，透過 Entra 的 OBO 流程代使用者申請暫時存取）；每次都要對，留紀錄，非同步通知指定的人。
 其他業界實例：AWS DevOps Agent（自動調查告警與工單）、Datadog Bits AI SRE（調查每個告警）。
-跨前中後段怎麼找 root cause，在附錄（右下角「細節」連結）。
 三家模型供應商也這麼看嗎？下一頁。
 重點句：放手的依據是一筆一筆的核准紀錄；守要求的那幾類，不在放手的範圍。`,
   `（長期，推論）上一頁是 Azure 的做法；三家模型供應商的共識也是同一件事，加上更多：表格最左邊那一欄。建的工作在移動，那什麼不移動？看三家模型供應商自己怎麼說。它們是最想讓 Agent 越做越多的一方，說法卻高度一致。
@@ -4654,7 +4654,7 @@ LPQM Agent 重構後留下來的每一項，這一頁都要找到位置。知識
 欄位值檢查和只開放設計好的表格操作，都做在 MCP server 端，在 Plugin 外面：就算 Harness 被繞過，也擋得住，模型寫的程式碰不到 prod。Plugin 只帶 MCP 的連線設定。權限做在資料來源或前端，LPQM Agent 就是做在前端；測試題拿來驗證整包。
 重點句：Plugin 是包裝；真正不能錯的，要做在包裝外面。如果把規則寫成 Plugin 裡的 Skill，那只是引導。
 補充（被問到）：Plugin 是 Claude Code 與 claude.ai 的打包格式，其他 Harness 有各自的做法；能跨 Harness 帶著走的是 Skill 和 MCP。Plugin 可以由管理員用 managed settings 統一發布、強制啟用。`,
-  `（附錄）從一個系統放大到好幾個系統。目前還沒有這類需求。
+  `（附錄）職能型的半導體例子：從一個系統放大到好幾個系統。目前還沒有這類需求。
 對照第 23 頁的圖：這是職能型找系統型那一條箭頭——這批貨的 Agent 就是一個職能型 Agent，它去找各段的系統型 Agent；權限照系統型那一頁，用它自己的最小權限，背後綁著一位指定的工程師。
 情境：一批貨在後段量測異常，要回頭找 root cause——可能在前段、中段、也可能在後段。難處是資料和專業知識分散在不同單位，人工追查要跨部門來回問。
 做法：這批貨的 Agent 被事件喚醒，用 lot ID 當線索，去問前、中、後段的系統型 Agent（每個系統一個，懂自己那段的資料和術語）。各段回假設和證據，再互相反駁，留下證據最強的——這就是附錄辯論那頁：單一調查者容易被第一個假設牽著走，互相反駁比較可靠。最後整理成建議，扣貨、改 recipe 這類影響產線的決定，由工程師核准。
