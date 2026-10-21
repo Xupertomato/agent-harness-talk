@@ -3391,40 +3391,51 @@ const PlanArrow = ({ label }: { label?: string }) => (
   </div>
 );
 
+const ReleaseCard = ({ navy = false, label, head, eg, children }: { navy?: boolean; label: string; head: string; eg: string; children: ReactNode }) => (
+  <div
+    style={{
+      flex: 1,
+      boxSizing: 'border-box',
+      border: navy ? '2px solid var(--osd-accent)' : `1.5px solid ${c.amberLine}`,
+      background: navy ? c.panel : c.amberSoft,
+      borderRadius: 'var(--osd-radius)',
+      padding: '20px 32px',
+      display: 'flex',
+      flexDirection: 'column',
+    }}
+  >
+    <div style={{ fontSize: 26, fontWeight: 800, color: navy ? 'var(--osd-accent)' : c.amber }}>{label}</div>
+    <div style={{ fontSize: 40, fontWeight: 900, lineHeight: 1.3, marginTop: 6 }}>{head}</div>
+    <div style={{ fontSize: 28, lineHeight: 1.4, color: c.muted, marginTop: 8 }}>{eg}</div>
+    <div style={{ marginTop: 12, fontSize: 28, lineHeight: 1.4, fontWeight: 700, flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>{children}</div>
+  </div>
+);
+
+const FlowArrow = ({ navy = false }: { navy?: boolean }) => (
+  <div style={{ color: navy ? 'var(--osd-accent)' : c.amber, fontSize: 26, lineHeight: 1.2, padding: '0 0 0 12px' }}>↓</div>
+);
+
 const OrgAgentPage: Page = () => (
-  <Frame title={<>檢查怎麼交出去：<br />一類一類，有紀錄就放手；守要求的，永遠留給人</>} main={<>放手的依據是<Hi>一筆一筆的核准紀錄</Hi>；守要求的那幾類，不在放手的範圍。</>} zoom={1.25}>
-    <div style={{ display: 'flex', alignItems: 'stretch' }}>
-      <LoopStep
-        no="01"
-        title="異常進來，先調查"
-        sub={<>例：這批貨在後段量測異常。<K>職能型 Agent</K> 醒來，問<Nb>前中後段</Nb>的<K>系統型 Agent</K>，整理出<Nb>處置建議</Nb>。</>}
-      />
-      <StageArrow />
-      <LoopStep
-        no="02"
-        title="先只提建議，人核准"
-        sub={<>每一類處置，都先由工程師<Nb>按核准</Nb>；<K>同時留下核准紀錄。</K></>}
-      />
-      <StageArrow />
-      <LoopStep
-        no="03"
-        title="一直被核准的那類，才放手"
-        sub={<>例：量測異常就安排重測。<K>扣貨、改 recipe</K> 永遠留給人。</>}
-      />
+  <Frame title="檢查一類一類交出去：有核准紀錄才放手" main={<>放手的依據是<Hi>核准紀錄</Hi>，不是感覺。</>} zoom={1.25}>
+    <div style={{ display: 'flex', gap: 28, alignItems: 'stretch' }}>
+      <ReleaseCard label="會交出去的" head="補能力的核准" eg="例：量測異常 → 安排重測">
+        <div>先只提建議，人核准</div>
+        <FlowArrow />
+        <div>每次核准都留紀錄</div>
+        <FlowArrow />
+        <div>一直被核准的這一類，才讓它自己做</div>
+      </ReleaseCard>
+      <ReleaseCard navy label="永遠留給人的" head="守要求的核准" eg="例：扣貨、改 recipe">
+        <div>規定本身要求人決定，模型再強也一樣</div>
+        <div style={{ height: 8 }} />
+        <div>怎麼分：換成人來做，也要有人核准嗎？</div>
+        <FlowArrow navy />
+        <div style={{ paddingLeft: 12 }}>要 → 守要求，永遠留給人</div>
+        <div style={{ paddingLeft: 12 }}>不用 → 補能力，看紀錄放手</div>
+      </ReleaseCard>
     </div>
-    <div
-      style={{
-        marginTop: 24,
-        border: `1.5px solid ${c.hair}`,
-        background: c.mutedSoft,
-        borderRadius: 'var(--osd-radius)',
-        padding: '16px 28px',
-        fontSize: 24,
-        lineHeight: 1.5,
-        color: c.muted,
-      }}
-    >
-      <b>業界已經這樣做：</b>Azure SRE Agent 的執行模式依每個 response plan 分開設定；<br />官方建議先用 Review 跑 2–4 週，一直被核准的那類再切成 Autonomous。
+    <div style={{ marginTop: 16, fontSize: 26, lineHeight: 1.4, color: c.muted }}>
+      業界做法：Azure SRE Agent 依每種事件分開設定，官方建議先用 Review 跑 2–4 週，<br />一直被核准的那類再切成 Autonomous。
     </div>
   </Frame>
 );
@@ -4396,16 +4407,16 @@ Plugin 是什麼、怎麼打包，在附錄（右下角「Plugin」）。
 檢查具體怎麼交出去？下一頁。
 重點句：模型再強十倍，這件事還需要人嗎？`,
   `（長期，推論）上一頁說長期檢查也會被接手。例子就是第 22 頁那個這批貨的 Agent。一開始它只做兩件事：查出問題、找到該調整的人；常見又一直被同意的處置，例如安排重測，才讓它自己做。具體怎麼交出去？人工核准本身也是一種控制，一樣問它為什麼存在。因為還不信任模型的判斷而設的核准，是補能力——累積了核准紀錄，就能一類一類放手；因為規定本身而設的，例如扣貨、改 recipe，是守要求，永遠留給人。
-接著同一批貨的故事：這批貨的 Agent 是職能型——它代表「處理這批貨異常」這個流程，橫跨前、中、後段的系統。它由告警、排程、工單觸發，沒人開口、線上沒人；引擎跟個人型 Agent 一樣，差別都在引擎外面那一圈。
-01：異常進來，先調查。這批貨在後段量測異常，Agent 被事件喚醒，去問前中後段的系統型 Agent，整理出處置建議。
-02：先只提建議，人核准。每一類處置，都先由工程師按核准，同時留下核准紀錄；這時 Agent 只是提案，不自己動手。
-03：一直被核准的那類，才放手。例如「量測異常就安排重測」一直被核准，這一類才改成自己執行、事後回報（這是舉例）；扣貨、改 recipe 這類影響產線的決定，永遠留給人。
+先看左邊這張。例子就是第 22 頁那個這批貨的 Agent：一開始它只調查、找到該處理的人；處置要先提建議，由人核准。這類核准之所以存在，是因為我們還不信任模型的判斷，所以叫補能力。每次核准都留下紀錄；某一類，例如「量測異常就安排重測」，一直被核准，這一類才改成自己執行、事後回報（這是舉例）。放手的單位是一類，不是整個 Agent。
+再看右邊這張。扣貨、改 recipe 這類影響產線的決定，核准是規定本身要求的，所以叫守要求，永遠留給人，模型再強也一樣。
+判斷方法還是那一題：換成人來做，也要有人核准嗎？要，就是守要求。
+背景：這批貨的 Agent 是職能型，代表「處理這批貨異常」這個流程，橫跨前、中、後段的系統；由告警、排程、工單觸發，沒人開口、線上沒人。引擎跟個人型 Agent 一樣，差別都在引擎外面那一圈。
 業界已經這樣做（依 Microsoft Learn「run modes」文件，2026-10）：Azure SRE Agent 的 Review 模式，是在執行 Azure 基礎設施的寫入操作（Azure CLI、Resource Manager 這類）前等核准，只有 SRE Agent 管理員能按核准；發 email、貼 Teams、查外部資料不用等，依 Agent 的判斷和 response plan 的指示進行。執行模式是依每個 response plan、每個排程任務分開設定的，不是整個 Agent 一起切——所以叫一類一類放。官方建議先用 Review，觀察它建議什麼，跑兩到四週，發現某些模式一直都核准，再把那些觸發切成 Autonomous。官方建議的分法：正式環境事故、資安告警留在 Review；測試環境事故、每日健康檢查、成本與用量報表可以 Autonomous。
 回扣第二部分：這就是「放不放，用證據決定」——證據是核准紀錄，放寬的單位是一類觸發。回扣主線：補能力的會變薄，守要求的不會；越自主，守要求越重要。
 工程上還要改的（被問到再講）：context 從事件本身組，記憶跟著職位、不跟著某個人；入口用 Workflow 依觸發類型分流，裡面再用 Loop；不能當場問人，把關事前寫成規則；用自己的身分、權限最小化、背後有指定的人（例如 Microsoft Entra 的 agent 身分不能擁有高權限管理角色；Azure SRE Agent 沒有權限時，透過 Entra 的 OBO 流程代使用者申請暫時存取）；每次都要對，留紀錄，非同步通知指定的人。
 其他業界實例：AWS DevOps Agent（自動調查告警與工單）、Datadog Bits AI SRE（調查每個告警）。
 三家模型供應商也這麼看嗎？下一頁。
-重點句：放手的依據是一筆一筆的核准紀錄；守要求的那幾類，不在放手的範圍。`,
+重點句：放手的依據是核准紀錄，不是感覺。`,
   `（長期，推論）上一頁是 Azure 的做法；三家模型供應商的共識也是同一件事，加上更多：右邊那張「授權」卡的三行。建的工作在移動，那什麼不移動？看三家模型供應商自己怎麼說。它們是最想讓 Agent 越做越多的一方，說法卻高度一致。
 OpenAI〈Practices for Governing Agentic AI Systems〉（約 2023 年底）提出七項做法：高風險動作要使用者核准、有些動作直接封鎖；每個 Agent 實例要能追溯到它代表的使用者；人隨時能中止 Agent，Agent 不能抗拒。它也提醒：要核准的事太多，核准會變成橡皮圖章。〈A practical guide to building agents〉說：敏感、不可逆、高風險的動作要觸發人工監督，直到 Agent 的可靠度被建立。
 Anthropic〈Our framework for developing safe and trustworthy agents〉（2025 年 8 月）：核心張力是自主和人的監督之間的平衡，高風險決定之前人要保有控制權；Claude Code 預設唯讀，改程式或系統前要人核准，信任的例行工作可以給持續權限。2026 年 4 月的〈Trustworthy agents in practice〉補充：使用者替每個動作設定允許、要核准或封鎖；多 Agent 的監督還沒解決；所有防護加起來也不是保證。
