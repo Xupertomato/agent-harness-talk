@@ -3328,9 +3328,6 @@ const ConsensusPage: Page = () => (
     <ConsensusRow k="背後有明確的人" a={<>每個 Agent 都能追溯到<br />它代表的使用者</>} b={<>高風險決定之前，<br />人保有控制權</>} g={<>每個 Agent 要有明確的<br />人類控制者</>} />
     <ConsensusRow k="權力在模型之外限制" a={<>規則式防護、<br />工具依風險分級</>} b={<>每個動作設定允許、<br />要核准或封鎖</>} g={<>模型之外的確定性政策引擎，<br />在動作執行前檢查</>} />
     <ConsensusRow k="可靠了才放手" a={<>高風險動作要人監督，<br />直到可靠度被建立</>} b={<>信任的例行工作，<br />給持續權限</>} g={<>不可逆的動作，<br />要使用者確認</>} />
-    <SourceLine>
-      出處：OpenAI，Practices for Governing Agentic AI Systems（2023）、A practical guide to building agents；Anthropic，Our framework for developing safe and trustworthy agents（2025.08）；Google，Google's Approach for Secure AI Agents（2025）
-    </SourceLine>
   </Frame>
 );
 
@@ -4521,6 +4518,7 @@ Google〈Google's Approach for Secure AI Agents〉（2025）三條原則：每�
 三家的共識，剛好對上前面幾頁：背後有明確的人——權限那頁；權力在模型之外限制——系統型那頁的強制；可靠了才放手——人工核准那頁。
 前面問過它代表誰；三家的答案是，每個 Agent 背後都要有明確的人。
 注意它們都沒說設計或驗證會永遠留給人；一致說要留的，只有控制者這個位置。也要提醒：這些是賣 Agent 的公司寫的，多半從安全角度出發，不是中立研究。
+出處：OpenAI〈Practices for Governing Agentic AI Systems〉（2023）和〈A practical guide to building agents〉；Anthropic〈Our framework for developing safe and trustworthy agents〉（2025.08）；Google〈Google's Approach for Secure AI Agents〉（2025）；吳恩達 Stanford CS230（2025）。
 重點句：三家都沒說設計和驗證會永遠留給人；控制者的位置，三家都說要留。`,
   `【結尾 3 分鐘】
 回到封面的問題：哪些交給模型，哪些留給人？三張卡就是答案。
