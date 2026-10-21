@@ -2893,70 +2893,87 @@ const TrianglePage: Page = () => {
   );
 };
 
-const SmallBox = ({ x, y, w, h, name, line }: { x: number; y: number; w: number; h: number; name: string; line: string }) => (
-  <div
-    style={{
-      position: 'absolute',
-      left: x,
-      top: y,
-      width: w,
-      height: h,
-      boxSizing: 'border-box',
-      border: `1.5px solid ${c.line}`,
-      background: c.panel,
-      borderRadius: 'var(--osd-radius)',
-      padding: '10px 16px',
-      textAlign: 'center',
-      display: 'flex',
-      flexDirection: 'column',
-      justifyContent: 'center',
-    }}
-  >
-    <div style={{ fontSize: 40, fontWeight: 800, lineHeight: 1.3 }}>{name}</div>
-    <div style={{ fontSize: 28, lineHeight: 1.4, color: c.muted, marginTop: 4 }}>{line}</div>
-  </div>
-);
-
 const DeliverToPage: Page = () => {
-  const W = 1640;
+  const W = TRI_W;
   const bw = TRI_BW;
-  const bh = 160;
-  const gapY = 130;
-  const H = bh * 2 + gapY;
-  const y2 = bh + gapY;
+  const bh = 172;
+  const gapY = 28;
+  const y1 = TRI_TOP;
+  const y2 = TRI_TOP + bh + gapY;
+  const H = y2 + bh;
   const xr = W - bw;
-  const yr = (H - bh) / 2;
-  const c1 = bh / 2;
+  const rh = 230;
+  const yr = TRI_TOP + (H - TRI_TOP - rh) / 2;
+  const cr = yr + rh / 2;
+  const c1 = y1 + bh / 2;
   const c2 = y2 + bh / 2;
-  const cr = yr + bh / 2;
-  const lab: CSSProperties = { position: 'absolute', fontSize: 26, lineHeight: 1.35, color: c.muted, whiteSpace: 'nowrap' };
+  const boxBase: CSSProperties = {
+    position: 'absolute',
+    boxSizing: 'border-box',
+    background: c.panel,
+    borderRadius: 'var(--osd-radius)',
+    padding: '12px 24px',
+    display: 'flex',
+    flexDirection: 'column',
+    justifyContent: 'center',
+  };
+  const colLab: CSSProperties = { position: 'absolute', top: 0, fontSize: 26, color: c.muted, lineHeight: 1.3 };
+  const Caller = ({ y, name, line }: { y: number; name: string; line: string }) => (
+    <div style={{ ...boxBase, left: 0, top: y, width: bw, height: bh, border: `1.5px solid ${c.line}` }}>
+      <div style={{ fontSize: 38, fontWeight: 800, lineHeight: 1.3 }}>{name}</div>
+      <div style={{ display: 'flex', alignItems: 'baseline', gap: 14, marginTop: 6 }}>
+        <span style={{ fontSize: 24, color: c.muted, flexShrink: 0 }}>帶著</span>
+        <span style={{ fontSize: 28, lineHeight: 1.4 }}>{line}</span>
+      </div>
+    </div>
+  );
+  const warnCell: CSSProperties = { fontSize: 30, lineHeight: 1.4, whiteSpace: 'nowrap' };
+  const warnArrow: CSSProperties = { fontFamily: mono, fontSize: 30, color: c.dim };
   return (
     <Frame
       title="個人型和職能型找系統型辦事，各自帶著自己的權限"
-      main={<>系統型不另外加權限，<Hi>只在門口檢查呼叫者帶來的</Hi>。</>}
-      links={[{ label: 'Plugin', to: PluginDelivery }, { label: '權限細節', to: AgentLadderPage }]}
+      main={<><Hi>權限跟著代表的對象走</Hi>；系統型只在門口檢查。</>}
       anchor="top"
     >
       <div style={{ position: 'relative', width: W, height: H }}>
+        <div style={{ ...colLab, left: 0 }}>要東西的（呼叫端）</div>
+        <div style={{ ...colLab, left: xr }}>守東西的（資源端）</div>
         <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`} style={{ position: 'absolute', left: 0, top: 0 }} aria-hidden="true">
           <defs>
             <RtMarker id="osd-ah-dl-head" />
           </defs>
-          <path d={`M${bw + 10} ${c1} L${xr - 10} ${cr - 22}`} fill="none" stroke={c.dim} strokeWidth="2" markerEnd="url(#osd-ah-dl-head)" />
-          <path d={`M${bw + 10} ${c2} L${xr - 10} ${cr + 22}`} fill="none" stroke={c.dim} strokeWidth="2" markerEnd="url(#osd-ah-dl-head)" />
-          <path d={`M${bw / 2} ${y2 - 10} L${bw / 2} ${bh + 10}`} fill="none" stroke={c.dim} strokeWidth="2" markerEnd="url(#osd-ah-dl-head)" />
+          <path d={`M${bw + 10} ${c1} L${xr - 10} ${cr - 28}`} fill="none" stroke={c.dim} strokeWidth="2" markerEnd="url(#osd-ah-dl-head)" />
+          <path d={`M${bw + 10} ${c2} L${xr - 10} ${cr + 28}`} fill="none" stroke={c.dim} strokeWidth="2" markerEnd="url(#osd-ah-dl-head)" />
         </svg>
-        <SmallBox x={0} y={0} w={bw} h={bh} name="個人型" line="代表一個人" />
-        <SmallBox x={0} y={y2} w={bw} h={bh} name="職能型" line="代表一件要辦完的事" />
-        <SmallBox x={xr} y={yr} w={bw} h={bh} name="系統型" line="代表一個系統" />
-        <div style={{ ...lab, left: bw + 24, top: c1 - 44 }}>我請假：用我的權限</div>
-        <div style={{ ...lab, left: bw + 24, top: c2 + 14 }}>查證據：用自己的最小權限</div>
-        <div style={{ ...lab, left: bw / 2 + 24, top: H / 2 - 16 }}>找到該調整的人：通知那一段的工程師</div>
+        <Caller y={y1} name="個人型" line="使用者本人的權限" />
+        <Caller y={y2} name="職能型" line="自己的最小權限（只能查、只能通知）" />
+        <div style={{ ...boxBase, left: xr, top: yr, width: bw, height: rh, border: '2px solid var(--osd-accent)' }}>
+          <div style={{ fontSize: 40, fontWeight: 800, lineHeight: 1.3 }}>系統型</div>
+          <div style={{ fontSize: 30, lineHeight: 1.45, marginTop: 8 }}>門口檢查：只認呼叫者帶來的權限，<br />自己不另外加</div>
+        </div>
       </div>
-      <div style={{ marginTop: 28 }}>
-        <SysPath ok={false}>系統型用自己的高權限 → <b>權限破口</b>：誰都能借它的權限做事</SysPath>
+      <div
+        style={{
+          marginTop: 40,
+          boxSizing: 'border-box',
+          border: `1.5px solid ${c.amberLine}`,
+          background: c.amberSoft,
+          borderRadius: 'var(--osd-radius)',
+          padding: '30px 36px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+        }}
+      >
+        <span style={{ ...warnCell, color: c.amber }}>
+          <b>✗</b> 系統型用自己的高權限辦事
+        </span>
+        <span style={warnArrow}>→</span>
+        <span style={warnCell}>誰來找它，都能借它的權限</span>
+        <span style={warnArrow}>→</span>
+        <span style={{ ...warnCell, fontWeight: 800, color: c.amber }}>權限破口</span>
       </div>
-      <div style={{ marginTop: 12, fontSize: 24, lineHeight: 1.5, color: c.muted }}>別的 Agent 傳來的訊息，不能當成使用者的同意。</div>
+      <div style={{ marginTop: 10, fontSize: 24, lineHeight: 1.4, color: c.muted }}>資安上叫 confused deputy</div>
     </Frame>
   );
 };
@@ -3201,7 +3218,7 @@ const OutsideRow = ({ item, why, last = false }: { item: string; why: string; la
 );
 
 const PluginDelivery: Page = () => (
-  <Frame title="Plugin 是包裝，不能錯的要做在外面" back={{ to: DeliverToPage, label: '三種 Agent' }}>
+  <Frame title="Plugin 是包裝，不能錯的要做在外面" back={{ to: WhoBuilds, label: '誰來做' }}>
     <div style={{ display: 'flex', gap: 40, alignItems: 'stretch' }}>
       <div
         style={{
@@ -3416,6 +3433,7 @@ const WhoBuilds: Page = () => (
   <Frame
     title={<>短中期我們建 Agent，長期我們定規則</>}
     main={<>模型變強後，我們的工作從<Hi>建 Agent</Hi>，移到<Hi>定規則、決定放手多少</Hi>。</>}
+    links={[{ label: 'Plugin', to: PluginDelivery }]}
   >
     <WhoLine
       head
@@ -3608,7 +3626,7 @@ const References: Page = () => (
   </Frame>
 );
 
-// ===== Added pages: Subagent, Evidence, DeliverTo, AgentLadder =====
+// ===== Added pages: Subagent, Evidence, DeliverTo =====
 
 const SubBox = ({ title, children }: { title: string; children: ReactNode }) => (
   <div
@@ -3950,51 +3968,6 @@ const CompRow = ({ k, a, b, head = false }: { k: string; a: string; b: string; h
   </div>
 );
 
-const SysBox = ({ children, subject = false }: { children: ReactNode; subject?: boolean }) => (
-  <div
-    style={{
-      flex: 1,
-      minWidth: 0,
-      boxSizing: 'border-box',
-      textAlign: 'center',
-      border: subject ? '2px solid var(--osd-accent)' : `1.5px solid ${c.line}`,
-      background: c.panel,
-      borderRadius: 'var(--osd-radius)',
-      padding: '14px 8px',
-      fontSize: 26,
-      fontWeight: 800,
-      lineHeight: 1.35,
-    }}
-  >
-    {children}
-  </div>
-);
-
-const SysPath = ({ ok, children }: { ok: boolean; children: ReactNode }) => (
-  <div style={{ display: 'flex', alignItems: 'baseline', gap: 14, fontSize: 25, lineHeight: 1.5, color: ok ? 'var(--osd-accent)' : c.amber }}>
-    <span style={{ fontWeight: 800, width: 28, flexShrink: 0 }}>{ok ? '✓' : '✗'}</span>
-    <span>{children}</span>
-  </div>
-);
-
-const SysChain = ({ id, from, mid, to, verdict, first = false }: { id: string; from: string; mid: string; to: string; verdict: ReactNode; first?: boolean }) => (
-  <div id={id} style={{ marginTop: first ? 0 : 40 }}>
-    <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-      <SysBox>{from}</SysBox>
-      <span style={{ fontSize: 28, color: c.dim }}>→</span>
-      <SysBox>{mid}</SysBox>
-      <span style={{ fontSize: 28, color: c.dim }}>→</span>
-      <SysBox subject>系統型 Agent</SysBox>
-      <span style={{ fontSize: 28, color: c.dim }}>→</span>
-      <SysBox>{to}</SysBox>
-    </div>
-    <div style={{ marginTop: 14, fontSize: 26, lineHeight: 1.45, color: 'var(--osd-accent)', display: 'flex', gap: 10 }}>
-      <span style={{ fontWeight: 800 }}>✓</span>
-      <span>{verdict}</span>
-    </div>
-  </div>
-);
-
 const IntroCard = ({ k, children }: { k: string; children: ReactNode }) => (
   <div style={{ border: `1.5px solid ${c.line}`, background: c.panel, borderRadius: 'var(--osd-radius)', padding: '18px 26px' }}>
     <div style={{ fontSize: 30, fontWeight: 800, lineHeight: 1.35 }}>{k}</div>
@@ -4152,25 +4125,6 @@ const FunctionalIntro: Page = () => {
   );
 };
 
-const AgentLadderPage: Page = () => (
-  <Frame back={{ to: DeliverToPage, label: '權限' }} zoom={1.3} title="系統型不另外加權限，只檢查呼叫者帶來的權限" main={<><Hi>權限跟著代表的對象走</Hi>；系統型只在門口檢查。</>}>
-    <div id="osd-ah-sysagent-chains">
-      <SysChain first id="osd-ah-sysagent-chain-a" from="使用者" mid="個人型 Agent" to="請假系統" verdict={<>用這位<b>使用者</b>的權限：送出的是他的假單</>} />
-      <SysChain
-        id="osd-ah-sysagent-chain-b"
-        from="量測異常"
-        mid="職能型 Agent"
-        to="前段系統"
-        verdict={<>用它<b>自己的最小權限</b>：只能查、只能通知</>}
-      />
-      <div id="osd-ah-sysagent-paths" style={{ marginTop: 26 }}>
-        <SysPath ok={false}>系統型用自己的高權限 → <b>權限破口</b>：誰都能借它的權限做事</SysPath>
-      </div>
-    </div>
-    <div style={{ marginTop: 22, fontSize: 24, lineHeight: 1.5, color: c.muted }}>別的 Agent 傳來的訊息，不能當成使用者的同意。</div>
-  </Frame>
-);
-
 export const meta: SlideMeta = {
   title: 'Agent System with Harness Engineering',
   createdAt: '2026-10-12T00:07:16.057Z',
@@ -4227,9 +4181,8 @@ const appendix: [Page, Page][] = [
   [CompactPage, StatePage],
   [MemoryPage, StatePage],
   [VerifyPage, StatePage],
-  [PluginDelivery, DeliverToPage],
+  [PluginDelivery, WhoBuilds],
   [SystemAgentIntro, TrianglePage],
-  [AgentLadderPage, DeliverToPage],
   [OurWork, AITablePage],
 ];
 
@@ -4387,14 +4340,16 @@ OpenAI 的具體做法：AGENTS.md 當目錄不當百科；架構規則用 linte
 下一頁：個人型和職能型怎麼找系統型辦事、各用誰的權限。
 重點句：職能型替這批貨著想：查出卡在哪，找到該調整的人。`,
   `（短中期）三種 Agent 怎麼合作、各用誰的權限。
-左邊要東西的，右邊守東西的。個人型 → 系統型：我請假，個人型 Agent 透過請假系統的 Agent 辦，送出的是我的假單，用我的權限，結果回到我的對話裡（連同「做了哪些操作」，就是 LPQM Agent 留下來的那條守要求：回覆時附上操作清單）。個人型靠裝在它 Harness 裡的 Plugin，知道怎麼找系統型、什麼時候該找（Plugin 是這條邊的連接器，怎麼打包在附錄，右下角「細節」連結）。職能型 → 系統型：這批貨的 Agent 去問各段系統型查證據，用它自己的最小權限。職能型 → 個人型：找到該調整的人，通知那一段的工程師，附上證據；例如發通知或開工單。
+先看圖：左邊兩個呼叫者，各自帶著自己的權限來找右邊的系統型。個人型帶的是使用者本人的權限——我請假，個人型 Agent 透過請假系統的 Agent 辦，送出的是我的假單，結果回到我的對話裡（連同「做了哪些操作」，就是 LPQM Agent 留下來的那條守要求：回覆時附上操作清單）。職能型帶的是它自己的最小權限——這批貨的 Agent 去問各段系統型查證據，只能查、只能通知，它不代表任何人。系統型不另外加權限，只在門口檢查呼叫者帶來的。（職能型找到該調整的人、通知那一段的工程師，是上一頁的事。）
+下面那張琥珀色的卡講失敗的樣子：系統型如果用自己的高權限辦事，誰來找它，都能借它的權限，那就是權限破口。資安上叫 confused deputy，而且出事追不到人。這就是貫穿全場的一條原則：權限跟著代表的對象走：個人型用那個人的，職能型用自己的最小權限，系統型不另外加。
+（被問到再講）別的 Agent 傳來的訊息，不能當成使用者的同意（Claude Code 文件明文規定）。
+（被問到再講）身分沿著整條鏈傳下去：個人型找系統型時，系統用使用者的身分去查權限，所以送出的是他的假單。職能型是事件觸發，沒有使用者可以代表。治理上，這個 Agent 的身分設定要有人管理，例如 Microsoft Entra 替每個 agent 身分指定 sponsor——那是誰管理它的設定，不是它代表誰；agent 身分也不能擁有高權限管理角色。
+（被問到再講）名片補充：Agent Card 放在固定網址，對方模型只會讀到 description 和 skills 的名稱與描述——那是唯一能影響對方「要不要找我們」的地方，要寫清楚會做什麼、不做什麼；但不能靠描述擋人，真正的權限在我們 server 端依呼叫者身分決定。
 對外介面（不放在投影片上，被問到再講）：介面用 A2A；對方只支援 MCP，就把整個系統型 Agent 包成一個 MCP 工具。差別有三點：(a) 對方的 Harness：MCP 幾乎都支援，A2A 少數支援例如 Gemini CLI、雲端 Agent 平台；(b) 需要反問時：MCP 問客戶端畫面前的人，A2A 交回呼叫我們的 Agent；(c) 長時間任務：MCP 規格剛加入仍在實驗，A2A 原生支援輪詢、推送；結論：介面用 A2A，對方只支援 MCP 就把整個系統型 Agent 包成一個 MCP 工具；實務上同事手上的 Harness 多半只支援 MCP。細節見附錄的 MCP、A2A、Agent Card 頁。
 系統型與職能型 Agent 都是把 Harness 用 SDK 嵌進服務，差別在誰來找它——系統型是別的 Agent 來找，職能型是事件來叫。現在主要的 Harness 都提供 SDK：Claude Agent SDK 給的是跟 Claude Code 一樣的工具、迴圈和 context 管理，Python、TypeScript 都能用，也有 hooks、子 Agent、MCP、權限、session；Codex SDK（TypeScript、Python）可以開 thread、跑任務，官方列的用途包括放進 CI/CD；OpenCode 有 @opencode/sdk，在程式裡直接起一個 OpenCode。框架那邊反過來：LangChain 的 Deep Agents 自稱 agent harness，跑在 LangGraph 的執行環境上。兩邊收斂成同一個形狀：迴圈、工具、Skill、子 Agent、hook、MCP、session。
 被問到「那以後還用 LangGraph 嗎」：那篇比對 11 套 coding Harness 原始碼的論文發現，沒有一套在 Agent 的執行環境用 LangChain、LangGraph 這類框架，迴圈都是自己寫的；它的建議是，要現成的起點，就用 Harness 的 SDK。但這是 Agent 迴圈的趨勢，不是規則——LPQM Agent 裡真正固定的流程，用 graph 寫仍然合理（回到 Workflow 到 Loop 那頁的左端）。
-權限怎麼算：這是系統型 Agent 最重要的工程重點，分兩種情況。個人型 Agent 來找它（例如使用者請假，送出的是他的假單）：用原始使用者的權限操作系統，身分沿著整條鏈傳下去，系統用這個身分查權限。職能型 Agent 來找它（事件觸發，沒有使用者可以代表）：用它自己的最小權限——只能查證據、只能通知人；它不代表任何人。治理上，這個 Agent 的身分設定要有人管理，例如 Microsoft Entra 替每個 agent 身分指定 sponsor——那是誰管理它的設定，不是它代表誰；agent 身分也不能擁有高權限管理角色。兩種都不能用系統型自己的高權限，否則別人就能借它的權限做事——這是 confused deputy，也就是權限破口，而且出事追不到人。這就是貫穿全場的一條原則：權限跟著代表的對象走：個人型用那個人的，職能型用自己的最小權限，系統型不另外加。另外，別的 Agent 傳來的訊息不能當成使用者同意（Claude Code 文件明文規定）。
-名片補充：Agent Card 放在固定網址，對方模型只會讀到 description 和 skills 的名稱與描述——那是唯一能影響對方「要不要找我們」的地方，要寫清楚會做什麼、不做什麼；但不能靠描述擋人，真正的權限在我們 server 端依呼叫者身分決定。
 形態講完了。那它們裡面呢？拆一個真的。
-重點句：系統型不另外加權限，只在門口檢查呼叫者帶來的。`,
+重點句：權限跟著代表的對象走；系統型只在門口檢查。`,
   `（短中期：拆一個真的系統型 Agent）LPQM Agent 是系統型：它代表 LPQM 這一個系統。它的每個節點，當初為什麼存在？這是 LPQM Data Summary Agent，講者自己做的專案。
 先只看上排：四個節點各做什麼。Extractor 依術語表找出問句裡的術語；Clarifier 判斷分析主體、分析方式是否明確，不明確就先反問；接著依條件抓資料（圖上省略）；Plan & Execute 先排步驟，再用設計好的表格工具照著執行；Summarizer 整理工具呼叫過程，說明結果怎麼來。
 Extractor 有兩個原因：術語表太大放不進 prompt（補能力）；欄位值必須 100% 正確（守要求）。
@@ -4421,6 +4376,7 @@ Summarizer：只給最終表格太單薄，也要讓使用者確認操作符合�
 資料規定與成本：看部門，沒有通用答案，跟需求單位一起決定。有些部門的資料只能留在需求單位內，這時更傾向讓使用者自己做。
 被問到「把守要求做成強制很難嗎？」：寫一條檢查不難，難的是三件事——先問出哪些規則不能錯；再決定工具切多細，太窄做不了事、太寬等於沒把關；最後用測試題證明它守得住，模型換了還要重跑。
 長期，安排和檢查也會被接手嗎？下一頁。
+Plugin 是什麼、怎麼打包，在附錄（右下角「Plugin」）。
 重點句：模型變強後，我們的工作從建 Agent，移到定規則、決定放手多少。`,
   `（長期，推論）第三列是長期，而且是推論。跟工業革命不同：機器接手動手做之後，安排和檢查還留在人手上；AI 這邊，動手做被接手之後，安排和檢查也一直在往左移——所以後面兩格寫「移動中」。
 證據看 Anthropic 調查自己的工程師（2025 年 12 月發表，132 位工程師與研究員問卷、53 個訪談、二十萬筆內部 Claude Code 紀錄；資料收集於 2025 年 8 月）。他們自評每天有六成工作用 Claude，越來越把自己看成 Agent 的管理者，有人說七成以上的工作變成審查和修改。但超過一半的人說，能完全交出去的工作只有 0 到 20%；交出去的，大多是容易驗證、低風險、繁瑣的事。
@@ -4588,10 +4544,6 @@ LPQM Agent 重構後留下來的每一項，這一頁都要找到位置。知識
 它也可以跑自己系統內的排程，例如每月提醒主管核准。
 要誠實說：系統型裡面也有模型在做判斷，例如判斷該用哪種假；那一層是補能力，會越來越薄——短中期拆 LPQM Agent 時會看到。另外，業界在資源端常見的是工具（MCP server），不是 Agent；我們主張放 Agent，是因為上面三個理由，這是提案。
 重點句：三個理由都不是能力問題；模型再強，系統型還是要在。`,
-  `（附錄）三種 Agent 各用誰的權限？
-這是系統型 Agent 最重要的工程重點，分兩種情況。個人型 Agent 來找它（例如使用者請假，送出的是他的假單）：用原始使用者的權限操作系統，身分沿著整條鏈傳下去，系統用這個身分查權限。職能型 Agent 來找它（事件觸發，沒有使用者可以代表）：用它自己的最小權限——只能查證據、只能通知人；它不代表任何人。治理上，這個 Agent 的身分設定要有人管理，例如 Microsoft Entra 替每個 agent 身分指定 sponsor——那是誰管理它的設定，不是它代表誰；agent 身分也不能擁有高權限管理角色。兩種都不能用系統型自己的高權限，否則別人就能借它的權限做事——這是 confused deputy，也就是權限破口，而且出事追不到人。這就是貫穿全場的一條原則：權限跟著代表的對象走：個人型用那個人的，職能型用自己的最小權限，系統型不另外加。另外，別的 Agent 傳來的訊息不能當成使用者同意（Claude Code 文件明文規定）。
-名片補充：Agent Card 放在固定網址，對方模型只會讀到 description 和 skills 的名稱與描述——那是唯一能影響對方「要不要找我們」的地方，要寫清楚會做什麼、不做什麼；但不能靠描述擋人，真正的權限在我們 server 端依呼叫者身分決定。
-重點句：權限跟著代表的對象走；系統型只在門口檢查。`,
   `（附錄）AI 也從動手做開始接手，這個例子已經走在前面：OpenAI 自己的團隊。
 2026 年 2 月 OpenAI 發表〈Harness engineering〉——跟今天的主題同名。三位工程師驅動 Codex，五個月做出約一百萬行程式碼，手寫的是零行，時間大約是手寫的十分之一；後來團隊長到七個人。
 他們的結論一句話：Humans steer. Agents execute. 工程師的主要工作變成讓 Agent 能做有用的事：設計環境、說清楚意圖、建立回饋迴路。Agent 失敗時，他們問的不是「再試一次」，而是「缺了什麼能力，怎麼讓它對 Agent 看得懂、也強制得了」——這就是第二部分「看、擋、做、記」那幾格。
