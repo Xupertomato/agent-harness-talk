@@ -2670,7 +2670,7 @@ const Chip = ({ children }: { children: ReactNode }) => (
 const Part2Close: Page = () => (
   <Close
     zoom={1.3}
-    statement={<>補能力的會放寬，守要求的不會；<br /><Hi>放不放，用證據決定</Hi>。</>}
+    statement={<>補能力的會放寬，守要求的不會；<Hi>放不放，用證據決定</Hi>。</>}
     next="第三部分：定位"
     bridge={
       <>
@@ -2808,10 +2808,10 @@ const AITablePage: Page = () => (
 
 /* ===== 三種 Agent：要東西的（呼叫端）→ 守東西的（資源端） ===== */
 const TRI_W = 1640;
-const TRI_BW = 700;
-const TRI_BH = 212;
+const TRI_BW = 680;
+const TRI_BH = 252;
 const TRI_TOP = 52;
-const TRI_GAP = 36;
+const TRI_GAP = 44;
 
 const AgentBox = ({ name, eg, rows, y, x }: { name: string; eg: string; rows: [string, string][]; y: number; x: number }) => (
   <div
@@ -2829,13 +2829,13 @@ const AgentBox = ({ name, eg, rows, y, x }: { name: string; eg: string; rows: [s
     }}
   >
     <div style={{ display: 'flex', alignItems: 'baseline', gap: 18, paddingBottom: 8 }}>
-      <span style={{ fontSize: 36, fontWeight: 800, lineHeight: 1.3, whiteSpace: 'nowrap' }}>{name}</span>
-      <span style={{ fontSize: 24, lineHeight: 1.3, color: c.muted, whiteSpace: 'nowrap' }}>{eg}</span>
+      <span style={{ fontSize: 40, fontWeight: 800, lineHeight: 1.3, whiteSpace: 'nowrap' }}>{name}</span>
+      <span style={{ fontSize: 26, lineHeight: 1.3, color: c.muted, whiteSpace: 'nowrap' }}>{eg}</span>
     </div>
     {rows.map(([k, v]) => (
-      <div key={k} style={{ display: 'grid', gridTemplateColumns: '140px 1fr', columnGap: 12, padding: '4px 0', borderTop: `1px solid ${c.hair}` }}>
-        <span style={{ fontSize: 22, lineHeight: '36px', color: c.muted }}>{k}</span>
-        <span style={{ fontSize: 26, lineHeight: '36px' }}>{v}</span>
+      <div key={k} style={{ display: 'grid', gridTemplateColumns: '170px 1fr', columnGap: 12, padding: '4px 0', borderTop: `1px solid ${c.hair}` }}>
+        <span style={{ fontSize: 26, lineHeight: '44px', color: c.muted }}>{k}</span>
+        <span style={{ fontSize: 28, lineHeight: '44px' }}>{v}</span>
       </div>
     ))}
   </div>
@@ -2852,14 +2852,14 @@ const TrianglePage: Page = () => {
   const cr = yr + TRI_BH / 2;
   return (
     <Frame
-      title={<>要建哪些 Agent？<br />先問它代表誰：一個人、一個流程，或一個系統</>}
+      title={<>要建哪些 Agent？看它代表人、流程，還是系統</>}
       main={<>判斷題：<Hi>它替誰要東西？</Hi></>}
       anchor="top"
       links={[{ label: '系統型', to: SystemAgentIntro }]}
     >
       <div style={{ position: 'relative', width: TRI_W, height: H }}>
-        <div style={{ position: 'absolute', left: 0, top: 0, fontSize: 24, color: c.muted, lineHeight: 1.3 }}>要東西的（呼叫端）</div>
-        <div style={{ position: 'absolute', left: xr, top: 0, fontSize: 24, color: c.muted, lineHeight: 1.3 }}>守東西的（資源端）</div>
+        <div style={{ position: 'absolute', left: 0, top: 0, fontSize: 26, color: c.muted, lineHeight: 1.3 }}>要東西的（呼叫端）</div>
+        <div style={{ position: 'absolute', left: xr, top: 0, fontSize: 26, color: c.muted, lineHeight: 1.3 }}>守東西的（資源端）</div>
         <svg width={TRI_W} height={H} viewBox={`0 0 ${TRI_W} ${H}`} style={{ position: 'absolute', left: 0, top: 0 }} aria-hidden="true">
           <defs>
             <RtMarker id="osd-ah-tri-head" />
@@ -2912,16 +2912,16 @@ const SmallBox = ({ x, y, w, h, name, line }: { x: number; y: number; w: number;
       justifyContent: 'center',
     }}
   >
-    <div style={{ fontSize: 36, fontWeight: 800, lineHeight: 1.3 }}>{name}</div>
-    <div style={{ fontSize: 25, lineHeight: 1.4, color: c.muted, marginTop: 2 }}>{line}</div>
+    <div style={{ fontSize: 40, fontWeight: 800, lineHeight: 1.3 }}>{name}</div>
+    <div style={{ fontSize: 28, lineHeight: 1.4, color: c.muted, marginTop: 4 }}>{line}</div>
   </div>
 );
 
 const DeliverToPage: Page = () => {
   const W = 1640;
-  const bw = 440;
-  const bh = 112;
-  const gapY = 128;
+  const bw = TRI_BW;
+  const bh = 160;
+  const gapY = 130;
   const H = bh * 2 + gapY;
   const y2 = bh + gapY;
   const xr = W - bw;
@@ -2929,10 +2929,10 @@ const DeliverToPage: Page = () => {
   const c1 = bh / 2;
   const c2 = y2 + bh / 2;
   const cr = yr + bh / 2;
-  const lab: CSSProperties = { position: 'absolute', fontSize: 24, lineHeight: 1.35, color: c.muted, whiteSpace: 'nowrap' };
+  const lab: CSSProperties = { position: 'absolute', fontSize: 26, lineHeight: 1.35, color: c.muted, whiteSpace: 'nowrap' };
   return (
     <Frame
-      title={<>要東西的找系統型辦事：<br />權限跟著代表的對象走</>}
+      title="個人型和職能型找系統型辦事，各自帶著自己的權限"
       main={<>系統型不另外加權限，<Hi>只在門口檢查呼叫者帶來的</Hi>。</>}
       links={[{ label: 'Plugin', to: PluginDelivery }, { label: '權限細節', to: AgentLadderPage }]}
       anchor="top"
@@ -2949,8 +2949,8 @@ const DeliverToPage: Page = () => {
         <SmallBox x={0} y={0} w={bw} h={bh} name="個人型" line="代表一個人" />
         <SmallBox x={0} y={y2} w={bw} h={bh} name="職能型" line="代表一個跨系統的流程" />
         <SmallBox x={xr} y={yr} w={bw} h={bh} name="系統型" line="代表一個系統" />
-        <div style={{ ...lab, left: bw + 24, top: c1 - 40 }}>我請假：用我的權限</div>
-        <div style={{ ...lab, left: bw + 24, top: c2 + 10 }}>到職流程：用自己的最小權限，綁著一位指定的人</div>
+        <div style={{ ...lab, left: bw + 24, top: c1 - 44 }}>我請假：用我的權限</div>
+        <div style={{ ...lab, left: bw + 24, top: c2 + 14 }}>到職流程：用自己的最小權限，綁著一位指定的人</div>
         <div style={{ ...lab, left: bw / 2 + 24, top: H / 2 - 16 }}>需要核准：送到主管手上</div>
       </div>
       <div style={{ marginTop: 28 }}>
@@ -3535,7 +3535,7 @@ const WhoLine = ({ k, a, b, head = false }: { k?: string; a: ReactNode; b: React
 
 const WhoBuilds: Page = () => (
   <Frame
-    title={<>誰來做會隨時間移動：<br />個人型先由我們協助，之後交給使用者</>}
+    title={<>誰來做會隨時間移動：個人型先由我們協助，之後交給使用者</>}
     main={<>交一個通用 Harness 給使用者：<Hi>長期只夠個人型那一角</Hi>。</>}
   >
     <WhoLine head a="短中期" b="長期" />
