@@ -3331,29 +3331,28 @@ const DurabilityPage: Page = () => (
   </Frame>
 );
 
-const ConsensusRow = ({ k, a, b, g }: { k: string; a: ReactNode; b: ReactNode; g: ReactNode }) => (
-  <TRow cols="280px 1fr 1fr 1fr" pad={20} size={28}>
-    <div style={{ fontWeight: 800, color: 'var(--osd-accent)' }}>{k}</div>
-    <div>{a}</div>
-    <div>{b}</div>
-    <div>{g}</div>
-  </TRow>
+const ConsensusLine = ({ children, last = false }: { children: ReactNode; last?: boolean }) => (
+  <div style={{ fontSize: 30, fontWeight: 700, lineHeight: 1.4, padding: '26px 0', borderBottom: last ? 'none' : `1px solid ${c.hair}` }}>{children}</div>
 );
 
 const ConsensusPage: Page = () => (
-  <Frame title="留到最後的：需求和授權" main={<>三家都沒說設計和驗證會永遠留給人；<Hi>控制者的位置</Hi>，三家都說要留。</>}>
-    <p style={{ ...p0, fontSize: 24, lineHeight: 1.5, color: c.muted, marginBottom: 22 }}>
-      吳恩達：AI 讓寫程式變快，新的瓶頸變成決定要做什麼（Stanford CS230，2025）
-    </p>
-    <TRow cols="280px 1fr 1fr 1fr" head>
-      <div style={{ color: c.muted }}>共識</div>
-      <div>OpenAI</div>
-      <div>Anthropic</div>
-      <div>Google</div>
-    </TRow>
-    <ConsensusRow k="背後有明確的人" a={<>每個 Agent 都能追溯到<br />它代表的使用者</>} b={<>高風險決定之前，<br />人保有控制權</>} g={<>每個 Agent 要有明確的<br />人類控制者</>} />
-    <ConsensusRow k="權力在模型之外限制" a={<>規則式防護、<br />工具依風險分級</>} b={<>每個動作設定允許、<br />要核准或封鎖</>} g={<>模型之外的確定性政策引擎，<br />在動作執行前檢查</>} />
-    <ConsensusRow k="可靠了才放手" a={<>高風險動作要人監督，<br />直到可靠度被建立</>} b={<>信任的例行工作，<br />給持續權限</>} g={<>不可逆的動作，<br />要使用者確認</>} />
+  <Frame title="留到最後的：需求和授權" main={<>設計和驗證都在移動；<Hi>需求由人定，授權由人給</Hi>。</>}>
+    <div style={{ display: 'flex', gap: 36, alignItems: 'stretch' }}>
+      <Panel style={{ flex: 1, minWidth: 0, padding: '48px 44px', border: `1.5px solid ${c.line}` }}>
+        <div style={{ fontSize: 44, fontWeight: 800, lineHeight: 1.2, color: 'var(--osd-accent)' }}>需求</div>
+        <p style={{ ...p0, fontSize: 24, lineHeight: 1.45, color: c.muted, marginTop: 14, marginBottom: 10, minHeight: 70 }}>吳恩達：寫程式變快之後，新的瓶頸變成決定要做什麼<br />（Stanford CS230，2025）</p>
+        <ConsensusLine>要做出什麼</ConsensusLine>
+        <ConsensusLine>什麼才算對</ConsensusLine>
+        <ConsensusLine last>哪些不能錯</ConsensusLine>
+      </Panel>
+      <Panel style={{ flex: 1, minWidth: 0, padding: '48px 44px', border: `1.5px solid ${c.line}` }}>
+        <div style={{ fontSize: 44, fontWeight: 800, lineHeight: 1.2, color: 'var(--osd-accent)' }}>授權</div>
+        <p style={{ ...p0, fontSize: 24, lineHeight: 1.45, color: c.muted, marginTop: 14, marginBottom: 10, minHeight: 70 }}>OpenAI · Anthropic · Google 三家一致</p>
+        <ConsensusLine>每個 Agent 背後都有明確的人</ConsensusLine>
+        <ConsensusLine>權力在模型之外限制</ConsensusLine>
+        <ConsensusLine last>可靠了才放手</ConsensusLine>
+      </Panel>
+    </div>
   </Frame>
 );
 
@@ -4407,17 +4406,17 @@ Plugin 是什麼、怎麼打包，在附錄（右下角「Plugin」）。
 其他業界實例：AWS DevOps Agent（自動調查告警與工單）、Datadog Bits AI SRE（調查每個告警）。
 三家模型供應商也這麼看嗎？下一頁。
 重點句：放手的依據是一筆一筆的核准紀錄；守要求的那幾類，不在放手的範圍。`,
-  `（長期，推論）上一頁是 Azure 的做法；三家模型供應商的共識也是同一件事，加上更多：表格最左邊那一欄。建的工作在移動，那什麼不移動？看三家模型供應商自己怎麼說。它們是最想讓 Agent 越做越多的一方，說法卻高度一致。
+  `（長期，推論）上一頁是 Azure 的做法；三家模型供應商的共識也是同一件事，加上更多：右邊那張「授權」卡的三行。建的工作在移動，那什麼不移動？看三家模型供應商自己怎麼說。它們是最想讓 Agent 越做越多的一方，說法卻高度一致。
 OpenAI〈Practices for Governing Agentic AI Systems〉（約 2023 年底）提出七項做法：高風險動作要使用者核准、有些動作直接封鎖；每個 Agent 實例要能追溯到它代表的使用者；人隨時能中止 Agent，Agent 不能抗拒。它也提醒：要核准的事太多，核准會變成橡皮圖章。〈A practical guide to building agents〉說：敏感、不可逆、高風險的動作要觸發人工監督，直到 Agent 的可靠度被建立。
 Anthropic〈Our framework for developing safe and trustworthy agents〉（2025 年 8 月）：核心張力是自主和人的監督之間的平衡，高風險決定之前人要保有控制權；Claude Code 預設唯讀，改程式或系統前要人核准，信任的例行工作可以給持續權限。2026 年 4 月的〈Trustworthy agents in practice〉補充：使用者替每個動作設定允許、要核准或封鎖；多 Agent 的監督還沒解決；所有防護加起來也不是保證。
 Google〈Google's Approach for Secure AI Agents〉（2025）三條原則：每個 Agent 要有明確的人類控制者，系統要分得出指令來自授權的使用者還是來自它處理的資料；權力要受限、依用途動態調整，Agent 不能自己擴權，使用者要能查看和撤回；動作和規劃要可觀察、可稽核。防線分兩層：模型之外的確定性政策引擎，加上模型推理式的防禦；關鍵和不可逆的動作由確定性那層兜底。Google Cloud 的 Agent Identity 也把每個 Agent 做成獨立的身分，代表使用者行動時，紀錄裡同時看得到 Agent 和使用者。
-「需求」這一半，先看吳恩達：Stanford CS230 2025 年秋季的課堂演講說，AI 寫程式讓工程變快，新的瓶頸變成產品管理——也就是決定要做什麼；工程師和產品經理的比例，正在往 1:1 靠近。「授權給誰」這一半，看三家模型供應商。
-三家的共識，剛好對上前面幾頁：背後有明確的人——權限那頁；權力在模型之外限制——系統型那頁的強制；可靠了才放手——人工核准那頁。
+「需求」這一半，先看吳恩達：Stanford CS230 2025 年秋季的課堂演講說，AI 寫程式讓工程變快，新的瓶頸變成產品管理——也就是決定要做什麼；工程師和產品經理的比例，正在往 1:1 靠近。「授權給誰」這一半，看三家模型供應商。逐行對照三家各自的說法——第一行，每個 Agent 背後都有明確的人：OpenAI 說每個 Agent 都能追溯到它代表的使用者，Anthropic 說高風險決定之前人保有控制權，Google 說每個 Agent 要有明確的人類控制者。第二行，權力在模型之外限制：OpenAI 用規則式防護、工具依風險分級，Anthropic 讓每個動作設定允許、要核准或封鎖，Google 用模型之外的確定性政策引擎在動作執行前檢查。第三行，可靠了才放手：OpenAI 說高風險動作要人監督，直到可靠度被建立，Anthropic 說信任的例行工作給持續權限，Google 說不可逆的動作要使用者確認。
+三家的共識（右卡三行），剛好對上前面幾頁：背後有明確的人——權限那頁；權力在模型之外限制——系統型那頁的強制；可靠了才放手——人工核准那頁。
 前面問過它代表誰；三家的答案是，每個 Agent 背後都要有明確的人。
 回扣第 21 頁：每種 Agent 都代表某個對象；三家說的「明確的人在控制」，就是在這個對象之外，永遠要有人能核准、撤回。
 注意它們都沒說設計或驗證會永遠留給人；一致說要留的，只有控制者這個位置。也要提醒：這些是賣 Agent 的公司寫的，多半從安全角度出發，不是中立研究。
 出處：OpenAI〈Practices for Governing Agentic AI Systems〉（2023）和〈A practical guide to building agents〉；Anthropic〈Our framework for developing safe and trustworthy agents〉（2025.08）；Google〈Google's Approach for Secure AI Agents〉（2025）；吳恩達 Stanford CS230（2025）。
-重點句：三家都沒說設計和驗證會永遠留給人；控制者的位置，三家都說要留。`,
+重點句：設計和驗證都在移動；需求由人定，授權由人給。`,
   `【結尾 3 分鐘】
 回到封面的問題：哪些交給模型，哪些留給人？三張卡就是答案。
 交給模型的——會被吸收的：因為能力不足而存在的，補能力的流程與提示。注意是「終究會」，不是「現在就會」——哪些已經被吸收，要用測試題驗證。
