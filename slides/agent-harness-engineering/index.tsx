@@ -3366,124 +3366,6 @@ const PlanArrow = ({ label }: { label?: string }) => (
   </div>
 );
 
-const VBox = ({
-  w,
-  navy = false,
-  sub,
-  children,
-}: {
-  w: number | string;
-  navy?: boolean;
-  sub?: ReactNode;
-  children: ReactNode;
-}) => (
-  <div
-    style={{
-      width: w,
-      flexShrink: 0,
-      boxSizing: 'border-box',
-      border: navy ? '2px solid var(--osd-accent)' : `1.5px solid ${c.line}`,
-      background: c.panel,
-      borderRadius: 'var(--osd-radius)',
-      padding: '14px 18px',
-      textAlign: 'center',
-      fontSize: 28,
-      fontWeight: 800,
-      lineHeight: 1.4,
-    }}
-  >
-    {children}
-    {sub ? <div style={{ fontSize: 21, fontWeight: 400, color: c.muted, marginTop: 4, lineHeight: 1.4 }}>{sub}</div> : null}
-  </div>
-);
-
-const VLines = ({ down }: { down: boolean }) => {
-  const xs = [172, 540, 908];
-  const h = 64;
-  return (
-    <svg width={1080} height={h} viewBox={`0 0 1080 ${h}`} style={{ display: 'block' }} aria-hidden="true">
-      <defs>
-        <marker id="osd-ah-vision-head" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto" markerUnits="userSpaceOnUse">
-          <path d="M1 1 L9 5 L1 9" fill="none" stroke={c.dim} strokeWidth="1.8" />
-        </marker>
-      </defs>
-      {xs.map((x) =>
-        down ? (
-          <path key={x} id={`osd-ah-vision-d${x}`} d={`M540 2 C540 ${h / 2}, ${x} ${h / 2}, ${x} ${h - 4}`} fill="none" stroke={c.dim} strokeWidth="2" markerEnd="url(#osd-ah-vision-head)" />
-        ) : (
-          <path key={x} id={`osd-ah-vision-u${x}`} d={`M${x} 2 C${x} ${h / 2}, 540 ${h / 2}, 540 ${h - 4}`} fill="none" stroke={c.dim} strokeWidth="2" markerEnd="url(#osd-ah-vision-head)" />
-        ),
-      )}
-    </svg>
-  );
-};
-
-const VisionNote = ({ head, children, strong = false }: { head: string; children: ReactNode; strong?: boolean }) => (
-  <div
-    style={{
-      boxSizing: 'border-box',
-      border: `1.5px solid ${c.line}`,
-      borderLeft: strong ? '4px solid var(--osd-accent)' : `1.5px solid ${c.line}`,
-      background: c.panel,
-      borderRadius: 'var(--osd-radius)',
-      padding: strong ? '24px 28px' : '20px 26px',
-    }}
-  >
-    <div style={{ fontSize: strong ? 30 : 28, fontWeight: 800, lineHeight: 1.35 }}>{head}</div>
-    {children}
-  </div>
-);
-
-const VisionPage: Page = () => (
-  <Frame title="跨段找 root cause：一個 Agent 統籌，各段回證據" back={{ to: FunctionalIntro, label: '職能型' }} main={<>一個 Agent 統籌、固定格式交換證據；<Hi>影響產線的決定，留給人</Hi>。</>}>
-    <div style={{ display: 'flex', gap: 56, alignItems: 'flex-start' }}>
-      <div style={{ width: 1080, flexShrink: 0 }}>
-        <div style={{ display: 'flex', alignItems: 'center' }}>
-          <div style={{ width: 220 }}>
-            <div style={{ fontFamily: mono, fontSize: 20, letterSpacing: '0.12em', color: c.muted, marginBottom: 6, textAlign: 'center' }}>事件</div>
-            <VBox w={220}>
-              <K>後段量測異常</K>
-            </VBox>
-          </div>
-          <div style={{ width: 100, textAlign: 'center', fontFamily: mono, fontSize: 34, color: c.dim, paddingTop: 26 }}>→</div>
-          <div style={{ paddingTop: 26 }}>
-            <VBox w={440} navy sub={<>職能型：事件來才醒，<K>狀態寫回紀錄</K></>}>
-              這批貨的 Agent
-            </VBox>
-          </div>
-        </div>
-        <VLines down />
-        <div style={{ display: 'flex', gap: 24 }}>
-          {['前段', '中段', '後段'].map((s) => (
-            <VBox key={s} w={344} sub="回：假設＋證據">
-              <K>{s}系統型 Agent</K>
-            </VBox>
-          ))}
-        </div>
-        <VLines down={false} />
-        <div style={{ display: 'flex', alignItems: 'center', paddingLeft: 320 }}>
-          <VBox w={440}>互相反駁，留下證據最強的</VBox>
-          <div style={{ width: 80, textAlign: 'center', fontFamily: mono, fontSize: 34, color: c.dim }}>→</div>
-          <VBox w={240} navy sub="扣貨、改 recipe">
-            工程師核准
-          </VBox>
-        </div>
-      </div>
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 28 }}>
-        <VisionNote head="固定格式，不自由聊天">
-          <div style={{ fontFamily: mono, fontSize: 22, lineHeight: 1.6, marginTop: 10 }}>lot ID ｜ 假設 ｜ 證據 ｜ 信心</div>
-          <div style={{ fontSize: 22, color: c.muted, marginTop: 8, lineHeight: 1.5 }}>每多傳一手，就多一次失真</div>
-        </VisionNote>
-        <VisionNote head="為什麼要一個 Agent 統籌？" strong>
-          <div style={{ fontSize: 25, lineHeight: 1.55, marginTop: 10 }}>
-            Anthropic 的多 Agent 研究系統：<K>LLM Agent</K> 目前還不擅長<K><b>即時協調、互相委派</b></K>工作。
-          </div>
-        </VisionNote>
-      </div>
-    </div>
-  </Frame>
-);
-
 const OrgAgentPage: Page = () => (
   <Frame title={<>檢查怎麼交出去：<br />一類一類，有紀錄就放手；守要求的，永遠留給人</>} main={<>放手的依據是<Hi>一筆一筆的核准紀錄</Hi>；守要求的那幾類，不在放手的範圍。</>} zoom={1.25}>
     <div style={{ display: 'flex', alignItems: 'stretch' }}>
@@ -4169,11 +4051,18 @@ const FnBox = ({ children, navy = false, w }: { children: ReactNode; navy?: bool
 );
 
 const FunctionalIntro: Page = () => {
-  const ys = [76, 176, 276];
+  const ys = [30, 104, 178];
   const names = ['前段系統', '中段系統', '後段系統'];
+  const rowStyle: CSSProperties = {
+    display: 'grid',
+    gridTemplateColumns: 'minmax(0, 1.2fr) minmax(0, 1fr)',
+    columnGap: 32,
+    alignItems: 'baseline',
+    padding: '10px 0',
+  };
   return (
-    <Frame title="職能型：代表一個跨系統的流程，不代表任何一個人" main={<>職能型存在的理由是<Hi>跨系統</Hi>；不跨系統，就交給那個系統的 Agent。</>} links={[{ label: '跨段找 root cause', to: VisionPage }]} zoom={1.2}>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+    <Frame title="職能型：代表一個跨系統的流程，不代表任何一個人" main={<>職能型存在的理由是<Hi>跨系統</Hi>；一個 Agent 統籌，各段只回證據。</>}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', marginTop: 34 }}>
         <FnBox w={300}>
           <div style={{ fontSize: 34, fontWeight: 800, lineHeight: 1.3 }}>事件</div>
           <div style={{ fontSize: 23, lineHeight: 1.45, color: c.muted, marginTop: 4 }}>後段量測異常</div>
@@ -4183,43 +4072,66 @@ const FunctionalIntro: Page = () => {
           <div style={{ fontSize: 34, fontWeight: 800, lineHeight: 1.3 }}>職能型 Agent</div>
           <div style={{ fontSize: 23, lineHeight: 1.45, color: c.muted, marginTop: 4 }}>這批貨的異常處理</div>
         </FnBox>
-        <svg width={150} height={352} viewBox="0 0 150 352" style={{ display: 'block', flexShrink: 0 }} aria-hidden="true">
+        <svg width={190} height={208} viewBox="0 0 190 208" style={{ display: 'block', flexShrink: 0 }} aria-hidden="true">
           <defs>
             <RtMarker id="osd-ah-fn-fan" />
           </defs>
           {ys.map((y) => (
-            <path key={y} d={`M4 176 C70 176, 70 ${y}, 144 ${y}`} fill="none" stroke={c.dim} strokeWidth="2" markerEnd="url(#osd-ah-fn-fan)" />
+            <path key={y} d={`M4 104 C80 104, 80 ${y}, 184 ${y}`} fill="none" stroke={c.dim} strokeWidth="2" markerEnd="url(#osd-ah-fn-fan)" />
           ))}
+          <text x="168" y="203" textAnchor="end" fontSize="21" fill={c.muted}>各段回證據</text>
         </svg>
-        <div style={{ width: 360, flexShrink: 0 }}>
-          <div style={{ fontSize: 22, color: c.muted, textAlign: 'center', height: 40, lineHeight: '30px' }}>系統型 Agent</div>
-          <div style={{ position: 'relative', height: 312 }}>
-            {names.map((n, i) => (
-              <div
-                key={n}
-                style={{
-                  position: 'absolute',
-                  left: 0,
-                  right: 0,
-                  top: ys[i] - 76,
-                  height: 72,
-                  boxSizing: 'border-box',
-                  border: `1.5px solid ${c.line}`,
-                  background: c.panel,
-                  borderRadius: 'var(--osd-radius)',
-                  textAlign: 'center',
-                  fontSize: 28,
-                  lineHeight: '69px',
-                }}
-              >
-                <b>{n}</b>
-                <span style={{ color: c.muted }}>的 Agent</span>
-              </div>
-            ))}
-          </div>
+        <div style={{ width: 360, flexShrink: 0, position: 'relative', height: 208 }}>
+          <div style={{ position: 'absolute', left: 0, right: 0, top: -36, fontSize: 22, color: c.muted, textAlign: 'center', lineHeight: '30px' }}>系統型 Agent</div>
+          {names.map((n, i) => (
+            <div
+              key={n}
+              style={{
+                position: 'absolute',
+                left: 0,
+                right: 0,
+                top: ys[i] - 30,
+                height: 60,
+                boxSizing: 'border-box',
+                border: `1.5px solid ${c.line}`,
+                background: c.panel,
+                borderRadius: 'var(--osd-radius)',
+                textAlign: 'center',
+                fontSize: 28,
+                lineHeight: '57px',
+              }}
+            >
+              <b>{n}</b>
+              <span style={{ color: c.muted }}>的 Agent</span>
+            </div>
+          ))}
         </div>
       </div>
-      <p style={{ fontSize: 24, lineHeight: 1.5, color: c.muted, margin: '36px 0 0' }}>
+      <div
+        style={{
+          boxSizing: 'border-box',
+          marginTop: 28,
+          border: `1.5px solid ${c.line}`,
+          background: c.panel,
+          borderRadius: 'var(--osd-radius)',
+          padding: '22px 32px 14px',
+        }}
+      >
+        <div style={{ fontSize: 32, fontWeight: 800, lineHeight: 1.35, marginBottom: 6 }}>為什麼要一個 Agent 統籌，不讓各段的 Agent 互相傳話？</div>
+        <div style={{ ...rowStyle, borderBottom: `1px solid ${c.hair}` }}>
+          <div style={{ fontSize: 28, fontWeight: 700, lineHeight: 1.4 }}>每多傳一手，就多一次失真</div>
+          <div style={{ fontSize: 24, lineHeight: 1.4, color: c.muted }}>換成人來傳話也一樣</div>
+        </div>
+        <div style={{ ...rowStyle, borderBottom: `1px dashed ${c.line}` }}>
+          <div style={{ fontSize: 28, fontWeight: 700, lineHeight: 1.4 }}>意圖和權限只有一個出口</div>
+          <div style={{ fontSize: 24, lineHeight: 1.4, color: c.muted }}>背後綁著一位指定的工程師</div>
+        </div>
+        <div style={rowStyle}>
+          <div style={{ fontSize: 26, fontWeight: 400, lineHeight: 1.4, color: c.muted }}>現在的模型也還不擅長即時協調、互相委派</div>
+          <div style={{ fontSize: 22, lineHeight: 1.4, color: c.dim }}>Anthropic，多 Agent 研究系統</div>
+        </div>
+      </div>
+      <p style={{ fontSize: 24, lineHeight: 1.5, color: c.muted, margin: '22px 0 0' }}>
         只碰一個系統的流程，不算職能型：例如每月提醒主管核准假單，是請假系統的 Agent 自己的排程。
       </p>
     </Frame>
@@ -4302,7 +4214,6 @@ const appendix: [Page, Page][] = [
   [MemoryPage, StatePage],
   [VerifyPage, StatePage],
   [PluginDelivery, DeliverToPage],
-  [VisionPage, FunctionalIntro],
   [SystemAgentIntro, TrianglePage],
   [AgentLadderPage, DeliverToPage],
   [OurWork, AITablePage],
@@ -4453,12 +4364,14 @@ OpenAI 的具體做法：AGENTS.md 當目錄不當百科；架構規則用 linte
 判斷題：它替誰要東西？替一個人要，是個人型；替一個流程要，是職能型；它不要東西，只守住一個系統，是系統型。
 被問到「代表一個部門的 Agent 算哪一種」：公司內目前還沒有這種案例。真的出現時，用「用誰的權限」拆：替每位成員回答、用提問者的權限，是多人共用的個人型；用自己的身分去完成部門的目標，是職能型。
 重點句：先問它代表誰——一個人、一個流程，或一個系統。`,
-  `（短中期）職能型：代表一個流程，不代表任何一個人。例子是一批貨在後段量測異常：這個事件叫醒這批貨的 Agent，它分別去問前段、中段、後段系統的 Agent，各段回證據，整理出處置建議，送到工程師手上。這是想像的例子，目前還沒有這類需求；細節在附錄（右下角「跨段找 root cause」）。它的意圖來自流程——這批貨的異常要被處理，沒有哪一個人在對它下指令。
+  `（短中期）職能型：代表一個流程，不代表任何一個人。例子是一批貨在後段量測異常：這個事件叫醒這批貨的 Agent，它分別去問前段、中段、後段系統的 Agent，各段回證據，整理出處置建議，送到工程師手上。這是想像的例子，目前還沒有這類需求。它的意圖來自流程——這批貨的異常要被處理，沒有哪一個人在對它下指令。
 如果台下不是產線的人，通用的例子是新人到職：HR 建立到職資料，到職流程的 Agent 去找 HR、帳號、門禁、請假系統的 Agent。
 邊界規則：只碰一個系統的流程，不算職能型。例如每月底檢查還沒核准的假單、提醒主管——那只碰請假系統，是請假系統的 Agent 自己跑的排程。職能型存在的理由就是跨系統；不跨系統，它就沒有理由存在。
 實作上，職能型和個人型都是把 Harness 用 SDK 嵌進服務（SDK 的細節在後面「怎麼合作、各用誰的權限」那一頁）。業界例子：Azure SRE Agent 處理告警、AWS DevOps Agent 調查工單——都是代表一個流程、橫跨多個資源。
+為什麼要一個 Agent 統籌、而不讓各段 Agent 自由溝通？先看不會過期的理由：每多傳一手就多一次失真，換成人傳話也一樣——這過得了「換成人來做也要遵守」那一題；而且一個流程的意圖和權限要有單一出口，背後綁著一位指定的工程師。再看現在的理由：Anthropic 在多 Agent 研究系統的文章裡寫，LLM Agent 目前還不擅長即時協調、互相委派工作——這是能力問題，以後可能會鬆。溝通用固定格式（lot ID、假設、證據、信心），也少一次「別人的訊息被當成指令」的風險。
+被問到「一批貨綁一個 Agent 是不是幾千個模型一直開著」：不是——這批貨的 Agent＝這批貨的狀態紀錄＋事件來時才喚醒的 Harness，平常不跑模型；它也不取代 MES，派工、hold、規格是寫死的守要求，Agent 不能覆蓋。
 下一頁：個人型和職能型怎麼找系統型辦事、各用誰的權限。
-重點句：職能型存在的理由是跨系統；不跨系統，就交給那個系統的 Agent。`,
+重點句：職能型存在的理由是跨系統；一個 Agent 統籌，各段只回證據。`,
   `（短中期）三種 Agent 怎麼合作、各用誰的權限。
 左邊要東西的，右邊守東西的。個人型 → 系統型：我請假，個人型 Agent 透過請假系統的 Agent 辦，送出的是我的假單，用我的權限，結果回到我的對話裡（連同「做了哪些操作」，就是 LPQM Agent 留下來的那條守要求：回覆時附上操作清單）。個人型靠裝在它 Harness 裡的 Plugin，知道怎麼找系統型、什麼時候該找（Plugin 是這條邊的連接器，怎麼打包在附錄，右下角「細節」連結）。職能型 → 系統型：這批貨的 Agent 去問各段系統型，用它自己的最小權限，背後綁著一位指定的工程師。職能型 → 個人型：流程需要核准時，送到工程師手上；結果也要回到人手上，例如發通知或開工單。
 對外介面（不放在投影片上，被問到再講）：介面用 A2A；對方只支援 MCP，就把整個系統型 Agent 包成一個 MCP 工具。差別有三點：(a) 對方的 Harness：MCP 幾乎都支援，A2A 少數支援例如 Gemini CLI、雲端 Agent 平台；(b) 需要反問時：MCP 問客戶端畫面前的人，A2A 交回呼叫我們的 Agent；(c) 長時間任務：MCP 規格剛加入仍在實驗，A2A 原生支援輪詢、推送；結論：介面用 A2A，對方只支援 MCP 就把整個系統型 Agent 包成一個 MCP 工具；實務上同事手上的 Harness 多半只支援 MCP。細節見附錄的 MCP、A2A、Agent Card 頁。
@@ -4653,14 +4566,6 @@ LPQM Agent 重構後留下來的每一項，這一頁都要找到位置。知識
 欄位值檢查和只開放設計好的表格操作，都做在 MCP server 端，在 Plugin 外面：就算 Harness 被繞過，也擋得住，模型寫的程式碰不到 prod。Plugin 只帶 MCP 的連線設定。權限做在資料來源或前端，LPQM Agent 就是做在前端；測試題拿來驗證整包。
 重點句：Plugin 是包裝；真正不能錯的，要做在包裝外面。如果把規則寫成 Plugin 裡的 Skill，那只是引導。
 補充（被問到）：Plugin 是 Claude Code 與 claude.ai 的打包格式，其他 Harness 有各自的做法；能跨 Harness 帶著走的是 Skill 和 MCP。Plugin 可以由管理員用 managed settings 統一發布、強制啟用。`,
-  `（附錄）第 22 頁職能型例子的展開：從一個系統放大到好幾個系統。目前還沒有這類需求。
-對照第 23 頁的圖：這是職能型找系統型那一條箭頭——這批貨的 Agent 就是一個職能型 Agent，它去找各段的系統型 Agent；權限照系統型那一頁，用它自己的最小權限，背後綁著一位指定的工程師。
-情境：一批貨在後段量測異常，要回頭找 root cause——可能在前段、中段、也可能在後段。難處是資料和專業知識分散在不同單位，人工追查要跨部門來回問。
-做法：這批貨的 Agent 被事件喚醒，用 lot ID 當線索，去問前、中、後段的系統型 Agent（每個系統一個，懂自己那段的資料和術語）。各段回假設和證據，再互相反駁，留下證據最強的——這就是附錄辯論那頁：單一調查者容易被第一個假設牽著走，互相反駁比較可靠。最後整理成建議，扣貨、改 recipe 這類影響產線的決定，由工程師核准。
-「一批貨綁一個 Agent」不是幾千個模型一直開著：這批貨的 Agent ＝ 這批貨的狀態紀錄 ＋ 事件來時才喚醒的 Harness。平常不跑模型，進站、量測超規、被後段退回時才醒來處理，處理完把結果寫回狀態。它不取代 MES：派工、hold、規格是寫死的守要求，Agent 不能覆蓋；它的價值在例外處理。
-為什麼要一個 Agent 統籌、而不是各段 Agent 自由溝通：Anthropic 在多 Agent 研究系統的文章裡寫，LLM Agent 目前還不擅長即時協調、互相委派工作。每多傳一手就多一次失真，也多一次「別人的訊息被當成指令」的風險。所以溝通用固定格式（lot ID、假設、證據、信心），由一個 Agent 當中心去問各段。
-口頭可以補（不上投影片）：部門 Agent 的想像——它不必「知道部門所有事情」，知道的應該是系統（工單、MES、文件），部門 Agent 是在上面做判斷的那一層；個人 Agent 回報結構化事件，不是自由摘要（模型寫的摘要會漏、會越傳越失真）。它的定位是幕僚長：彙整、建議、草擬分派，由主管核准；誰能問它什麼，照提問者本人的權限回答，否則它就變成全部門權限的聯集。
-重點句：一個 Agent 統籌、固定格式交換證據；影響產線的決定，留給人。`,
   `（附錄）系統型：代表一個系統。它不追求自己的目標，只處理別人的請求，並守住這個系統。LPQM Agent 就是 LPQM 這個系統的系統型 Agent。
 為什麼系統那一端要有它？三個理由，都不是能力問題：
 守要求——規定只能在系統這一端強制，因為那是所有呼叫者都必須經過的地方；寫成程式強制，寫一次，所有來找它的 Agent 都經過同一套檢查。餘額不足不能送出、主管核准才生效。
