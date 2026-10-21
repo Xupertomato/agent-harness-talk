@@ -2689,7 +2689,7 @@ const Act4: Page = () => <Divider no={3} name="定位" q="模型變強後，我�
 /* ===== 時間軸：四段工作表（IR / AI / Durability 共用） ===== */
 type StageKind = 'human' | 'taken' | 'ours' | 'moving';
 type StageCell = [StageKind, ReactNode];
-const STAGE_COLS = '150px repeat(4, 1fr)';
+const STAGE_COLS = '190px repeat(4, 1fr)';
 const STAGE_HEAD = ['決定要什麼', '安排怎麼做', '動手做', '檢查做得對不對'];
 
 const StageCellView = ({ cell }: { cell: StageCell }) => {
@@ -2702,7 +2702,7 @@ const StageCellView = ({ cell }: { cell: StageCell }) => {
         : kind === 'moving'
           ? { color: c.muted, fontStyle: 'italic' }
           : {};
-  return <div style={{ fontSize: 28, lineHeight: 1.4, ...st }}>{text}</div>;
+  return <div style={{ fontSize: 30, lineHeight: 1.4, ...st }}>{text}</div>;
 };
 
 const WorkStageTable = ({ label, rows }: { label: string; rows: { k: string; cells: [StageCell, StageCell, StageCell, StageCell] }[] }) => (
@@ -2735,11 +2735,11 @@ const WorkStageTable = ({ label, rows }: { label: string; rows: { k: string; cel
           gridTemplateColumns: STAGE_COLS,
           columnGap: 28,
           alignItems: 'start',
-          padding: '16px 0',
+          padding: '30px 0',
           borderBottom: `1px solid ${c.hair}`,
         }}
       >
-        <div style={{ fontSize: 28, fontWeight: 800, lineHeight: 1.4 }}>{r.k}</div>
+        <div style={{ fontSize: 30, fontWeight: 800, lineHeight: 1.4 }}>{r.k}</div>
         {r.cells.map((cell, i) => (
           <StageCellView key={i} cell={cell} />
         ))}
@@ -2755,7 +2755,7 @@ const AI_ROWS: { k: string; cells: [StageCell, StageCell, StageCell, StageCell] 
 
 const IRPage: Page = () => (
   <Frame
-    title={<>工業革命先接手的是動手做：<br />人的工作移到決定、安排、檢查</>}
+    title={<>鑑往：工業革命改變了什麼？</>}
     main={<>機器先接手<Hi>動手做</Hi>；人留在決定、安排和檢查。</>}
   >
     <WorkStageTable
@@ -2773,7 +2773,7 @@ const IRPage: Page = () => (
         },
       ]}
     />
-    <div style={{ marginTop: 28, fontSize: 24, lineHeight: 1.5, color: c.muted }}>
+    <div style={{ marginTop: 40, fontSize: 26, lineHeight: 1.5, color: c.muted }}>
       <p style={p0}>新工作也一直出現：美國現在過半的就業，屬於 1940 年之後才出現的職業。</p>
       <SourceLine tight>出處：Autor et al., New Frontiers, NBER 2022</SourceLine>
       <p style={{ ...p0, marginTop: 14 }}>轉換期很痛：手搖紡織工這個職業，幾十年內幾乎消失。</p>
@@ -2783,16 +2783,14 @@ const IRPage: Page = () => (
 
 const AITablePage: Page = () => (
   <Frame
-    title={<>AI 也從動手做開始接手：<br />短中期，我們還在建 Agent</>}
+    title={<>知來：AI 會改變什麼？</>}
     main={<>短中期，人的工作在<Hi>安排怎麼做</Hi>：建 Agent。</>}
     links={[{ label: 'OpenAI 團隊', to: OurWork }]}
   >
     <WorkStageTable label="AI：軟體與 Agent" rows={AI_ROWS} />
-    <div style={{ marginTop: 28, fontSize: 24, lineHeight: 1.5, color: c.muted }}>
+    <div style={{ marginTop: 40, fontSize: 26, lineHeight: 1.5, color: c.muted }}>
       <p style={p0}>已經在發生：OpenAI 三位工程師驅動 Codex，五個月約一百萬行程式碼，手寫 0 行。</p>
       <SourceLine tight>出處：OpenAI，Harness engineering（2026.02）</SourceLine>
-      <p style={{ ...p0, marginTop: 14 }}>時間尺度：這是 agent 的十年，不是 agent 的一年。</p>
-      <SourceLine tight>出處：Andrej Karpathy，Dwarkesh Podcast（2025.10）</SourceLine>
     </div>
   </Frame>
 );
@@ -4421,15 +4419,15 @@ OpenAI 的具體做法：AGENTS.md 當目錄不當百科；架構規則用 linte
 可以這樣問台下：Claude Code 寫程式這麼順手，知識能加 Skill、操作能力能接工具或 Plugin，都補上之後，就能直接交給其他單位用了嗎？
 在這裡停一下，讓問題懸著。不憑感覺回答：開場一段歷史；接著短中期：我們建哪些 Agent、裡面什麼會過期；最後長期：留下什麼。
 這裡說的通用 Harness，指的是引擎（迴圈、工具呼叫、context 管理）；預設要為使用者重新設定——後面要講的就是怎麼重新調鬆緊。`,
-  `（第三部分開場，約 1 分鐘）先看一段歷史：工業革命時，機器到底接手了什麼？把一件工作拆成四段：決定要什麼、安排怎麼做、動手做、檢查做得對不對——就是大家熟悉的 PDCA。
+  `（第三部分開場：鑑往，約 1 分鐘）先看一段歷史：工業革命時，機器到底接手了什麼？把一件工作拆成四段：決定要什麼、安排怎麼做、動手做、檢查做得對不對——就是大家熟悉的 PDCA。
 手工織布時，四段都是織工自己做。動力織布機出現後，機器接手的是動手做；人去架機器、穿線，一個織工從顧一台變成顧四台以上——十九世紀蘭開夏紡織廠有「four loom weaver」這個稱呼。
 勞動沒有消失，而是移到決定、安排和檢查。新工作也一直出現：MIT 的 David Autor 等人研究，美國現在過半的就業，屬於 1940 年之後才出現的職業類別。
 但要誠實：轉換期很痛，手搖紡織工這個職業幾十年內幾乎消失。同一份研究也發現，過去四十年，自動化壓低勞動需求的效果變強了，增強型創新提高需求的效果卻沒有。
 這次會一樣嗎？下一頁。
 重點句：機器先接手動手做；人留在決定、安排和檢查。`,
-  `（短中期，開頭）AI 也是從動手做開始接手。之前，人手寫程式、畫 graph；現在模型寫，人做的是安排——建 Agent、設計它的環境——和檢查：測試題、核准。
+  `（知來，短中期開頭）AI 也是從動手做開始接手。之前，人手寫程式、畫 graph；現在模型寫，人做的是安排——建 Agent、設計它的環境——和檢查：測試題、核准。
 這不是預測，已經在發生：OpenAI 2026 年 2 月的〈Harness engineering〉，三位工程師驅動 Codex，五個月做出約一百萬行程式碼，手寫的是零行（細節在附錄）。他們的說法是 Humans steer. Agents execute.——第二部分提過這句。
-多久？Karpathy 2025 年 10 月說：這是 agent 的十年，不是 agent 的一年——agent 還不夠聰明、沒有持續學習。所以接下來十年左右，我們的工作重心在「安排」：建 Agent。
+這一段叫短中期，但不給具體年數——沒有人知道多長，我們只知道現在還在這一列。
 那要建哪些 Agent？下一頁。
 重點句：短中期，人的工作在安排怎麼做：建 Agent。`,
   `（短中期）從第一性原則出發：每個 Agent 都代表某個對象，這個對象決定它想要什麼、用誰的權限。組織裡能被代表的對象，我們看到三種：一個人、一個流程、一個系統——所以有三種 Agent。
