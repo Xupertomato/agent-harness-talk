@@ -1365,12 +1365,12 @@ const LOOP_NODES: { name: string; verb: string; v: string; deg: number; model?: 
 ];
 
 const HarnessMap: Page = () => {
-  const W = 1640, H = 590, cx = 820, cy = 295, rx = 610, ry = 215;
+  const W = 1640, H = 588, cx = 820, cy = 318, rx = 622, ry = 234, bw = 414, bh = 164;
   const pt = (d: number) => [cx + rx * Math.cos((d * Math.PI) / 180), cy + ry * Math.sin((d * Math.PI) / 180)];
   const mids = LOOP_NODES.map((n) => n.deg + 36);
   return (
     <Frame title="模型只負責想；看、擋、做、記，都靠 Harness" links={[{ label: '最小的 Harness', to: MinHarnessPage }]}>
-      <div style={{ position: 'relative', width: W, height: H }}>
+      <div style={{ position: 'relative', width: W, height: H, marginTop: 10 }}>
         <svg width={W} height={H} style={{ position: 'absolute', inset: 0 }} aria-hidden="true">
           <ellipse cx={cx} cy={cy} rx={rx} ry={ry} fill="none" stroke={c.line} strokeWidth={2} />
           {mids.map((d) => {
@@ -1387,12 +1387,12 @@ const HarnessMap: Page = () => {
               key={n.name}
               style={{
                 position: 'absolute',
-                left: x - 190,
-                top: y - 75,
-                width: 380,
-                height: 150,
+                left: x - bw / 2,
+                top: y - bh / 2,
+                width: bw,
+                height: bh,
                 boxSizing: 'border-box',
-                padding: '12px 24px',
+                padding: '14px 24px',
                 borderRadius: 'var(--osd-radius)',
                 border: n.model ? `2px dashed ${c.line}` : '2px solid var(--osd-accent)',
                 background: n.model ? '#eef0f4' : c.panel,
@@ -2944,7 +2944,7 @@ const DeliverToPage: Page = () => {
       main={<><Hi>權限跟著代表的對象走</Hi>；系統型只在門口檢查。</>}
       anchor="top"
     >
-      <div style={{ position: 'relative', width: W, height: H }}>
+      <div style={{ position: 'relative', width: W, height: H, marginTop: 10 }}>
         <div style={{ ...colLab, left: 0 }}>要東西的（呼叫端）</div>
         <div style={{ ...colLab, left: xr }}>守東西的（資源端）</div>
         <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`} style={{ position: 'absolute', left: 0, top: 0 }} aria-hidden="true">
