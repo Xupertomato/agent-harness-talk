@@ -200,6 +200,7 @@ const Frame = ({
   main,
   links,
   zoom = 1,
+  anchor,
 }: {
   scope?: ReactNode;
   intro?: ReactNode;
@@ -210,6 +211,7 @@ const Frame = ({
   main?: ReactNode;
   links?: { label: string; to: Page }[];
   zoom?: number;
+  anchor?: 'top';
 }) => (
   <div style={{ ...canvas, padding: '84px 140px 150px', display: 'flex', flexDirection: 'column' }}>
     <h2
@@ -229,7 +231,7 @@ const Frame = ({
     {intro ? <div style={{ fontSize: 26, lineHeight: 1.3, fontWeight: 400, color: c.muted, marginTop: 10 }}>{intro}</div> : null}
     <div
       data-band="body"
-      style={{ margin: '48px 0 40px', flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}
+      style={{ margin: '48px 0 40px', flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column', justifyContent: anchor === 'top' ? 'flex-start' : 'center' }}
     >
       <div data-body style={{ zoom }}>
         {children}
@@ -2735,7 +2737,7 @@ const WorkStageTable = ({ label, rows }: { label: string; rows: { k: string; cel
           gridTemplateColumns: STAGE_COLS,
           columnGap: 28,
           alignItems: 'start',
-          padding: '30px 0',
+          padding: '38px 0',
           borderBottom: `1px solid ${c.hair}`,
         }}
       >
@@ -2757,6 +2759,7 @@ const IRPage: Page = () => (
   <Frame
     title={<>鑑往：工業革命改變了什麼？</>}
     main={<>機器先接手<Hi>動手做</Hi>；人留在決定、安排和檢查。</>}
+    anchor="top"
   >
     <WorkStageTable
       label="工業革命：織布"
@@ -2785,6 +2788,7 @@ const AITablePage: Page = () => (
     title={<>知來：AI 會改變什麼？</>}
     main={<>短中期，人的工作在<Hi>安排怎麼做</Hi>：建 Agent。</>}
     links={[{ label: 'OpenAI 團隊', to: OurWork }]}
+    anchor="top"
   >
     <WorkStageTable label="AI：軟體與 Agent" rows={AI_ROWS} />
     <div style={{ marginTop: 64, fontSize: 28, lineHeight: 1.5, color: c.muted }}>
@@ -2840,8 +2844,9 @@ const TrianglePage: Page = () => {
   const cr = yr + TRI_BH / 2;
   return (
     <Frame
-      title={<>一個 Agent 先問它代表誰：<br />一個人、一個流程，或一個系統</>}
+      title={<>要建哪些 Agent？<br />先問它代表誰：一個人、一個流程，或一個系統</>}
       main={<>判斷題：<Hi>它替誰要東西？</Hi></>}
+      anchor="top"
       links={[{ label: '系統型', to: SystemAgentIntro }]}
     >
       <div style={{ position: 'relative', width: TRI_W, height: H }}>
@@ -2922,6 +2927,7 @@ const DeliverToPage: Page = () => {
       title={<>要東西的找系統型辦事：<br />權限跟著代表的對象走</>}
       main={<>系統型不另外加權限，<Hi>只在門口檢查呼叫者帶來的</Hi>。</>}
       links={[{ label: 'Plugin', to: PluginDelivery }, { label: '權限細節', to: AgentLadderPage }]}
+      anchor="top"
     >
       <div style={{ position: 'relative', width: W, height: H }}>
         <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`} style={{ position: 'absolute', left: 0, top: 0 }} aria-hidden="true">
@@ -3273,6 +3279,7 @@ const DurabilityPage: Page = () => (
   <Frame
     title="長期：安排和檢查也開始被接手"
     main={<>判斷題：<Hi>模型再強十倍，這件事還需要人嗎？</Hi></>}
+    anchor="top"
   >
     <WorkStageTable
       label="AI：軟體與 Agent"
@@ -4429,7 +4436,7 @@ OpenAI 的具體做法：AGENTS.md 當目錄不當百科；架構規則用 linte
 這一段叫短中期，但不給具體年數——沒有人知道多長，我們只知道現在還在這一列。
 那要建哪些 Agent？下一頁。
 重點句：短中期，人的工作在安排怎麼做：建 Agent。`,
-  `（短中期）從第一性原則出發：每個 Agent 都代表某個對象，這個對象決定它想要什麼、用誰的權限。組織裡能被代表的對象，我們看到三種：一個人、一個流程、一個系統——所以有三種 Agent。
+  `（短中期）上一頁說短中期我們在建 Agent。要建哪些？先問它代表誰。從第一性原則出發：每個 Agent 都代表某個對象，這個對象決定它想要什麼、用誰的權限。組織裡能被代表的對象，我們看到三種：一個人、一個流程、一個系統——所以有三種 Agent。
 這頁分兩側。左邊是要東西的（呼叫端）：個人型代表一個人，例如手上的 Claude Code，前兩部分講的都是它；職能型代表一個跨系統的流程，例如新人到職。右邊是守東西的（資源端）：系統型代表一個系統，例如請假系統的 Agent。兩個箭頭，就是左邊的 Agent 去找右邊的系統型辦事。
 三列各有用途：代表誰是分類的方法；為什麼留下說明這三種形態都不是因為能力不足而存在，模型再強也還在；背後的人會在權限那頁用到，最後三家模型供應商的共識也會回到這裡。系統型的三個理由——守要求、資料不出系統、知識在這裡維護——細節在附錄。
 為什麼不用「人在不在線上」來分：那是實作細節。個人型也能在背景跑，例如排程替我整理資訊，代表的還是那個人，所以還是個人型；職能型和系統型也都沒人在線上——用它來分，三種會糊在一起。真正分得開的，是它代表誰。
