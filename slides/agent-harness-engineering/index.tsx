@@ -2773,10 +2773,9 @@ const IRPage: Page = () => (
         },
       ]}
     />
-    <div style={{ marginTop: 40, fontSize: 26, lineHeight: 1.5, color: c.muted }}>
+    <div style={{ marginTop: 64, fontSize: 28, lineHeight: 1.5, color: c.muted }}>
       <p style={p0}>新工作也一直出現：美國現在過半的就業，屬於 1940 年之後才出現的職業。</p>
       <SourceLine tight>出處：Autor et al., New Frontiers, NBER 2022</SourceLine>
-      <p style={{ ...p0, marginTop: 14 }}>轉換期很痛：手搖紡織工這個職業，幾十年內幾乎消失。</p>
     </div>
   </Frame>
 );
@@ -2788,7 +2787,7 @@ const AITablePage: Page = () => (
     links={[{ label: 'OpenAI 團隊', to: OurWork }]}
   >
     <WorkStageTable label="AI：軟體與 Agent" rows={AI_ROWS} />
-    <div style={{ marginTop: 40, fontSize: 26, lineHeight: 1.5, color: c.muted }}>
+    <div style={{ marginTop: 64, fontSize: 28, lineHeight: 1.5, color: c.muted }}>
       <p style={p0}>已經在發生：OpenAI 三位工程師驅動 Codex，五個月約一百萬行程式碼，手寫 0 行。</p>
       <SourceLine tight>出處：OpenAI，Harness engineering（2026.02）</SourceLine>
     </div>
@@ -4422,7 +4421,7 @@ OpenAI 的具體做法：AGENTS.md 當目錄不當百科；架構規則用 linte
   `（第三部分開場：鑑往，約 1 分鐘）先看一段歷史：工業革命時，機器到底接手了什麼？把一件工作拆成四段：決定要什麼、安排怎麼做、動手做、檢查做得對不對——就是大家熟悉的 PDCA。
 手工織布時，四段都是織工自己做。動力織布機出現後，機器接手的是動手做；人去架機器、穿線，一個織工從顧一台變成顧四台以上——十九世紀蘭開夏紡織廠有「four loom weaver」這個稱呼。
 勞動沒有消失，而是移到決定、安排和檢查。新工作也一直出現：MIT 的 David Autor 等人研究，美國現在過半的就業，屬於 1940 年之後才出現的職業類別。
-但要誠實：轉換期很痛，手搖紡織工這個職業幾十年內幾乎消失。同一份研究也發現，過去四十年，自動化壓低勞動需求的效果變強了，增強型創新提高需求的效果卻沒有。
+但要誠實：（被問到再講）轉換期很痛，手搖紡織工這個職業幾十年內幾乎消失。同一份研究也發現，過去四十年，自動化壓低勞動需求的效果變強了，增強型創新提高需求的效果卻沒有。
 這次會一樣嗎？下一頁。
 重點句：機器先接手動手做；人留在決定、安排和檢查。`,
   `（知來，短中期開頭）AI 也是從動手做開始接手。之前，人手寫程式、畫 graph；現在模型寫，人做的是安排——建 Agent、設計它的環境——和檢查：測試題、核准。
