@@ -3258,7 +3258,7 @@ const SteerRow = ({ head, sub, last = false }: { head: string; sub: string; last
 );
 
 const OurWork: Page = () => (
-  <Frame back={{ to: AITablePage, label: 'AI 也從動手做開始' }} title={<>做出來變便宜，工程師的工作變成掌舵：<br />說清楚意圖、設計環境、建回饋迴路</>} main={<>做出來交給 Agent；<Hi>意圖、環境、回饋迴路</Hi>，是我們的工作。</>}>
+  <Frame back={{ to: AITablePage, label: 'AI 也從動手做開始' }} title={<>做出來變便宜，工程師的工作變成：<br />說清楚意圖、設計環境、建回饋迴路</>} main={<>做出來交給 Agent；<Hi>意圖、環境、回饋迴路</Hi>，是我們的工作。</>}>
     <div style={{ display: 'flex', gap: 36, alignItems: 'stretch' }}>
       <Panel style={{ flex: 42, minWidth: 0, padding: '22px 26px' }}>
         <Label tone="muted">OpenAI 自己的團隊</Label>
@@ -3523,22 +3523,26 @@ const OrgAgentPage: Page = () => (
 );
 
 const WhoLine = ({ k, a, b, head = false }: { k?: string; a: ReactNode; b: ReactNode; head?: boolean }) => (
-  <TRow cols="200px 1.4fr 1fr" head={head} pad={22} size={30}>
-    <div style={{ fontWeight: 800, fontSize: head ? undefined : 34, color: head ? undefined : 'var(--osd-accent)' }}>{k}</div>
-    <div style={head ? { fontSize: 26 } : undefined}>{a}</div>
-    <div style={head ? { fontSize: 26 } : undefined}>{b}</div>
+  <TRow cols="230px 1.75fr 1fr" head={head} pad={36} size={32}>
+    <div style={{ fontWeight: 800, fontSize: head ? undefined : 44, color: head ? undefined : 'var(--osd-accent)' }}>{k}</div>
+    <div style={head ? { fontSize: 30 } : undefined}>{a}</div>
+    <div style={head ? { fontSize: 30 } : undefined}>{b}</div>
   </TRow>
 );
 
 const WhoBuilds: Page = () => (
   <Frame
-    title={<>誰來做會隨時間移動：個人型先由我們協助，之後交給使用者</>}
-    main={<>交一個通用 Harness 給使用者：<Hi>長期只夠個人型那一角</Hi>。</>}
+    title={<>短中期我們建 Agent，長期我們定規則</>}
+    main={<>模型變強後，我們的工作從<Hi>建 Agent</Hi>，移到<Hi>定規則、決定放手多少</Hi>。</>}
   >
-    <WhoLine head a="短中期" b="長期" />
+    <WhoLine
+      head
+      a={<>短中期<div style={{ fontSize: 24, fontWeight: 400, letterSpacing: 0, lineHeight: 1.35, color: c.muted, marginTop: 4 }}>在安排怎麼做</div></>}
+      b={<>長期<div style={{ fontSize: 24, fontWeight: 400, letterSpacing: 0, lineHeight: 1.35, color: c.muted, marginTop: 4 }}>在決定要什麼、放手多少</div></>}
+    />
     <WhoLine k="個人型" a={<>我們協助建置：寫第一批 Skill、裝 Plugin、<Nb>設定權限</Nb></>} b="使用者自己做" />
-    <WhoLine k="系統型" a="我們建：把規則寫成強制、守住資料" b="我們掌舵：定規則、管邊界" />
-    <WhoLine k="職能型" a="我們建：跨系統的身分與權限、每次都對" b="我們掌舵：定流程、決定放手多少" />
+    <WhoLine k="系統型" a="我們建：把規則寫成強制、守住資料" b="我們定規則、管邊界" />
+    <WhoLine k="職能型" a="我們建：跨系統的身分與權限、每次都對" b="我們定流程、決定放手多少" />
     <p style={{ fontSize: 24, lineHeight: 1.5, color: c.muted, margin: '24px 0 0' }}>
       需求單位給題目和標準答案；我們大量、重複地檢查。資料規定與成本看部門，跟需求單位一起決定。
     </p>
@@ -4482,7 +4486,7 @@ Summarizer：只給最終表格太單薄，也要讓使用者確認操作符合�
 注意：「現在模型做得到」要用舊的測試題重跑過才能說——這也是後面「需要保證每次都對」那一題。
 短中期到這裡。誰來做這些事，會隨時間移動——下一頁。
 重點句：形態留下，內部變薄：迴圈交給通用 Harness，強制、資料和知識留在系統端。`,
-  `（轉場）回到開場的命題：交一個通用 Harness 給使用者就好嗎？要分時間看。短中期不夠：使用者還不會寫 Skill、接 Plugin、設權限，個人型也要我們協助建置——就像機器剛進工廠時要有人來架。長期，個人型交給使用者自己做；系統型和職能型，我們從「建」移到「掌舵」：定規則、管邊界、決定放手多少。
+  `（轉場）回答分隔頁的問題：模型變強後，我們還要做什麼？分時間看。短中期，三種 Agent 都要我們建——使用者還不會寫 Skill、接 Plugin、設權限，個人型也要我們協助，就像機器剛進工廠時要有人來架。長期，個人型交給使用者自己做；系統型和職能型，我們從「建」移到「定規則」：系統型定規則、管邊界，職能型定流程、決定放手多少。也就是從四段表的「安排」，移到「決定」。
 個人型為什麼長期能交給使用者：通用 Harness 加自己寫的 Skill，結果自己看，他是領域專家，判斷得比我們好。
 為什麼職能型特別需要我們：OpenCode 是例子——TUI 只是連到 server 的用戶端，opencode serve 只啟動 server；引擎一樣，差在線上有沒有人，而 server 沒有多使用者的設計，身分、權限、紀錄要另外補。
 要每次都對：一次對不代表每次對——同一題跑十次可能錯一次，模型升級後原本對的可能變錯，邊界情況平常遇不到（pass^k：k 次要全對）。
@@ -4490,7 +4494,7 @@ Summarizer：只給最終表格太單薄，也要讓使用者確認操作符合�
 資料規定與成本：看部門，沒有通用答案，跟需求單位一起決定。有些部門的資料只能留在需求單位內，這時更傾向讓使用者自己做。
 被問到「把守要求做成強制很難嗎？」：寫一條檢查不難，難的是三件事——先問出哪些規則不能錯；再決定工具切多細，太窄做不了事、太寬等於沒把關；最後用測試題證明它守得住，模型換了還要重跑。
 長期，安排和檢查也會被接手嗎？下一頁。
-重點句：交一個通用 Harness 給使用者：短中期不夠，長期只夠個人型那一角。`,
+重點句：模型變強後，我們的工作從建 Agent，移到定規則、決定放手多少。`,
   `（長期，推論）第三列是長期，而且是推論。跟工業革命不同：機器接手動手做之後，安排和檢查還留在人手上；AI 這邊，動手做被接手之後，安排和檢查也一直在往左移——所以後面兩格寫「移動中」。
 證據看 Anthropic 調查自己的工程師（2025 年 12 月發表，132 位工程師與研究員問卷、53 個訪談、二十萬筆內部 Claude Code 紀錄；資料收集於 2025 年 8 月）。他們自評每天有六成工作用 Claude，越來越把自己看成 Agent 的管理者，有人說七成以上的工作變成審查和修改。但超過一半的人說，能完全交出去的工作只有 0 到 20%；交出去的，大多是容易驗證、低風險、繁瑣的事。
 所以現在決定能交多少的，是驗證：驗得了，才交得出去。
@@ -4510,7 +4514,7 @@ Summarizer：只給最終表格太單薄，也要讓使用者確認操作符合�
 跨前中後段怎麼找 root cause，在附錄（右下角「細節」連結）。
 三家模型供應商也這麼看嗎？下一頁。
 重點句：放手的依據是一筆一筆的核准紀錄；守要求的那幾類，不在放手的範圍。`,
-  `（長期，推論）上一頁是 Azure 的做法；三家模型供應商的共識也是同一件事，加上更多：表格最左邊那一欄。掌舵在移動，那什麼不移動？看三家模型供應商自己怎麼說。它們是最想讓 Agent 越做越多的一方，說法卻高度一致。
+  `（長期，推論）上一頁是 Azure 的做法；三家模型供應商的共識也是同一件事，加上更多：表格最左邊那一欄。建的工作在移動，那什麼不移動？看三家模型供應商自己怎麼說。它們是最想讓 Agent 越做越多的一方，說法卻高度一致。
 OpenAI〈Practices for Governing Agentic AI Systems〉（約 2023 年底）提出七項做法：高風險動作要使用者核准、有些動作直接封鎖；每個 Agent 實例要能追溯到它代表的使用者；人隨時能中止 Agent，Agent 不能抗拒。它也提醒：要核准的事太多，核准會變成橡皮圖章。〈A practical guide to building agents〉說：敏感、不可逆、高風險的動作要觸發人工監督，直到 Agent 的可靠度被建立。
 Anthropic〈Our framework for developing safe and trustworthy agents〉（2025 年 8 月）：核心張力是自主和人的監督之間的平衡，高風險決定之前人要保有控制權；Claude Code 預設唯讀，改程式或系統前要人核准，信任的例行工作可以給持續權限。2026 年 4 月的〈Trustworthy agents in practice〉補充：使用者替每個動作設定允許、要核准或封鎖；多 Agent 的監督還沒解決；所有防護加起來也不是保證。
 Google〈Google's Approach for Secure AI Agents〉（2025）三條原則：每個 Agent 要有明確的人類控制者，系統要分得出指令來自授權的使用者還是來自它處理的資料；權力要受限、依用途動態調整，Agent 不能自己擴權，使用者要能查看和撤回；動作和規劃要可觀察、可稽核。防線分兩層：模型之外的確定性政策引擎，加上模型推理式的防禦；關鍵和不可逆的動作由確定性那層兜底。Google Cloud 的 Agent Identity 也把每個 Agent 做成獨立的身分，代表使用者行動時，紀錄裡同時看得到 Agent 和使用者。
@@ -4651,7 +4655,7 @@ LPQM Agent 重構後留下來的每一項，這一頁都要找到位置。知識
 重點句：Plugin 是包裝；真正不能錯的，要做在包裝外面。如果把規則寫成 Plugin 裡的 Skill，那只是引導。
 補充（被問到）：Plugin 是 Claude Code 與 claude.ai 的打包格式，其他 Harness 有各自的做法；能跨 Harness 帶著走的是 Skill 和 MCP。Plugin 可以由管理員用 managed settings 統一發布、強制啟用。`,
   `（附錄）從一個系統放大到好幾個系統。目前還沒有這類需求。
-對照三角形：這是職能型找系統型那一條邊——這批貨的 Agent 就是一個職能型 Agent，它去找各段的系統型 Agent；權限照系統型那一頁，用它自己的最小權限，背後綁著一位指定的工程師。
+對照第 23 頁的圖：這是職能型找系統型那一條箭頭——這批貨的 Agent 就是一個職能型 Agent，它去找各段的系統型 Agent；權限照系統型那一頁，用它自己的最小權限，背後綁著一位指定的工程師。
 情境：一批貨在後段量測異常，要回頭找 root cause——可能在前段、中段、也可能在後段。難處是資料和專業知識分散在不同單位，人工追查要跨部門來回問。
 做法：這批貨的 Agent 被事件喚醒，用 lot ID 當線索，去問前、中、後段的系統型 Agent（每個系統一個，懂自己那段的資料和術語）。各段回假設和證據，再互相反駁，留下證據最強的——這就是附錄辯論那頁：單一調查者容易被第一個假設牽著走，互相反駁比較可靠。最後整理成建議，扣貨、改 recipe 這類影響產線的決定，由工程師核准。
 「一批貨綁一個 Agent」不是幾千個模型一直開著：這批貨的 Agent ＝ 這批貨的狀態紀錄 ＋ 事件來時才喚醒的 Harness。平常不跑模型，進站、量測超規、被後段退回時才醒來處理，處理完把結果寫回狀態。它不取代 MES：派工、hold、規格是寫死的守要求，Agent 不能覆蓋；它的價值在例外處理。
